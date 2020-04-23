@@ -1,27 +1,27 @@
 package com.github.badoualy.telegram.tl.api.contacts;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
 import com.github.badoualy.telegram.tl.api.TLContactBlocked;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBlocked extends TLAbsBlocked {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x1c138d15;
-
-    private final String _constructor = "contacts.blocked#1c138d15";
+    private final String _constructor = "contacts.blocked#0";
 
     public TLBlocked() {
     }

@@ -1,38 +1,36 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsInputCheckPasswordSRP;
 import com.github.badoualy.telegram.tl.api.account.TLPasswordSettings;
-import com.github.badoualy.telegram.tl.core.TLBytes;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountGetPasswordSettings extends TLMethod<TLPasswordSettings> {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0xbc8d11bb;
+    protected TLAbsInputCheckPasswordSRP password;
 
-    protected TLBytes currentPasswordHash;
-
-    private final String _constructor = "account.getPasswordSettings#bc8d11bb";
+    private final String _constructor = "account.getPasswordSettings#0";
 
     public TLRequestAccountGetPasswordSettings() {
     }
 
-    public TLRequestAccountGetPasswordSettings(TLBytes currentPasswordHash) {
-        this.currentPasswordHash = currentPasswordHash;
+    public TLRequestAccountGetPasswordSettings(TLAbsInputCheckPasswordSRP password) {
+        this.password = password;
     }
 
     @Override
@@ -43,28 +41,26 @@ public class TLRequestAccountGetPasswordSettings extends TLMethod<TLPasswordSett
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLPasswordSettings)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLPasswordSettings) response;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeTLBytes(currentPasswordHash, stream);
+        writeTLObject(password, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        currentPasswordHash = readTLBytes(stream, context);
+        password = readTLObject(stream, context, TLAbsInputCheckPasswordSRP.class, -1);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
-        size += computeTLBytesSerializedSize(currentPasswordHash);
+        size += password.computeSerializedSize();
         return size;
     }
 
@@ -78,11 +74,11 @@ public class TLRequestAccountGetPasswordSettings extends TLMethod<TLPasswordSett
         return CONSTRUCTOR_ID;
     }
 
-    public TLBytes getCurrentPasswordHash() {
-        return currentPasswordHash;
+    public TLAbsInputCheckPasswordSRP getPassword() {
+        return password;
     }
 
-    public void setCurrentPasswordHash(TLBytes currentPasswordHash) {
-        this.currentPasswordHash = currentPasswordHash;
+    public void setPassword(TLAbsInputCheckPasswordSRP password) {
+        this.password = password;
     }
 }

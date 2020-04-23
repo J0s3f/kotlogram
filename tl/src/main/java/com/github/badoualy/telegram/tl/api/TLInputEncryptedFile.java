@@ -1,29 +1,28 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputEncryptedFile extends TLAbsInputEncryptedFile {
-
-    public static final int CONSTRUCTOR_ID = 0x5a17b5e5;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected long id;
 
     protected long accessHash;
 
-    private final String _constructor = "inputEncryptedFile#5a17b5e5";
+    private final String _constructor = "inputEncryptedFile#0";
 
     public TLInputEncryptedFile() {
     }

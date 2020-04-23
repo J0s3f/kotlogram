@@ -1,35 +1,35 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputBotInlineMessageMediaGeo extends TLAbsInputBotInlineMessage {
-
-    public static final int CONSTRUCTOR_ID = 0xf4a59de1;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLAbsInputGeoPoint geoPoint;
 
-    private final String _constructor = "inputBotInlineMessageMediaGeo#f4a59de1";
+    protected int period;
+
+    private final String _constructor = "inputBotInlineMessageMediaGeo#0";
 
     public TLInputBotInlineMessageMediaGeo() {
     }
 
-    public TLInputBotInlineMessageMediaGeo(TLAbsInputGeoPoint geoPoint, TLAbsReplyMarkup replyMarkup) {
+    public TLInputBotInlineMessageMediaGeo(TLAbsInputGeoPoint geoPoint, int period, TLAbsReplyMarkup replyMarkup) {
         this.geoPoint = geoPoint;
+        this.period = period;
         this.replyMarkup = replyMarkup;
     }
 
@@ -44,6 +44,7 @@ public class TLInputBotInlineMessageMediaGeo extends TLAbsInputBotInlineMessage 
 
         writeInt(flags, stream);
         writeTLObject(geoPoint, stream);
+        writeInt(period, stream);
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             writeTLObject(replyMarkup, stream);
@@ -55,6 +56,7 @@ public class TLInputBotInlineMessageMediaGeo extends TLAbsInputBotInlineMessage 
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         geoPoint = readTLObject(stream, context, TLAbsInputGeoPoint.class, -1);
+        period = readInt(stream);
         replyMarkup = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsReplyMarkup.class, -1) : null;
     }
 
@@ -65,6 +67,7 @@ public class TLInputBotInlineMessageMediaGeo extends TLAbsInputBotInlineMessage 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         size += geoPoint.computeSerializedSize();
+        size += SIZE_INT32;
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             size += replyMarkup.computeSerializedSize();
@@ -88,6 +91,14 @@ public class TLInputBotInlineMessageMediaGeo extends TLAbsInputBotInlineMessage 
 
     public void setGeoPoint(TLAbsInputGeoPoint geoPoint) {
         this.geoPoint = geoPoint;
+    }
+
+    public int getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(int period) {
+        this.period = period;
     }
 
     public TLAbsReplyMarkup getReplyMarkup() {

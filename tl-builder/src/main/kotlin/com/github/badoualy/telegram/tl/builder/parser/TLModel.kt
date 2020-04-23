@@ -74,9 +74,13 @@ class TLMethod(val name: String, val id: Int, val parameters: List<TLParameter>,
 }
 
 // A parameter
-class TLParameter(val name: String, val tlType: TLType) : Comparable<TLParameter> {
+class TLParameter(val nameI: String, val tlType: TLType) : Comparable<TLParameter> {
     var inherited = false
-
+    val name = when (nameI) {
+        "static" -> "isStatic"
+        "default" -> "isDefault"
+        else -> nameI
+    }
     override fun toString() = "$name: $tlType"
     override fun compareTo(other: TLParameter) = name.compareTo(other.name)
     override fun equals(other: Any?) = other is TLParameter && other.name == name && other.tlType == tlType

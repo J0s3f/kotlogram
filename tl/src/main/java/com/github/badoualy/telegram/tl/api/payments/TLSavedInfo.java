@@ -1,27 +1,24 @@
 package com.github.badoualy.telegram.tl.api.payments;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLPaymentRequestedInfo;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSavedInfo extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0xfb8fe43c;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -29,7 +26,7 @@ public class TLSavedInfo extends TLObject {
 
     protected TLPaymentRequestedInfo savedInfo;
 
-    private final String _constructor = "payments.savedInfo#fb8fe43c";
+    private final String _constructor = "payments.savedInfo#0";
 
     public TLSavedInfo() {
     }
@@ -61,8 +58,7 @@ public class TLSavedInfo extends TLObject {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         hasSavedCredentials = (flags & 2) != 0;
-        savedInfo = (flags & 1) != 0 ? readTLObject(stream, context, TLPaymentRequestedInfo.class,
-                                                    TLPaymentRequestedInfo.CONSTRUCTOR_ID) : null;
+        savedInfo = (flags & 1) != 0 ? readTLObject(stream, context, TLPaymentRequestedInfo.class, TLPaymentRequestedInfo.CONSTRUCTOR_ID) : null;
     }
 
     @Override

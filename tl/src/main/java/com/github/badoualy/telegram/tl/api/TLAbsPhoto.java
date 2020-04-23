@@ -1,19 +1,21 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.core.TLObject;
 
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLPhoto}: photo#9288dd29</li>
- * <li>{@link TLPhotoEmpty}: photoEmpty#2331b22d</li>
+ * <li>{@link TLPhoto}: photo#0</li>
+ * <li>{@link TLPhotoEmpty}: photoEmpty#0</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public abstract class TLAbsPhoto extends TLObject {
-
     protected long id;
 
     public TLAbsPhoto() {

@@ -1,27 +1,24 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.core.TLObject;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLBytes;
+import com.github.badoualy.telegram.tl.core.TLObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDcOption extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0x5d8c6cc;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -33,25 +30,31 @@ public class TLDcOption extends TLObject {
 
     protected boolean cdn;
 
+    protected boolean isStatic;
+
     protected int id;
 
     protected String ipAddress;
 
     protected int port;
 
-    private final String _constructor = "dcOption#5d8c6cc";
+    protected TLBytes secret;
+
+    private final String _constructor = "dcOption#0";
 
     public TLDcOption() {
     }
 
-    public TLDcOption(boolean ipv6, boolean mediaOnly, boolean tcpoOnly, boolean cdn, int id, String ipAddress, int port) {
+    public TLDcOption(boolean ipv6, boolean mediaOnly, boolean tcpoOnly, boolean cdn, boolean isStatic, int id, String ipAddress, int port, TLBytes secret) {
         this.ipv6 = ipv6;
         this.mediaOnly = mediaOnly;
         this.tcpoOnly = tcpoOnly;
         this.cdn = cdn;
+        this.isStatic = isStatic;
         this.id = id;
         this.ipAddress = ipAddress;
         this.port = port;
+        this.secret = secret;
     }
 
     private void computeFlags() {
@@ -60,6 +63,8 @@ public class TLDcOption extends TLObject {
         flags = mediaOnly ? (flags | 2) : (flags & ~2);
         flags = tcpoOnly ? (flags | 4) : (flags & ~4);
         flags = cdn ? (flags | 8) : (flags & ~8);
+        flags = isStatic ? (flags | 16) : (flags & ~16);
+        flags = secret != null ? (flags | 1024) : (flags & ~1024);
     }
 
     @Override
@@ -70,6 +75,10 @@ public class TLDcOption extends TLObject {
         writeInt(id, stream);
         writeString(ipAddress, stream);
         writeInt(port, stream);
+        if ((flags & 1024) != 0) {
+            if (secret == null) throwNullFieldException("secret", flags);
+            writeTLBytes(secret, stream);
+        }
     }
 
     @Override
@@ -80,9 +89,11 @@ public class TLDcOption extends TLObject {
         mediaOnly = (flags & 2) != 0;
         tcpoOnly = (flags & 4) != 0;
         cdn = (flags & 8) != 0;
+        isStatic = (flags & 16) != 0;
         id = readInt(stream);
         ipAddress = readTLString(stream);
         port = readInt(stream);
+        secret = (flags & 1024) != 0 ? readTLBytes(stream, context) : null;
     }
 
     @Override
@@ -94,6 +105,10 @@ public class TLDcOption extends TLObject {
         size += SIZE_INT32;
         size += computeTLStringSerializedSize(ipAddress);
         size += SIZE_INT32;
+        if ((flags & 1024) != 0) {
+            if (secret == null) throwNullFieldException("secret", flags);
+            size += computeTLBytesSerializedSize(secret);
+        }
         return size;
     }
 
@@ -139,6 +154,14 @@ public class TLDcOption extends TLObject {
         this.cdn = cdn;
     }
 
+    public boolean getIsStatic() {
+        return isStatic;
+    }
+
+    public void setIsStatic(boolean isStatic) {
+        this.isStatic = isStatic;
+    }
+
     public int getId() {
         return id;
     }
@@ -161,5 +184,13 @@ public class TLDcOption extends TLObject {
 
     public void setPort(int port) {
         this.port = port;
+    }
+
+    public TLBytes getSecret() {
+        return secret;
+    }
+
+    public void setSecret(TLBytes secret) {
+        this.secret = secret;
     }
 }

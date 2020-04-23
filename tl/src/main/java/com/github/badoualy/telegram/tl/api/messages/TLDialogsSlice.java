@@ -1,39 +1,44 @@
 package com.github.badoualy.telegram.tl.api.messages;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsChat;
+import com.github.badoualy.telegram.tl.api.TLAbsDialog;
 import com.github.badoualy.telegram.tl.api.TLAbsMessage;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
-import com.github.badoualy.telegram.tl.api.TLDialog;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDialogsSlice extends TLAbsDialogs {
-
-    public static final int CONSTRUCTOR_ID = 0x71e094f3;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int count;
 
-    private final String _constructor = "messages.dialogsSlice#71e094f3";
+    protected TLVector<TLAbsDialog> dialogs;
+
+    protected TLVector<TLAbsMessage> messages;
+
+    protected TLVector<TLAbsChat> chats;
+
+    protected TLVector<TLAbsUser> users;
+
+    private final String _constructor = "messages.dialogsSlice#0";
 
     public TLDialogsSlice() {
     }
 
-    public TLDialogsSlice(int count, TLVector<TLDialog> dialogs, TLVector<TLAbsMessage> messages, TLVector<TLAbsChat> chats, TLVector<TLAbsUser> users) {
+    public TLDialogsSlice(int count, TLVector<TLAbsDialog> dialogs, TLVector<TLAbsMessage> messages, TLVector<TLAbsChat> chats, TLVector<TLAbsUser> users) {
         this.count = count;
         this.dialogs = dialogs;
         this.messages = messages;
@@ -89,11 +94,11 @@ public class TLDialogsSlice extends TLAbsDialogs {
         this.count = count;
     }
 
-    public TLVector<TLDialog> getDialogs() {
+    public TLVector<TLAbsDialog> getDialogs() {
         return dialogs;
     }
 
-    public void setDialogs(TLVector<TLDialog> dialogs) {
+    public void setDialogs(TLVector<TLAbsDialog> dialogs) {
         this.dialogs = dialogs;
     }
 

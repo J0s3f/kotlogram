@@ -1,77 +1,95 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.core.TLObject;
 
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLUpdateBotCallbackQuery}: updateBotCallbackQuery#e73547e1</li>
- * <li>{@link TLUpdateBotInlineQuery}: updateBotInlineQuery#54826690</li>
- * <li>{@link TLUpdateBotInlineSend}: updateBotInlineSend#e48f964</li>
- * <li>{@link TLUpdateBotPrecheckoutQuery}: updateBotPrecheckoutQuery#5d2f3aa9</li>
- * <li>{@link TLUpdateBotShippingQuery}: updateBotShippingQuery#e0cdc940</li>
- * <li>{@link TLUpdateBotWebhookJSON}: updateBotWebhookJSON#8317c0c3</li>
- * <li>{@link TLUpdateBotWebhookJSONQuery}: updateBotWebhookJSONQuery#9b9240a6</li>
- * <li>{@link TLUpdateChannel}: updateChannel#b6d45656</li>
- * <li>{@link TLUpdateChannelMessageViews}: updateChannelMessageViews#98a12b4b</li>
- * <li>{@link TLUpdateChannelPinnedMessage}: updateChannelPinnedMessage#98592475</li>
- * <li>{@link TLUpdateChannelTooLong}: updateChannelTooLong#eb0467fb</li>
- * <li>{@link TLUpdateChannelWebPage}: updateChannelWebPage#40771900</li>
- * <li>{@link TLUpdateChatAdmins}: updateChatAdmins#6e947941</li>
- * <li>{@link TLUpdateChatParticipantAdd}: updateChatParticipantAdd#ea4b0e5c</li>
- * <li>{@link TLUpdateChatParticipantAdmin}: updateChatParticipantAdmin#b6901959</li>
- * <li>{@link TLUpdateChatParticipantDelete}: updateChatParticipantDelete#6e5f8c22</li>
- * <li>{@link TLUpdateChatParticipants}: updateChatParticipants#7761198</li>
- * <li>{@link TLUpdateChatUserTyping}: updateChatUserTyping#9a65ea1f</li>
- * <li>{@link TLUpdateConfig}: updateConfig#a229dd06</li>
- * <li>{@link TLUpdateContactLink}: updateContactLink#9d2e67c5</li>
- * <li>{@link TLUpdateContactRegistered}: updateContactRegistered#2575bbb9</li>
- * <li>{@link TLUpdateDcOptions}: updateDcOptions#8e5e9873</li>
- * <li>{@link TLUpdateDeleteChannelMessages}: updateDeleteChannelMessages#c37521c9</li>
- * <li>{@link TLUpdateDeleteMessages}: updateDeleteMessages#a20db0e5</li>
- * <li>{@link TLUpdateDialogPinned}: updateDialogPinned#d711a2cc</li>
- * <li>{@link TLUpdateDraftMessage}: updateDraftMessage#ee2bb969</li>
- * <li>{@link TLUpdateEditChannelMessage}: updateEditChannelMessage#1b3f4df7</li>
- * <li>{@link TLUpdateEditMessage}: updateEditMessage#e40370a3</li>
- * <li>{@link TLUpdateEncryptedChatTyping}: updateEncryptedChatTyping#1710f156</li>
- * <li>{@link TLUpdateEncryptedMessagesRead}: updateEncryptedMessagesRead#38fe25b7</li>
- * <li>{@link TLUpdateEncryption}: updateEncryption#b4a2e88d</li>
- * <li>{@link TLUpdateInlineBotCallbackQuery}: updateInlineBotCallbackQuery#f9d27a5a</li>
- * <li>{@link TLUpdateMessageID}: updateMessageID#4e90bfd6</li>
- * <li>{@link TLUpdateNewChannelMessage}: updateNewChannelMessage#62ba04d9</li>
- * <li>{@link TLUpdateNewEncryptedMessage}: updateNewEncryptedMessage#12bcbd9a</li>
- * <li>{@link TLUpdateNewMessage}: updateNewMessage#1f2b0afd</li>
- * <li>{@link TLUpdateNewStickerSet}: updateNewStickerSet#688a30aa</li>
- * <li>{@link TLUpdateNotifySettings}: updateNotifySettings#bec268ef</li>
- * <li>{@link TLUpdatePhoneCall}: updatePhoneCall#ab0f6b1e</li>
- * <li>{@link TLUpdatePinnedDialogs}: updatePinnedDialogs#d8caf68d</li>
- * <li>{@link TLUpdatePrivacy}: updatePrivacy#ee3b272a</li>
- * <li>{@link TLUpdatePtsChanged}: updatePtsChanged#3354678f</li>
- * <li>{@link TLUpdateReadChannelInbox}: updateReadChannelInbox#4214f37f</li>
- * <li>{@link TLUpdateReadChannelOutbox}: updateReadChannelOutbox#25d6c9c7</li>
- * <li>{@link TLUpdateReadFeaturedStickers}: updateReadFeaturedStickers#571d2742</li>
- * <li>{@link TLUpdateReadHistoryInbox}: updateReadHistoryInbox#9961fd5c</li>
- * <li>{@link TLUpdateReadHistoryOutbox}: updateReadHistoryOutbox#2f2f21bf</li>
- * <li>{@link TLUpdateReadMessagesContents}: updateReadMessagesContents#68c13933</li>
- * <li>{@link TLUpdateRecentStickers}: updateRecentStickers#9a422c20</li>
- * <li>{@link TLUpdateSavedGifs}: updateSavedGifs#9375341e</li>
- * <li>{@link TLUpdateServiceNotification}: updateServiceNotification#ebe46819</li>
- * <li>{@link TLUpdateStickerSets}: updateStickerSets#43ae3dec</li>
- * <li>{@link TLUpdateStickerSetsOrder}: updateStickerSetsOrder#bb2d201</li>
- * <li>{@link TLUpdateUserBlocked}: updateUserBlocked#80ece81a</li>
- * <li>{@link TLUpdateUserName}: updateUserName#a7332b73</li>
- * <li>{@link TLUpdateUserPhone}: updateUserPhone#12b9417b</li>
- * <li>{@link TLUpdateUserPhoto}: updateUserPhoto#95313b0c</li>
- * <li>{@link TLUpdateUserStatus}: updateUserStatus#1bfbd823</li>
- * <li>{@link TLUpdateUserTyping}: updateUserTyping#5c486927</li>
- * <li>{@link TLUpdateWebPage}: updateWebPage#7f891213</li>
+ * <li>{@link TLUpdateBotCallbackQuery}: updateBotCallbackQuery#0</li>
+ * <li>{@link TLUpdateBotInlineQuery}: updateBotInlineQuery#0</li>
+ * <li>{@link TLUpdateBotInlineSend}: updateBotInlineSend#0</li>
+ * <li>{@link TLUpdateBotPrecheckoutQuery}: updateBotPrecheckoutQuery#0</li>
+ * <li>{@link TLUpdateBotShippingQuery}: updateBotShippingQuery#0</li>
+ * <li>{@link TLUpdateBotWebhookJSON}: updateBotWebhookJSON#0</li>
+ * <li>{@link TLUpdateBotWebhookJSONQuery}: updateBotWebhookJSONQuery#0</li>
+ * <li>{@link TLUpdateChannel}: updateChannel#0</li>
+ * <li>{@link TLUpdateChannelAvailableMessages}: updateChannelAvailableMessages#0</li>
+ * <li>{@link TLUpdateChannelMessageViews}: updateChannelMessageViews#0</li>
+ * <li>{@link TLUpdateChannelPinnedMessage}: updateChannelPinnedMessage#0</li>
+ * <li>{@link TLUpdateChannelReadMessagesContents}: updateChannelReadMessagesContents#0</li>
+ * <li>{@link TLUpdateChannelTooLong}: updateChannelTooLong#0</li>
+ * <li>{@link TLUpdateChannelWebPage}: updateChannelWebPage#0</li>
+ * <li>{@link TLUpdateChatDefaultBannedRights}: updateChatDefaultBannedRights#0</li>
+ * <li>{@link TLUpdateChatParticipantAdd}: updateChatParticipantAdd#0</li>
+ * <li>{@link TLUpdateChatParticipantAdmin}: updateChatParticipantAdmin#0</li>
+ * <li>{@link TLUpdateChatParticipantDelete}: updateChatParticipantDelete#0</li>
+ * <li>{@link TLUpdateChatParticipants}: updateChatParticipants#0</li>
+ * <li>{@link TLUpdateChatPinnedMessage}: updateChatPinnedMessage#0</li>
+ * <li>{@link TLUpdateChatUserTyping}: updateChatUserTyping#0</li>
+ * <li>{@link TLUpdateConfig}: updateConfig#0</li>
+ * <li>{@link TLUpdateContactsReset}: updateContactsReset#0</li>
+ * <li>{@link TLUpdateDcOptions}: updateDcOptions#0</li>
+ * <li>{@link TLUpdateDeleteChannelMessages}: updateDeleteChannelMessages#0</li>
+ * <li>{@link TLUpdateDeleteMessages}: updateDeleteMessages#0</li>
+ * <li>{@link TLUpdateDeleteScheduledMessages}: updateDeleteScheduledMessages#0</li>
+ * <li>{@link TLUpdateDialogPinned}: updateDialogPinned#0</li>
+ * <li>{@link TLUpdateDialogUnreadMark}: updateDialogUnreadMark#0</li>
+ * <li>{@link TLUpdateDraftMessage}: updateDraftMessage#0</li>
+ * <li>{@link TLUpdateEditChannelMessage}: updateEditChannelMessage#0</li>
+ * <li>{@link TLUpdateEditMessage}: updateEditMessage#0</li>
+ * <li>{@link TLUpdateEncryptedChatTyping}: updateEncryptedChatTyping#0</li>
+ * <li>{@link TLUpdateEncryptedMessagesRead}: updateEncryptedMessagesRead#0</li>
+ * <li>{@link TLUpdateEncryption}: updateEncryption#0</li>
+ * <li>{@link TLUpdateFavedStickers}: updateFavedStickers#0</li>
+ * <li>{@link TLUpdateFolderPeers}: updateFolderPeers#0</li>
+ * <li>{@link TLUpdateGeoLiveViewed}: updateGeoLiveViewed#0</li>
+ * <li>{@link TLUpdateInlineBotCallbackQuery}: updateInlineBotCallbackQuery#0</li>
+ * <li>{@link TLUpdateLangPack}: updateLangPack#0</li>
+ * <li>{@link TLUpdateLangPackTooLong}: updateLangPackTooLong#0</li>
+ * <li>{@link TLUpdateLoginToken}: updateLoginToken#0</li>
+ * <li>{@link TLUpdateMessageID}: updateMessageID#0</li>
+ * <li>{@link TLUpdateMessagePoll}: updateMessagePoll#0</li>
+ * <li>{@link TLUpdateNewChannelMessage}: updateNewChannelMessage#0</li>
+ * <li>{@link TLUpdateNewEncryptedMessage}: updateNewEncryptedMessage#0</li>
+ * <li>{@link TLUpdateNewMessage}: updateNewMessage#0</li>
+ * <li>{@link TLUpdateNewScheduledMessage}: updateNewScheduledMessage#0</li>
+ * <li>{@link TLUpdateNewStickerSet}: updateNewStickerSet#0</li>
+ * <li>{@link TLUpdateNotifySettings}: updateNotifySettings#0</li>
+ * <li>{@link TLUpdatePeerLocated}: updatePeerLocated#0</li>
+ * <li>{@link TLUpdatePeerSettings}: updatePeerSettings#0</li>
+ * <li>{@link TLUpdatePhoneCall}: updatePhoneCall#0</li>
+ * <li>{@link TLUpdatePinnedDialogs}: updatePinnedDialogs#0</li>
+ * <li>{@link TLUpdatePrivacy}: updatePrivacy#0</li>
+ * <li>{@link TLUpdatePtsChanged}: updatePtsChanged#0</li>
+ * <li>{@link TLUpdateReadChannelInbox}: updateReadChannelInbox#0</li>
+ * <li>{@link TLUpdateReadChannelOutbox}: updateReadChannelOutbox#0</li>
+ * <li>{@link TLUpdateReadFeaturedStickers}: updateReadFeaturedStickers#0</li>
+ * <li>{@link TLUpdateReadHistoryInbox}: updateReadHistoryInbox#0</li>
+ * <li>{@link TLUpdateReadHistoryOutbox}: updateReadHistoryOutbox#0</li>
+ * <li>{@link TLUpdateReadMessagesContents}: updateReadMessagesContents#0</li>
+ * <li>{@link TLUpdateRecentStickers}: updateRecentStickers#0</li>
+ * <li>{@link TLUpdateSavedGifs}: updateSavedGifs#0</li>
+ * <li>{@link TLUpdateServiceNotification}: updateServiceNotification#0</li>
+ * <li>{@link TLUpdateStickerSets}: updateStickerSets#0</li>
+ * <li>{@link TLUpdateStickerSetsOrder}: updateStickerSetsOrder#0</li>
+ * <li>{@link TLUpdateTheme}: updateTheme#0</li>
+ * <li>{@link TLUpdateUserBlocked}: updateUserBlocked#0</li>
+ * <li>{@link TLUpdateUserName}: updateUserName#0</li>
+ * <li>{@link TLUpdateUserPhone}: updateUserPhone#0</li>
+ * <li>{@link TLUpdateUserPhoto}: updateUserPhoto#0</li>
+ * <li>{@link TLUpdateUserPinnedMessage}: updateUserPinnedMessage#0</li>
+ * <li>{@link TLUpdateUserStatus}: updateUserStatus#0</li>
+ * <li>{@link TLUpdateUserTyping}: updateUserTyping#0</li>
+ * <li>{@link TLUpdateWebPage}: updateWebPage#0</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public abstract class TLAbsUpdate extends TLObject {
-
     public TLAbsUpdate() {
     }
 }

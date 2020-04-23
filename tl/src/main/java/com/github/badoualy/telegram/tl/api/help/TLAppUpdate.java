@@ -1,74 +1,114 @@
 package com.github.badoualy.telegram.tl.api.help;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsDocument;
+import com.github.badoualy.telegram.tl.api.TLAbsMessageEntity;
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBool;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeBoolean;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_BOOLEAN;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLAppUpdate extends TLAbsAppUpdate {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x8987f311;
+    protected int flags;
+
+    protected boolean canNotSkip;
 
     protected int id;
 
-    protected boolean critical;
-
-    protected String url;
+    protected String version;
 
     protected String text;
 
-    private final String _constructor = "help.appUpdate#8987f311";
+    protected TLVector<TLAbsMessageEntity> entities;
+
+    protected TLAbsDocument document;
+
+    protected String url;
+
+    private final String _constructor = "help.appUpdate#0";
 
     public TLAppUpdate() {
     }
 
-    public TLAppUpdate(int id, boolean critical, String url, String text) {
+    public TLAppUpdate(boolean canNotSkip, int id, String version, String text, TLVector<TLAbsMessageEntity> entities, TLAbsDocument document, String url) {
+        this.canNotSkip = canNotSkip;
         this.id = id;
-        this.critical = critical;
-        this.url = url;
+        this.version = version;
         this.text = text;
+        this.entities = entities;
+        this.document = document;
+        this.url = url;
+    }
+
+    private void computeFlags() {
+        flags = 0;
+        flags = canNotSkip ? (flags | 1) : (flags & ~1);
+        flags = document != null ? (flags | 2) : (flags & ~2);
+        flags = url != null ? (flags | 4) : (flags & ~4);
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        computeFlags();
+
+        writeInt(flags, stream);
         writeInt(id, stream);
-        writeBoolean(critical, stream);
-        writeString(url, stream);
+        writeString(version, stream);
         writeString(text, stream);
+        writeTLVector(entities, stream);
+        if ((flags & 2) != 0) {
+            if (document == null) throwNullFieldException("document", flags);
+            writeTLObject(document, stream);
+        }
+        if ((flags & 4) != 0) {
+            if (url == null) throwNullFieldException("url", flags);
+            writeString(url, stream);
+        }
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        flags = readInt(stream);
+        canNotSkip = (flags & 1) != 0;
         id = readInt(stream);
-        critical = readTLBool(stream);
-        url = readTLString(stream);
+        version = readTLString(stream);
         text = readTLString(stream);
+        entities = readTLVector(stream, context);
+        document = (flags & 2) != 0 ? readTLObject(stream, context, TLAbsDocument.class, -1) : null;
+        url = (flags & 4) != 0 ? readTLString(stream) : null;
     }
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
-        size += SIZE_BOOLEAN;
-        size += computeTLStringSerializedSize(url);
+        size += SIZE_INT32;
+        size += computeTLStringSerializedSize(version);
         size += computeTLStringSerializedSize(text);
+        size += entities.computeSerializedSize();
+        if ((flags & 2) != 0) {
+            if (document == null) throwNullFieldException("document", flags);
+            size += document.computeSerializedSize();
+        }
+        if ((flags & 4) != 0) {
+            if (url == null) throwNullFieldException("url", flags);
+            size += computeTLStringSerializedSize(url);
+        }
         return size;
     }
 
@@ -82,6 +122,14 @@ public class TLAppUpdate extends TLAbsAppUpdate {
         return CONSTRUCTOR_ID;
     }
 
+    public boolean getCanNotSkip() {
+        return canNotSkip;
+    }
+
+    public void setCanNotSkip(boolean canNotSkip) {
+        this.canNotSkip = canNotSkip;
+    }
+
     public int getId() {
         return id;
     }
@@ -90,20 +138,12 @@ public class TLAppUpdate extends TLAbsAppUpdate {
         this.id = id;
     }
 
-    public boolean getCritical() {
-        return critical;
+    public String getVersion() {
+        return version;
     }
 
-    public void setCritical(boolean critical) {
-        this.critical = critical;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getText() {
@@ -112,5 +152,29 @@ public class TLAppUpdate extends TLAbsAppUpdate {
 
     public void setText(String text) {
         this.text = text;
+    }
+
+    public TLVector<TLAbsMessageEntity> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(TLVector<TLAbsMessageEntity> entities) {
+        this.entities = entities;
+    }
+
+    public TLAbsDocument getDocument() {
+        return document;
+    }
+
+    public void setDocument(TLAbsDocument document) {
+        this.document = document;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

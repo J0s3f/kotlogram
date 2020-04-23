@@ -1,42 +1,44 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdatePinnedDialogs extends TLAbsUpdate {
-
-    public static final int CONSTRUCTOR_ID = 0xd8caf68d;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
-    protected TLVector<TLAbsPeer> order;
+    protected Integer folderId;
 
-    private final String _constructor = "updatePinnedDialogs#d8caf68d";
+    protected TLVector<TLAbsDialogPeer> order;
+
+    private final String _constructor = "updatePinnedDialogs#0";
 
     public TLUpdatePinnedDialogs() {
     }
 
-    public TLUpdatePinnedDialogs(TLVector<TLAbsPeer> order) {
+    public TLUpdatePinnedDialogs(Integer folderId, TLVector<TLAbsDialogPeer> order) {
+        this.folderId = folderId;
         this.order = order;
     }
 
     private void computeFlags() {
         flags = 0;
+        flags = folderId != null ? (flags | 2) : (flags & ~2);
         flags = order != null ? (flags | 1) : (flags & ~1);
     }
 
@@ -45,6 +47,10 @@ public class TLUpdatePinnedDialogs extends TLAbsUpdate {
         computeFlags();
 
         writeInt(flags, stream);
+        if ((flags & 2) != 0) {
+            if (folderId == null) throwNullFieldException("folderId", flags);
+            writeInt(folderId, stream);
+        }
         if ((flags & 1) != 0) {
             if (order == null) throwNullFieldException("order", flags);
             writeTLVector(order, stream);
@@ -55,6 +61,7 @@ public class TLUpdatePinnedDialogs extends TLAbsUpdate {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
+        folderId = (flags & 2) != 0 ? readInt(stream) : null;
         order = (flags & 1) != 0 ? readTLVector(stream, context) : null;
     }
 
@@ -64,6 +71,10 @@ public class TLUpdatePinnedDialogs extends TLAbsUpdate {
 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
+        if ((flags & 2) != 0) {
+            if (folderId == null) throwNullFieldException("folderId", flags);
+            size += SIZE_INT32;
+        }
         if ((flags & 1) != 0) {
             if (order == null) throwNullFieldException("order", flags);
             size += order.computeSerializedSize();
@@ -81,11 +92,19 @@ public class TLUpdatePinnedDialogs extends TLAbsUpdate {
         return CONSTRUCTOR_ID;
     }
 
-    public TLVector<TLAbsPeer> getOrder() {
+    public Integer getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(Integer folderId) {
+        this.folderId = folderId;
+    }
+
+    public TLVector<TLAbsDialogPeer> getOrder() {
         return order;
     }
 
-    public void setOrder(TLVector<TLAbsPeer> order) {
+    public void setOrder(TLVector<TLAbsDialogPeer> order) {
         this.order = order;
     }
 }

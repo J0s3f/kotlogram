@@ -1,28 +1,22 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateBotInlineSend extends TLAbsUpdate {
-
-    public static final int CONSTRUCTOR_ID = 0xe48f964;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -36,7 +30,7 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
 
     protected TLInputBotInlineMessageID msgId;
 
-    private final String _constructor = "updateBotInlineSend#e48f964";
+    private final String _constructor = "updateBotInlineSend#0";
 
     public TLUpdateBotInlineSend() {
     }
@@ -81,8 +75,7 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
         query = readTLString(stream);
         geo = (flags & 1) != 0 ? readTLObject(stream, context, TLAbsGeoPoint.class, -1) : null;
         id = readTLString(stream);
-        msgId = (flags & 2) != 0 ? readTLObject(stream, context, TLInputBotInlineMessageID.class,
-                                                TLInputBotInlineMessageID.CONSTRUCTOR_ID) : null;
+        msgId = (flags & 2) != 0 ? readTLObject(stream, context, TLInputBotInlineMessageID.class, TLInputBotInlineMessageID.CONSTRUCTOR_ID) : null;
     }
 
     @Override

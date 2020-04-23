@@ -1,5 +1,8 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLInputPhoneCall;
 import com.github.badoualy.telegram.tl.api.TLPhoneCallProtocol;
@@ -7,28 +10,19 @@ import com.github.badoualy.telegram.tl.api.phone.TLPhoneCall;
 import com.github.badoualy.telegram.tl.core.TLBytes;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPhoneConfirmCall extends TLMethod<TLPhoneCall> {
-
-    public static final int CONSTRUCTOR_ID = 0x2efe1722;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLInputPhoneCall peer;
 
@@ -38,7 +32,7 @@ public class TLRequestPhoneConfirmCall extends TLMethod<TLPhoneCall> {
 
     protected TLPhoneCallProtocol protocol;
 
-    private final String _constructor = "phone.confirmCall#2efe1722";
+    private final String _constructor = "phone.confirmCall#0";
 
     public TLRequestPhoneConfirmCall() {
     }
@@ -58,9 +52,7 @@ public class TLRequestPhoneConfirmCall extends TLMethod<TLPhoneCall> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLPhoneCall)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLPhoneCall) response;
     }

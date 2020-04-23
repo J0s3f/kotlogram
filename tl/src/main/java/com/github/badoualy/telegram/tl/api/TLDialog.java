@@ -1,34 +1,25 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.core.TLObject;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
-public class TLDialog extends TLObject {
+public class TLDialog extends TLAbsDialog {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x66ffba14;
-
-    protected int flags;
-
-    protected boolean pinned;
-
-    protected TLAbsPeer peer;
-
-    protected int topMessage;
+    protected boolean unreadMark;
 
     protected int readInboxMaxId;
 
@@ -36,34 +27,43 @@ public class TLDialog extends TLObject {
 
     protected int unreadCount;
 
-    protected TLAbsPeerNotifySettings notifySettings;
+    protected int unreadMentionsCount;
+
+    protected TLPeerNotifySettings notifySettings;
 
     protected Integer pts;
 
     protected TLAbsDraftMessage draft;
 
-    private final String _constructor = "dialog#66ffba14";
+    protected Integer folderId;
+
+    private final String _constructor = "dialog#0";
 
     public TLDialog() {
     }
 
-    public TLDialog(boolean pinned, TLAbsPeer peer, int topMessage, int readInboxMaxId, int readOutboxMaxId, int unreadCount, TLAbsPeerNotifySettings notifySettings, Integer pts, TLAbsDraftMessage draft) {
+    public TLDialog(boolean pinned, boolean unreadMark, TLAbsPeer peer, int topMessage, int readInboxMaxId, int readOutboxMaxId, int unreadCount, int unreadMentionsCount, TLPeerNotifySettings notifySettings, Integer pts, TLAbsDraftMessage draft, Integer folderId) {
         this.pinned = pinned;
+        this.unreadMark = unreadMark;
         this.peer = peer;
         this.topMessage = topMessage;
         this.readInboxMaxId = readInboxMaxId;
         this.readOutboxMaxId = readOutboxMaxId;
         this.unreadCount = unreadCount;
+        this.unreadMentionsCount = unreadMentionsCount;
         this.notifySettings = notifySettings;
         this.pts = pts;
         this.draft = draft;
+        this.folderId = folderId;
     }
 
     private void computeFlags() {
         flags = 0;
         flags = pinned ? (flags | 4) : (flags & ~4);
+        flags = unreadMark ? (flags | 8) : (flags & ~8);
         flags = pts != null ? (flags | 1) : (flags & ~1);
         flags = draft != null ? (flags | 2) : (flags & ~2);
+        flags = folderId != null ? (flags | 16) : (flags & ~16);
     }
 
     @Override
@@ -76,6 +76,7 @@ public class TLDialog extends TLObject {
         writeInt(readInboxMaxId, stream);
         writeInt(readOutboxMaxId, stream);
         writeInt(unreadCount, stream);
+        writeInt(unreadMentionsCount, stream);
         writeTLObject(notifySettings, stream);
         if ((flags & 1) != 0) {
             if (pts == null) throwNullFieldException("pts", flags);
@@ -85,6 +86,10 @@ public class TLDialog extends TLObject {
             if (draft == null) throwNullFieldException("draft", flags);
             writeTLObject(draft, stream);
         }
+        if ((flags & 16) != 0) {
+            if (folderId == null) throwNullFieldException("folderId", flags);
+            writeInt(folderId, stream);
+        }
     }
 
     @Override
@@ -92,14 +97,17 @@ public class TLDialog extends TLObject {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         pinned = (flags & 4) != 0;
+        unreadMark = (flags & 8) != 0;
         peer = readTLObject(stream, context, TLAbsPeer.class, -1);
         topMessage = readInt(stream);
         readInboxMaxId = readInt(stream);
         readOutboxMaxId = readInt(stream);
         unreadCount = readInt(stream);
-        notifySettings = readTLObject(stream, context, TLAbsPeerNotifySettings.class, -1);
+        unreadMentionsCount = readInt(stream);
+        notifySettings = readTLObject(stream, context, TLPeerNotifySettings.class, TLPeerNotifySettings.CONSTRUCTOR_ID);
         pts = (flags & 1) != 0 ? readInt(stream) : null;
         draft = (flags & 2) != 0 ? readTLObject(stream, context, TLAbsDraftMessage.class, -1) : null;
+        folderId = (flags & 16) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -113,6 +121,7 @@ public class TLDialog extends TLObject {
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
+        size += SIZE_INT32;
         size += notifySettings.computeSerializedSize();
         if ((flags & 1) != 0) {
             if (pts == null) throwNullFieldException("pts", flags);
@@ -121,6 +130,10 @@ public class TLDialog extends TLObject {
         if ((flags & 2) != 0) {
             if (draft == null) throwNullFieldException("draft", flags);
             size += draft.computeSerializedSize();
+        }
+        if ((flags & 16) != 0) {
+            if (folderId == null) throwNullFieldException("folderId", flags);
+            size += SIZE_INT32;
         }
         return size;
     }
@@ -141,6 +154,14 @@ public class TLDialog extends TLObject {
 
     public void setPinned(boolean pinned) {
         this.pinned = pinned;
+    }
+
+    public boolean getUnreadMark() {
+        return unreadMark;
+    }
+
+    public void setUnreadMark(boolean unreadMark) {
+        this.unreadMark = unreadMark;
     }
 
     public TLAbsPeer getPeer() {
@@ -183,11 +204,19 @@ public class TLDialog extends TLObject {
         this.unreadCount = unreadCount;
     }
 
-    public TLAbsPeerNotifySettings getNotifySettings() {
+    public int getUnreadMentionsCount() {
+        return unreadMentionsCount;
+    }
+
+    public void setUnreadMentionsCount(int unreadMentionsCount) {
+        this.unreadMentionsCount = unreadMentionsCount;
+    }
+
+    public TLPeerNotifySettings getNotifySettings() {
         return notifySettings;
     }
 
-    public void setNotifySettings(TLAbsPeerNotifySettings notifySettings) {
+    public void setNotifySettings(TLPeerNotifySettings notifySettings) {
         this.notifySettings = notifySettings;
     }
 
@@ -205,5 +234,13 @@ public class TLDialog extends TLObject {
 
     public void setDraft(TLAbsDraftMessage draft) {
         this.draft = draft;
+    }
+
+    public Integer getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(Integer folderId) {
+        this.folderId = folderId;
     }
 }

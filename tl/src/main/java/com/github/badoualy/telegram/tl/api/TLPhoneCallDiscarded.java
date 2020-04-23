@@ -1,28 +1,23 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
-
-    public static final int CONSTRUCTOR_ID = 0x50ca4de1;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -30,18 +25,21 @@ public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
 
     protected boolean needDebug;
 
+    protected boolean video;
+
     protected TLAbsPhoneCallDiscardReason reason;
 
     protected Integer duration;
 
-    private final String _constructor = "phoneCallDiscarded#50ca4de1";
+    private final String _constructor = "phoneCallDiscarded#0";
 
     public TLPhoneCallDiscarded() {
     }
 
-    public TLPhoneCallDiscarded(boolean needRating, boolean needDebug, long id, TLAbsPhoneCallDiscardReason reason, Integer duration) {
+    public TLPhoneCallDiscarded(boolean needRating, boolean needDebug, boolean video, long id, TLAbsPhoneCallDiscardReason reason, Integer duration) {
         this.needRating = needRating;
         this.needDebug = needDebug;
+        this.video = video;
         this.id = id;
         this.reason = reason;
         this.duration = duration;
@@ -51,6 +49,7 @@ public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
         flags = 0;
         flags = needRating ? (flags | 4) : (flags & ~4);
         flags = needDebug ? (flags | 8) : (flags & ~8);
+        flags = video ? (flags | 32) : (flags & ~32);
         flags = reason != null ? (flags | 1) : (flags & ~1);
         flags = duration != null ? (flags | 2) : (flags & ~2);
     }
@@ -77,6 +76,7 @@ public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
         flags = readInt(stream);
         needRating = (flags & 4) != 0;
         needDebug = (flags & 8) != 0;
+        video = (flags & 32) != 0;
         id = readLong(stream);
         reason = (flags & 1) != 0 ? readTLObject(stream, context, TLAbsPhoneCallDiscardReason.class, -1) : null;
         duration = (flags & 2) != 0 ? readInt(stream) : null;
@@ -124,6 +124,14 @@ public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
 
     public void setNeedDebug(boolean needDebug) {
         this.needDebug = needDebug;
+    }
+
+    public boolean getVideo() {
+        return video;
+    }
+
+    public void setVideo(boolean video) {
+        this.video = video;
     }
 
     public long getId() {

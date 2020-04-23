@@ -1,54 +1,48 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMediaUploadedPhoto extends TLAbsInputMedia {
-
-    public static final int CONSTRUCTOR_ID = 0x630c9af1;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
     protected TLAbsInputFile file;
 
-    protected String caption;
-
     protected TLVector<TLAbsInputDocument> stickers;
 
-    private final String _constructor = "inputMediaUploadedPhoto#630c9af1";
+    protected Integer ttlSeconds;
+
+    private final String _constructor = "inputMediaUploadedPhoto#0";
 
     public TLInputMediaUploadedPhoto() {
     }
 
-    public TLInputMediaUploadedPhoto(TLAbsInputFile file, String caption, TLVector<TLAbsInputDocument> stickers) {
+    public TLInputMediaUploadedPhoto(TLAbsInputFile file, TLVector<TLAbsInputDocument> stickers, Integer ttlSeconds) {
         this.file = file;
-        this.caption = caption;
         this.stickers = stickers;
+        this.ttlSeconds = ttlSeconds;
     }
 
     private void computeFlags() {
         flags = 0;
         flags = stickers != null ? (flags | 1) : (flags & ~1);
+        flags = ttlSeconds != null ? (flags | 2) : (flags & ~2);
     }
 
     @Override
@@ -57,10 +51,13 @@ public class TLInputMediaUploadedPhoto extends TLAbsInputMedia {
 
         writeInt(flags, stream);
         writeTLObject(file, stream);
-        writeString(caption, stream);
         if ((flags & 1) != 0) {
             if (stickers == null) throwNullFieldException("stickers", flags);
             writeTLVector(stickers, stream);
+        }
+        if ((flags & 2) != 0) {
+            if (ttlSeconds == null) throwNullFieldException("ttlSeconds", flags);
+            writeInt(ttlSeconds, stream);
         }
     }
 
@@ -69,8 +66,8 @@ public class TLInputMediaUploadedPhoto extends TLAbsInputMedia {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         file = readTLObject(stream, context, TLAbsInputFile.class, -1);
-        caption = readTLString(stream);
         stickers = (flags & 1) != 0 ? readTLVector(stream, context) : null;
+        ttlSeconds = (flags & 2) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -80,10 +77,13 @@ public class TLInputMediaUploadedPhoto extends TLAbsInputMedia {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         size += file.computeSerializedSize();
-        size += computeTLStringSerializedSize(caption);
         if ((flags & 1) != 0) {
             if (stickers == null) throwNullFieldException("stickers", flags);
             size += stickers.computeSerializedSize();
+        }
+        if ((flags & 2) != 0) {
+            if (ttlSeconds == null) throwNullFieldException("ttlSeconds", flags);
+            size += SIZE_INT32;
         }
         return size;
     }
@@ -106,19 +106,19 @@ public class TLInputMediaUploadedPhoto extends TLAbsInputMedia {
         this.file = file;
     }
 
-    public String getCaption() {
-        return caption;
-    }
-
-    public void setCaption(String caption) {
-        this.caption = caption;
-    }
-
     public TLVector<TLAbsInputDocument> getStickers() {
         return stickers;
     }
 
     public void setStickers(TLVector<TLAbsInputDocument> stickers) {
         this.stickers = stickers;
+    }
+
+    public Integer getTtlSeconds() {
+        return ttlSeconds;
+    }
+
+    public void setTtlSeconds(Integer ttlSeconds) {
+        this.ttlSeconds = ttlSeconds;
     }
 }

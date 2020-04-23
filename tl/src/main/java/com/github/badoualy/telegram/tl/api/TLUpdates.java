@@ -1,26 +1,23 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdates extends TLAbsUpdates {
-
-    public static final int CONSTRUCTOR_ID = 0x74ae4240;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLVector<TLAbsUpdate> updates;
 
@@ -32,7 +29,7 @@ public class TLUpdates extends TLAbsUpdates {
 
     protected int seq;
 
-    private final String _constructor = "updates#74ae4240";
+    private final String _constructor = "updates#0";
 
     public TLUpdates() {
     }

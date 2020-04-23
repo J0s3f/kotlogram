@@ -1,19 +1,22 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.core.TLObject;
+import java.lang.String;
 
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLFoundGif}: foundGif#162ecc1f</li>
- * <li>{@link TLFoundGifCached}: foundGifCached#9c750409</li>
+ * <li>{@link TLFoundGif}: foundGif#0</li>
+ * <li>{@link TLFoundGifCached}: foundGifCached#0</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public abstract class TLAbsFoundGif extends TLObject {
-
     protected String url;
 
     public TLAbsFoundGif() {

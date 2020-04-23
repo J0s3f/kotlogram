@@ -473,7 +473,7 @@ object JavaPoet {
                 fieldType = ParameterizedTypeName.get(fieldType.rawType, typeArg)
             }
             // Build field
-            val fieldName = parameter.name.lCamelCase().javaEscape()
+            var fieldName = parameter.name.lCamelCase().javaEscape()
             if (!parameter.inherited || id == null) {
                 // Null-id is superclass
                 val fieldBuilder = FieldSpec.builder(fieldType, fieldName, Modifier.PROTECTED)

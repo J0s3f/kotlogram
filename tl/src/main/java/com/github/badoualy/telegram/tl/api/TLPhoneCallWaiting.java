@@ -1,30 +1,27 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCallWaiting extends TLAbsPhoneCall {
-
-    public static final int CONSTRUCTOR_ID = 0x1b8f4ad1;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
+
+    protected boolean video;
 
     protected long accessHash;
 
@@ -38,12 +35,13 @@ public class TLPhoneCallWaiting extends TLAbsPhoneCall {
 
     protected Integer receiveDate;
 
-    private final String _constructor = "phoneCallWaiting#1b8f4ad1";
+    private final String _constructor = "phoneCallWaiting#0";
 
     public TLPhoneCallWaiting() {
     }
 
-    public TLPhoneCallWaiting(long id, long accessHash, int date, int adminId, int participantId, TLPhoneCallProtocol protocol, Integer receiveDate) {
+    public TLPhoneCallWaiting(boolean video, long id, long accessHash, int date, int adminId, int participantId, TLPhoneCallProtocol protocol, Integer receiveDate) {
+        this.video = video;
         this.id = id;
         this.accessHash = accessHash;
         this.date = date;
@@ -55,6 +53,7 @@ public class TLPhoneCallWaiting extends TLAbsPhoneCall {
 
     private void computeFlags() {
         flags = 0;
+        flags = video ? (flags | 32) : (flags & ~32);
         flags = receiveDate != null ? (flags | 1) : (flags & ~1);
     }
 
@@ -79,6 +78,7 @@ public class TLPhoneCallWaiting extends TLAbsPhoneCall {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
+        video = (flags & 32) != 0;
         id = readLong(stream);
         accessHash = readLong(stream);
         date = readInt(stream);
@@ -115,6 +115,14 @@ public class TLPhoneCallWaiting extends TLAbsPhoneCall {
     @Override
     public int getConstructorId() {
         return CONSTRUCTOR_ID;
+    }
+
+    public boolean getVideo() {
+        return video;
+    }
+
+    public void setVideo(boolean video) {
+        this.video = video;
     }
 
     public long getId() {

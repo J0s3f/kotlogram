@@ -1,29 +1,27 @@
 package com.github.badoualy.telegram.tl.api.contacts;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsChat;
 import com.github.badoualy.telegram.tl.api.TLAbsPeer;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLResolvedPeer extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0x7f077ad9;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLAbsPeer peer;
 
@@ -31,7 +29,7 @@ public class TLResolvedPeer extends TLObject {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "contacts.resolvedPeer#7f077ad9";
+    private final String _constructor = "contacts.resolvedPeer#0";
 
     public TLResolvedPeer() {
     }

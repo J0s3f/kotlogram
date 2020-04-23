@@ -1,34 +1,42 @@
 package com.github.badoualy.telegram.tl.api.messages;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsChat;
+import com.github.badoualy.telegram.tl.api.TLAbsDialog;
 import com.github.badoualy.telegram.tl.api.TLAbsMessage;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
-import com.github.badoualy.telegram.tl.api.TLDialog;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDialogs extends TLAbsDialogs {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x15ba6c40;
+    protected TLVector<TLAbsDialog> dialogs;
 
-    private final String _constructor = "messages.dialogs#15ba6c40";
+    protected TLVector<TLAbsMessage> messages;
+
+    protected TLVector<TLAbsChat> chats;
+
+    protected TLVector<TLAbsUser> users;
+
+    private final String _constructor = "messages.dialogs#0";
 
     public TLDialogs() {
     }
 
-    public TLDialogs(TLVector<TLDialog> dialogs, TLVector<TLAbsMessage> messages, TLVector<TLAbsChat> chats, TLVector<TLAbsUser> users) {
+    public TLDialogs(TLVector<TLAbsDialog> dialogs, TLVector<TLAbsMessage> messages, TLVector<TLAbsChat> chats, TLVector<TLAbsUser> users) {
         this.dialogs = dialogs;
         this.messages = messages;
         this.chats = chats;
@@ -72,11 +80,11 @@ public class TLDialogs extends TLAbsDialogs {
         return CONSTRUCTOR_ID;
     }
 
-    public TLVector<TLDialog> getDialogs() {
+    public TLVector<TLAbsDialog> getDialogs() {
         return dialogs;
     }
 
-    public void setDialogs(TLVector<TLDialog> dialogs) {
+    public void setDialogs(TLVector<TLAbsDialog> dialogs) {
         this.dialogs = dialogs;
     }
 

@@ -3,9 +3,9 @@ package com.github.badoualy.telegram.tl.builder.parser
 import com.fasterxml.jackson.databind.JsonNode
 import java.util.*
 
-private val genericRegex = Regex("([a-zA-Z]+)<([a-zA-Z]+)>") // Vector<SomeKindOfType>
+private val genericRegex = Regex("([a-zA-Z]+)<([a-zA-Z\\\\.]+)>") // Vector<SomeKindOfType>
 private val flagRegex = Regex("([a-zA-Z]+).(\\d+)\\?([a-zA-Z<>.]+)") // flags.0?true
-private val rawRegex = Regex("[a-zA-Z].+")
+private val rawRegex = Regex("[a-zA-Z\\\\.].+")
 
 fun buildFromJson(root: JsonNode): TLDefinition {
     println("Reading TL-Schema...")

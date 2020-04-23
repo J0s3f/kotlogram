@@ -1,31 +1,23 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChatInvite extends TLAbsChatInvite {
-
-    public static final int CONSTRUCTOR_ID = 0xdb74f558;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -39,18 +31,18 @@ public class TLChatInvite extends TLAbsChatInvite {
 
     protected String title;
 
-    protected TLAbsChatPhoto photo;
+    protected TLAbsPhoto photo;
 
     protected int participantsCount;
 
     protected TLVector<TLAbsUser> participants;
 
-    private final String _constructor = "chatInvite#db74f558";
+    private final String _constructor = "chatInvite#0";
 
     public TLChatInvite() {
     }
 
-    public TLChatInvite(boolean channel, boolean broadcast, boolean _public, boolean megagroup, String title, TLAbsChatPhoto photo, int participantsCount, TLVector<TLAbsUser> participants) {
+    public TLChatInvite(boolean channel, boolean broadcast, boolean _public, boolean megagroup, String title, TLAbsPhoto photo, int participantsCount, TLVector<TLAbsUser> participants) {
         this.channel = channel;
         this.broadcast = broadcast;
         this._public = _public;
@@ -93,7 +85,7 @@ public class TLChatInvite extends TLAbsChatInvite {
         _public = (flags & 4) != 0;
         megagroup = (flags & 8) != 0;
         title = readTLString(stream);
-        photo = readTLObject(stream, context, TLAbsChatPhoto.class, -1);
+        photo = readTLObject(stream, context, TLAbsPhoto.class, -1);
         participantsCount = readInt(stream);
         participants = (flags & 16) != 0 ? readTLVector(stream, context) : null;
     }
@@ -164,11 +156,11 @@ public class TLChatInvite extends TLAbsChatInvite {
         this.title = title;
     }
 
-    public TLAbsChatPhoto getPhoto() {
+    public TLAbsPhoto getPhoto() {
         return photo;
     }
 
-    public void setPhoto(TLAbsChatPhoto photo) {
+    public void setPhoto(TLAbsPhoto photo) {
         this.photo = photo;
     }
 

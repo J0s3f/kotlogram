@@ -1,5 +1,8 @@
 package com.github.badoualy.telegram.tl.api.payments;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
 import com.github.badoualy.telegram.tl.api.TLInvoice;
@@ -7,33 +10,19 @@ import com.github.badoualy.telegram.tl.api.TLPaymentRequestedInfo;
 import com.github.badoualy.telegram.tl.api.TLShippingOption;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPaymentReceipt extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0x500911e1;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -57,7 +46,7 @@ public class TLPaymentReceipt extends TLObject {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "payments.paymentReceipt#500911e1";
+    private final String _constructor = "payments.paymentReceipt#0";
 
     public TLPaymentReceipt() {
     }
@@ -112,10 +101,8 @@ public class TLPaymentReceipt extends TLObject {
         botId = readInt(stream);
         invoice = readTLObject(stream, context, TLInvoice.class, TLInvoice.CONSTRUCTOR_ID);
         providerId = readInt(stream);
-        info = (flags & 1) != 0 ? readTLObject(stream, context, TLPaymentRequestedInfo.class,
-                                               TLPaymentRequestedInfo.CONSTRUCTOR_ID) : null;
-        shipping = (flags & 2) != 0 ? readTLObject(stream, context, TLShippingOption.class,
-                                                   TLShippingOption.CONSTRUCTOR_ID) : null;
+        info = (flags & 1) != 0 ? readTLObject(stream, context, TLPaymentRequestedInfo.class, TLPaymentRequestedInfo.CONSTRUCTOR_ID) : null;
+        shipping = (flags & 2) != 0 ? readTLObject(stream, context, TLShippingOption.class, TLShippingOption.CONSTRUCTOR_ID) : null;
         currency = readTLString(stream);
         totalAmount = readLong(stream);
         credentialsTitle = readTLString(stream);

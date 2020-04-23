@@ -1,26 +1,23 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLIntVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLIntVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateDeleteMessages extends TLAbsUpdate {
-
-    public static final int CONSTRUCTOR_ID = 0xa20db0e5;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLIntVector messages;
 
@@ -28,7 +25,7 @@ public class TLUpdateDeleteMessages extends TLAbsUpdate {
 
     protected int ptsCount;
 
-    private final String _constructor = "updateDeleteMessages#a20db0e5";
+    private final String _constructor = "updateDeleteMessages#0";
 
     public TLUpdateDeleteMessages() {
     }

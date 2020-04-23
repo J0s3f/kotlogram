@@ -1,35 +1,27 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.TLAbsUpdates;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates> {
-
-    public static final int CONSTRUCTOR_ID = 0xb16e06fe;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -38,6 +30,8 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
     protected boolean background;
 
     protected boolean clearDraft;
+
+    protected boolean hideVia;
 
     protected TLAbsInputPeer peer;
 
@@ -49,20 +43,24 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
 
     protected String id;
 
-    private final String _constructor = "messages.sendInlineBotResult#b16e06fe";
+    protected Integer scheduleDate;
+
+    private final String _constructor = "messages.sendInlineBotResult#0";
 
     public TLRequestMessagesSendInlineBotResult() {
     }
 
-    public TLRequestMessagesSendInlineBotResult(boolean silent, boolean background, boolean clearDraft, TLAbsInputPeer peer, Integer replyToMsgId, long randomId, long queryId, String id) {
+    public TLRequestMessagesSendInlineBotResult(boolean silent, boolean background, boolean clearDraft, boolean hideVia, TLAbsInputPeer peer, Integer replyToMsgId, long randomId, long queryId, String id, Integer scheduleDate) {
         this.silent = silent;
         this.background = background;
         this.clearDraft = clearDraft;
+        this.hideVia = hideVia;
         this.peer = peer;
         this.replyToMsgId = replyToMsgId;
         this.randomId = randomId;
         this.queryId = queryId;
         this.id = id;
+        this.scheduleDate = scheduleDate;
     }
 
     @Override
@@ -73,9 +71,7 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsUpdates)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsUpdates) response;
     }
@@ -85,7 +81,9 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
         flags = silent ? (flags | 32) : (flags & ~32);
         flags = background ? (flags | 64) : (flags & ~64);
         flags = clearDraft ? (flags | 128) : (flags & ~128);
+        flags = hideVia ? (flags | 2048) : (flags & ~2048);
         flags = replyToMsgId != null ? (flags | 1) : (flags & ~1);
+        flags = scheduleDate != null ? (flags | 1024) : (flags & ~1024);
     }
 
     @Override
@@ -101,6 +99,10 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
         writeLong(randomId, stream);
         writeLong(queryId, stream);
         writeString(id, stream);
+        if ((flags & 1024) != 0) {
+            if (scheduleDate == null) throwNullFieldException("scheduleDate", flags);
+            writeInt(scheduleDate, stream);
+        }
     }
 
     @Override
@@ -110,11 +112,13 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
         silent = (flags & 32) != 0;
         background = (flags & 64) != 0;
         clearDraft = (flags & 128) != 0;
+        hideVia = (flags & 2048) != 0;
         peer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
         replyToMsgId = (flags & 1) != 0 ? readInt(stream) : null;
         randomId = readLong(stream);
         queryId = readLong(stream);
         id = readTLString(stream);
+        scheduleDate = (flags & 1024) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -131,6 +135,10 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
         size += SIZE_INT64;
         size += SIZE_INT64;
         size += computeTLStringSerializedSize(id);
+        if ((flags & 1024) != 0) {
+            if (scheduleDate == null) throwNullFieldException("scheduleDate", flags);
+            size += SIZE_INT32;
+        }
         return size;
     }
 
@@ -166,6 +174,14 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
 
     public void setClearDraft(boolean clearDraft) {
         this.clearDraft = clearDraft;
+    }
+
+    public boolean getHideVia() {
+        return hideVia;
+    }
+
+    public void setHideVia(boolean hideVia) {
+        this.hideVia = hideVia;
     }
 
     public TLAbsInputPeer getPeer() {
@@ -206,5 +222,13 @@ public class TLRequestMessagesSendInlineBotResult extends TLMethod<TLAbsUpdates>
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public Integer getScheduleDate() {
+        return scheduleDate;
+    }
+
+    public void setScheduleDate(Integer scheduleDate) {
+        this.scheduleDate = scheduleDate;
     }
 }

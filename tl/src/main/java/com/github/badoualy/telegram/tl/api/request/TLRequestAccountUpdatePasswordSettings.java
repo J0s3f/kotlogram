@@ -1,42 +1,39 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsInputCheckPasswordSRP;
 import com.github.badoualy.telegram.tl.api.account.TLPasswordInputSettings;
 import com.github.badoualy.telegram.tl.core.TLBool;
-import com.github.badoualy.telegram.tl.core.TLBytes;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountUpdatePasswordSettings extends TLMethod<TLBool> {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0xfa7c4b86;
-
-    protected TLBytes currentPasswordHash;
+    protected TLAbsInputCheckPasswordSRP password;
 
     protected TLPasswordInputSettings newSettings;
 
-    private final String _constructor = "account.updatePasswordSettings#fa7c4b86";
+    private final String _constructor = "account.updatePasswordSettings#0";
 
     public TLRequestAccountUpdatePasswordSettings() {
     }
 
-    public TLRequestAccountUpdatePasswordSettings(TLBytes currentPasswordHash, TLPasswordInputSettings newSettings) {
-        this.currentPasswordHash = currentPasswordHash;
+    public TLRequestAccountUpdatePasswordSettings(TLAbsInputCheckPasswordSRP password, TLPasswordInputSettings newSettings) {
+        this.password = password;
         this.newSettings = newSettings;
     }
 
@@ -48,31 +45,28 @@ public class TLRequestAccountUpdatePasswordSettings extends TLMethod<TLBool> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLBool)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLBool) response;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeTLBytes(currentPasswordHash, stream);
+        writeTLObject(password, stream);
         writeTLObject(newSettings, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        currentPasswordHash = readTLBytes(stream, context);
-        newSettings = readTLObject(stream, context, TLPasswordInputSettings.class,
-                                   TLPasswordInputSettings.CONSTRUCTOR_ID);
+        password = readTLObject(stream, context, TLAbsInputCheckPasswordSRP.class, -1);
+        newSettings = readTLObject(stream, context, TLPasswordInputSettings.class, TLPasswordInputSettings.CONSTRUCTOR_ID);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
-        size += computeTLBytesSerializedSize(currentPasswordHash);
+        size += password.computeSerializedSize();
         size += newSettings.computeSerializedSize();
         return size;
     }
@@ -87,12 +81,12 @@ public class TLRequestAccountUpdatePasswordSettings extends TLMethod<TLBool> {
         return CONSTRUCTOR_ID;
     }
 
-    public TLBytes getCurrentPasswordHash() {
-        return currentPasswordHash;
+    public TLAbsInputCheckPasswordSRP getPassword() {
+        return password;
     }
 
-    public void setCurrentPasswordHash(TLBytes currentPasswordHash) {
-        this.currentPasswordHash = currentPasswordHash;
+    public void setPassword(TLAbsInputCheckPasswordSRP password) {
+        this.password = password;
     }
 
     public TLPasswordInputSettings getNewSettings() {

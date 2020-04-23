@@ -1,28 +1,22 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBotInlineResult extends TLAbsBotInlineResult {
-
-    public static final int CONSTRUCTOR_ID = 0x9bebaeb9;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected String title;
 
@@ -30,35 +24,23 @@ public class TLBotInlineResult extends TLAbsBotInlineResult {
 
     protected String url;
 
-    protected String thumbUrl;
+    protected TLAbsWebDocument thumb;
 
-    protected String contentUrl;
+    protected TLAbsWebDocument content;
 
-    protected String contentType;
-
-    protected Integer w;
-
-    protected Integer h;
-
-    protected Integer duration;
-
-    private final String _constructor = "botInlineResult#9bebaeb9";
+    private final String _constructor = "botInlineResult#0";
 
     public TLBotInlineResult() {
     }
 
-    public TLBotInlineResult(String id, String type, String title, String description, String url, String thumbUrl, String contentUrl, String contentType, Integer w, Integer h, Integer duration, TLAbsBotInlineMessage sendMessage) {
+    public TLBotInlineResult(String id, String type, String title, String description, String url, TLAbsWebDocument thumb, TLAbsWebDocument content, TLAbsBotInlineMessage sendMessage) {
         this.id = id;
         this.type = type;
         this.title = title;
         this.description = description;
         this.url = url;
-        this.thumbUrl = thumbUrl;
-        this.contentUrl = contentUrl;
-        this.contentType = contentType;
-        this.w = w;
-        this.h = h;
-        this.duration = duration;
+        this.thumb = thumb;
+        this.content = content;
         this.sendMessage = sendMessage;
     }
 
@@ -67,12 +49,8 @@ public class TLBotInlineResult extends TLAbsBotInlineResult {
         flags = title != null ? (flags | 2) : (flags & ~2);
         flags = description != null ? (flags | 4) : (flags & ~4);
         flags = url != null ? (flags | 8) : (flags & ~8);
-        flags = thumbUrl != null ? (flags | 16) : (flags & ~16);
-        flags = contentUrl != null ? (flags | 32) : (flags & ~32);
-        flags = contentType != null ? (flags | 32) : (flags & ~32);
-        flags = w != null ? (flags | 64) : (flags & ~64);
-        flags = h != null ? (flags | 64) : (flags & ~64);
-        flags = duration != null ? (flags | 128) : (flags & ~128);
+        flags = thumb != null ? (flags | 16) : (flags & ~16);
+        flags = content != null ? (flags | 32) : (flags & ~32);
     }
 
     @Override
@@ -95,28 +73,12 @@ public class TLBotInlineResult extends TLAbsBotInlineResult {
             writeString(url, stream);
         }
         if ((flags & 16) != 0) {
-            if (thumbUrl == null) throwNullFieldException("thumbUrl", flags);
-            writeString(thumbUrl, stream);
+            if (thumb == null) throwNullFieldException("thumb", flags);
+            writeTLObject(thumb, stream);
         }
         if ((flags & 32) != 0) {
-            if (contentUrl == null) throwNullFieldException("contentUrl", flags);
-            writeString(contentUrl, stream);
-        }
-        if ((flags & 32) != 0) {
-            if (contentType == null) throwNullFieldException("contentType", flags);
-            writeString(contentType, stream);
-        }
-        if ((flags & 64) != 0) {
-            if (w == null) throwNullFieldException("w", flags);
-            writeInt(w, stream);
-        }
-        if ((flags & 64) != 0) {
-            if (h == null) throwNullFieldException("h", flags);
-            writeInt(h, stream);
-        }
-        if ((flags & 128) != 0) {
-            if (duration == null) throwNullFieldException("duration", flags);
-            writeInt(duration, stream);
+            if (content == null) throwNullFieldException("content", flags);
+            writeTLObject(content, stream);
         }
         writeTLObject(sendMessage, stream);
     }
@@ -130,12 +92,8 @@ public class TLBotInlineResult extends TLAbsBotInlineResult {
         title = (flags & 2) != 0 ? readTLString(stream) : null;
         description = (flags & 4) != 0 ? readTLString(stream) : null;
         url = (flags & 8) != 0 ? readTLString(stream) : null;
-        thumbUrl = (flags & 16) != 0 ? readTLString(stream) : null;
-        contentUrl = (flags & 32) != 0 ? readTLString(stream) : null;
-        contentType = (flags & 32) != 0 ? readTLString(stream) : null;
-        w = (flags & 64) != 0 ? readInt(stream) : null;
-        h = (flags & 64) != 0 ? readInt(stream) : null;
-        duration = (flags & 128) != 0 ? readInt(stream) : null;
+        thumb = (flags & 16) != 0 ? readTLObject(stream, context, TLAbsWebDocument.class, -1) : null;
+        content = (flags & 32) != 0 ? readTLObject(stream, context, TLAbsWebDocument.class, -1) : null;
         sendMessage = readTLObject(stream, context, TLAbsBotInlineMessage.class, -1);
     }
 
@@ -160,28 +118,12 @@ public class TLBotInlineResult extends TLAbsBotInlineResult {
             size += computeTLStringSerializedSize(url);
         }
         if ((flags & 16) != 0) {
-            if (thumbUrl == null) throwNullFieldException("thumbUrl", flags);
-            size += computeTLStringSerializedSize(thumbUrl);
+            if (thumb == null) throwNullFieldException("thumb", flags);
+            size += thumb.computeSerializedSize();
         }
         if ((flags & 32) != 0) {
-            if (contentUrl == null) throwNullFieldException("contentUrl", flags);
-            size += computeTLStringSerializedSize(contentUrl);
-        }
-        if ((flags & 32) != 0) {
-            if (contentType == null) throwNullFieldException("contentType", flags);
-            size += computeTLStringSerializedSize(contentType);
-        }
-        if ((flags & 64) != 0) {
-            if (w == null) throwNullFieldException("w", flags);
-            size += SIZE_INT32;
-        }
-        if ((flags & 64) != 0) {
-            if (h == null) throwNullFieldException("h", flags);
-            size += SIZE_INT32;
-        }
-        if ((flags & 128) != 0) {
-            if (duration == null) throwNullFieldException("duration", flags);
-            size += SIZE_INT32;
+            if (content == null) throwNullFieldException("content", flags);
+            size += content.computeSerializedSize();
         }
         size += sendMessage.computeSerializedSize();
         return size;
@@ -237,52 +179,20 @@ public class TLBotInlineResult extends TLAbsBotInlineResult {
         this.url = url;
     }
 
-    public String getThumbUrl() {
-        return thumbUrl;
+    public TLAbsWebDocument getThumb() {
+        return thumb;
     }
 
-    public void setThumbUrl(String thumbUrl) {
-        this.thumbUrl = thumbUrl;
+    public void setThumb(TLAbsWebDocument thumb) {
+        this.thumb = thumb;
     }
 
-    public String getContentUrl() {
-        return contentUrl;
+    public TLAbsWebDocument getContent() {
+        return content;
     }
 
-    public void setContentUrl(String contentUrl) {
-        this.contentUrl = contentUrl;
-    }
-
-    public String getContentType() {
-        return contentType;
-    }
-
-    public void setContentType(String contentType) {
-        this.contentType = contentType;
-    }
-
-    public Integer getW() {
-        return w;
-    }
-
-    public void setW(Integer w) {
-        this.w = w;
-    }
-
-    public Integer getH() {
-        return h;
-    }
-
-    public void setH(Integer h) {
-        this.h = h;
-    }
-
-    public Integer getDuration() {
-        return duration;
-    }
-
-    public void setDuration(Integer duration) {
-        this.duration = duration;
+    public void setContent(TLAbsWebDocument content) {
+        this.content = content;
     }
 
     public TLAbsBotInlineMessage getSendMessage() {

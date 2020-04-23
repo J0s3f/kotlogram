@@ -1,27 +1,25 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.contacts.TLAbsTopPeers;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsGetTopPeers extends TLMethod<TLAbsTopPeers> {
-
-    public static final int CONSTRUCTOR_ID = 0xd4982db5;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -30,6 +28,12 @@ public class TLRequestContactsGetTopPeers extends TLMethod<TLAbsTopPeers> {
     protected boolean botsPm;
 
     protected boolean botsInline;
+
+    protected boolean phoneCalls;
+
+    protected boolean forwardUsers;
+
+    protected boolean forwardChats;
 
     protected boolean groups;
 
@@ -41,15 +45,18 @@ public class TLRequestContactsGetTopPeers extends TLMethod<TLAbsTopPeers> {
 
     protected int hash;
 
-    private final String _constructor = "contacts.getTopPeers#d4982db5";
+    private final String _constructor = "contacts.getTopPeers#0";
 
     public TLRequestContactsGetTopPeers() {
     }
 
-    public TLRequestContactsGetTopPeers(boolean correspondents, boolean botsPm, boolean botsInline, boolean groups, boolean channels, int offset, int limit, int hash) {
+    public TLRequestContactsGetTopPeers(boolean correspondents, boolean botsPm, boolean botsInline, boolean phoneCalls, boolean forwardUsers, boolean forwardChats, boolean groups, boolean channels, int offset, int limit, int hash) {
         this.correspondents = correspondents;
         this.botsPm = botsPm;
         this.botsInline = botsInline;
+        this.phoneCalls = phoneCalls;
+        this.forwardUsers = forwardUsers;
+        this.forwardChats = forwardChats;
         this.groups = groups;
         this.channels = channels;
         this.offset = offset;
@@ -65,9 +72,7 @@ public class TLRequestContactsGetTopPeers extends TLMethod<TLAbsTopPeers> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsTopPeers)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsTopPeers) response;
     }
@@ -77,6 +82,9 @@ public class TLRequestContactsGetTopPeers extends TLMethod<TLAbsTopPeers> {
         flags = correspondents ? (flags | 1) : (flags & ~1);
         flags = botsPm ? (flags | 2) : (flags & ~2);
         flags = botsInline ? (flags | 4) : (flags & ~4);
+        flags = phoneCalls ? (flags | 8) : (flags & ~8);
+        flags = forwardUsers ? (flags | 16) : (flags & ~16);
+        flags = forwardChats ? (flags | 32) : (flags & ~32);
         flags = groups ? (flags | 1024) : (flags & ~1024);
         flags = channels ? (flags | 32768) : (flags & ~32768);
     }
@@ -98,6 +106,9 @@ public class TLRequestContactsGetTopPeers extends TLMethod<TLAbsTopPeers> {
         correspondents = (flags & 1) != 0;
         botsPm = (flags & 2) != 0;
         botsInline = (flags & 4) != 0;
+        phoneCalls = (flags & 8) != 0;
+        forwardUsers = (flags & 16) != 0;
+        forwardChats = (flags & 32) != 0;
         groups = (flags & 1024) != 0;
         channels = (flags & 32768) != 0;
         offset = readInt(stream);
@@ -149,6 +160,30 @@ public class TLRequestContactsGetTopPeers extends TLMethod<TLAbsTopPeers> {
 
     public void setBotsInline(boolean botsInline) {
         this.botsInline = botsInline;
+    }
+
+    public boolean getPhoneCalls() {
+        return phoneCalls;
+    }
+
+    public void setPhoneCalls(boolean phoneCalls) {
+        this.phoneCalls = phoneCalls;
+    }
+
+    public boolean getForwardUsers() {
+        return forwardUsers;
+    }
+
+    public void setForwardUsers(boolean forwardUsers) {
+        this.forwardUsers = forwardUsers;
+    }
+
+    public boolean getForwardChats() {
+        return forwardChats;
+    }
+
+    public void setForwardChats(boolean forwardChats) {
+        this.forwardChats = forwardChats;
     }
 
     public boolean getGroups() {

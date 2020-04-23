@@ -1,33 +1,27 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsEncryptedChat;
 import com.github.badoualy.telegram.tl.api.TLAbsInputUser;
 import com.github.badoualy.telegram.tl.core.TLBytes;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesRequestEncryption extends TLMethod<TLAbsEncryptedChat> {
-
-    public static final int CONSTRUCTOR_ID = 0xf64daf43;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLAbsInputUser userId;
 
@@ -35,7 +29,7 @@ public class TLRequestMessagesRequestEncryption extends TLMethod<TLAbsEncryptedC
 
     protected TLBytes gA;
 
-    private final String _constructor = "messages.requestEncryption#f64daf43";
+    private final String _constructor = "messages.requestEncryption#0";
 
     public TLRequestMessagesRequestEncryption() {
     }
@@ -54,9 +48,7 @@ public class TLRequestMessagesRequestEncryption extends TLMethod<TLAbsEncryptedC
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsEncryptedChat)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsEncryptedChat) response;
     }

@@ -1,42 +1,39 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
+import com.github.badoualy.telegram.tl.api.TLAbsInputDialogPeer;
 import com.github.badoualy.telegram.tl.core.TLBool;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesToggleDialogPin extends TLMethod<TLBool> {
-
-    public static final int CONSTRUCTOR_ID = 0x3289be6a;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
     protected boolean pinned;
 
-    protected TLAbsInputPeer peer;
+    protected TLAbsInputDialogPeer peer;
 
-    private final String _constructor = "messages.toggleDialogPin#3289be6a";
+    private final String _constructor = "messages.toggleDialogPin#0";
 
     public TLRequestMessagesToggleDialogPin() {
     }
 
-    public TLRequestMessagesToggleDialogPin(boolean pinned, TLAbsInputPeer peer) {
+    public TLRequestMessagesToggleDialogPin(boolean pinned, TLAbsInputDialogPeer peer) {
         this.pinned = pinned;
         this.peer = peer;
     }
@@ -49,9 +46,7 @@ public class TLRequestMessagesToggleDialogPin extends TLMethod<TLBool> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLBool)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLBool) response;
     }
@@ -74,7 +69,7 @@ public class TLRequestMessagesToggleDialogPin extends TLMethod<TLBool> {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         pinned = (flags & 1) != 0;
-        peer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
+        peer = readTLObject(stream, context, TLAbsInputDialogPeer.class, -1);
     }
 
     @Override
@@ -105,11 +100,11 @@ public class TLRequestMessagesToggleDialogPin extends TLMethod<TLBool> {
         this.pinned = pinned;
     }
 
-    public TLAbsInputPeer getPeer() {
+    public TLAbsInputDialogPeer getPeer() {
         return peer;
     }
 
-    public void setPeer(TLAbsInputPeer peer) {
+    public void setPeer(TLAbsInputDialogPeer peer) {
         this.peer = peer;
     }
 }

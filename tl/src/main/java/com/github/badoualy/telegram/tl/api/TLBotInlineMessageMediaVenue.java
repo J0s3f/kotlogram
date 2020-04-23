@@ -1,28 +1,22 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBotInlineMessageMediaVenue extends TLAbsBotInlineMessage {
-
-    public static final int CONSTRUCTOR_ID = 0x4366232e;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLAbsGeoPoint geo;
 
@@ -34,17 +28,20 @@ public class TLBotInlineMessageMediaVenue extends TLAbsBotInlineMessage {
 
     protected String venueId;
 
-    private final String _constructor = "botInlineMessageMediaVenue#4366232e";
+    protected String venueType;
+
+    private final String _constructor = "botInlineMessageMediaVenue#0";
 
     public TLBotInlineMessageMediaVenue() {
     }
 
-    public TLBotInlineMessageMediaVenue(TLAbsGeoPoint geo, String title, String address, String provider, String venueId, TLAbsReplyMarkup replyMarkup) {
+    public TLBotInlineMessageMediaVenue(TLAbsGeoPoint geo, String title, String address, String provider, String venueId, String venueType, TLAbsReplyMarkup replyMarkup) {
         this.geo = geo;
         this.title = title;
         this.address = address;
         this.provider = provider;
         this.venueId = venueId;
+        this.venueType = venueType;
         this.replyMarkup = replyMarkup;
     }
 
@@ -63,6 +60,7 @@ public class TLBotInlineMessageMediaVenue extends TLAbsBotInlineMessage {
         writeString(address, stream);
         writeString(provider, stream);
         writeString(venueId, stream);
+        writeString(venueType, stream);
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             writeTLObject(replyMarkup, stream);
@@ -78,6 +76,7 @@ public class TLBotInlineMessageMediaVenue extends TLAbsBotInlineMessage {
         address = readTLString(stream);
         provider = readTLString(stream);
         venueId = readTLString(stream);
+        venueType = readTLString(stream);
         replyMarkup = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsReplyMarkup.class, -1) : null;
     }
 
@@ -92,6 +91,7 @@ public class TLBotInlineMessageMediaVenue extends TLAbsBotInlineMessage {
         size += computeTLStringSerializedSize(address);
         size += computeTLStringSerializedSize(provider);
         size += computeTLStringSerializedSize(venueId);
+        size += computeTLStringSerializedSize(venueType);
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             size += replyMarkup.computeSerializedSize();
@@ -147,6 +147,14 @@ public class TLBotInlineMessageMediaVenue extends TLAbsBotInlineMessage {
 
     public void setVenueId(String venueId) {
         this.venueId = venueId;
+    }
+
+    public String getVenueType() {
+        return venueType;
+    }
+
+    public void setVenueType(String venueType) {
+        this.venueType = venueType;
     }
 
     public TLAbsReplyMarkup getReplyMarkup() {

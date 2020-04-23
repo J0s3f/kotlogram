@@ -1,26 +1,25 @@
 package com.github.badoualy.telegram.tl.api.messages;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLBytes;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDhConfigNotModified extends TLAbsDhConfig {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0xc0e24635;
-
-    private final String _constructor = "messages.dhConfigNotModified#c0e24635";
+    private final String _constructor = "messages.dhConfigNotModified#0";
 
     public TLDhConfigNotModified() {
     }

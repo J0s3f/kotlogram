@@ -1,33 +1,31 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLLongVector;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLLongVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLMethod;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLMethod;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestInvokeAfterMsgs<T extends TLObject> extends TLMethod<T> {
-
-    public static final int CONSTRUCTOR_ID = 0x3dc4b4f0;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLLongVector msgIds;
 
     protected TLMethod<T> query;
 
-    private final String _constructor = "invokeAfterMsgs#3dc4b4f0";
+    private final String _constructor = "invokeAfterMsgs#0";
 
     public TLRequestInvokeAfterMsgs() {
     }

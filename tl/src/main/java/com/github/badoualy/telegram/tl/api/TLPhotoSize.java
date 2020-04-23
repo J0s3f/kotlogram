@@ -1,30 +1,24 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhotoSize extends TLAbsPhotoSize {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x77bfb61b;
-
-    protected TLAbsFileLocation location;
+    protected TLFileLocationToBeDeprecated location;
 
     protected int w;
 
@@ -32,12 +26,12 @@ public class TLPhotoSize extends TLAbsPhotoSize {
 
     protected int size;
 
-    private final String _constructor = "photoSize#77bfb61b";
+    private final String _constructor = "photoSize#0";
 
     public TLPhotoSize() {
     }
 
-    public TLPhotoSize(String type, TLAbsFileLocation location, int w, int h, int size) {
+    public TLPhotoSize(String type, TLFileLocationToBeDeprecated location, int w, int h, int size) {
         this.type = type;
         this.location = location;
         this.w = w;
@@ -58,7 +52,7 @@ public class TLPhotoSize extends TLAbsPhotoSize {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         type = readTLString(stream);
-        location = readTLObject(stream, context, TLAbsFileLocation.class, -1);
+        location = readTLObject(stream, context, TLFileLocationToBeDeprecated.class, TLFileLocationToBeDeprecated.CONSTRUCTOR_ID);
         w = readInt(stream);
         h = readInt(stream);
         size = readInt(stream);
@@ -93,11 +87,11 @@ public class TLPhotoSize extends TLAbsPhotoSize {
         this.type = type;
     }
 
-    public TLAbsFileLocation getLocation() {
+    public TLFileLocationToBeDeprecated getLocation() {
         return location;
     }
 
-    public void setLocation(TLAbsFileLocation location) {
+    public void setLocation(TLFileLocationToBeDeprecated location) {
         this.location = location;
     }
 

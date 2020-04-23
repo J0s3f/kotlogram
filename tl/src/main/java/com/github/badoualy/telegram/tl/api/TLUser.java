@@ -1,31 +1,25 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUser extends TLAbsUser {
-
-    public static final int CONSTRUCTOR_ID = 0x2e13f4c3;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -51,6 +45,10 @@ public class TLUser extends TLAbsUser {
 
     protected boolean botInlineGeo;
 
+    protected boolean support;
+
+    protected boolean scam;
+
     protected Long accessHash;
 
     protected String firstName;
@@ -67,18 +65,18 @@ public class TLUser extends TLAbsUser {
 
     protected Integer botInfoVersion;
 
-    protected String restrictionReason;
+    protected TLVector<TLRestrictionReason> restrictionReason;
 
     protected String botInlinePlaceholder;
 
     protected String langCode;
 
-    private final String _constructor = "user#2e13f4c3";
+    private final String _constructor = "user#0";
 
     public TLUser() {
     }
 
-    public TLUser(boolean self, boolean contact, boolean mutualContact, boolean deleted, boolean bot, boolean botChatHistory, boolean botNochats, boolean verified, boolean restricted, boolean min, boolean botInlineGeo, int id, Long accessHash, String firstName, String lastName, String username, String phone, TLAbsUserProfilePhoto photo, TLAbsUserStatus status, Integer botInfoVersion, String restrictionReason, String botInlinePlaceholder, String langCode) {
+    public TLUser(boolean self, boolean contact, boolean mutualContact, boolean deleted, boolean bot, boolean botChatHistory, boolean botNochats, boolean verified, boolean restricted, boolean min, boolean botInlineGeo, boolean support, boolean scam, int id, Long accessHash, String firstName, String lastName, String username, String phone, TLAbsUserProfilePhoto photo, TLAbsUserStatus status, Integer botInfoVersion, TLVector<TLRestrictionReason> restrictionReason, String botInlinePlaceholder, String langCode) {
         this.self = self;
         this.contact = contact;
         this.mutualContact = mutualContact;
@@ -90,6 +88,8 @@ public class TLUser extends TLAbsUser {
         this.restricted = restricted;
         this.min = min;
         this.botInlineGeo = botInlineGeo;
+        this.support = support;
+        this.scam = scam;
         this.id = id;
         this.accessHash = accessHash;
         this.firstName = firstName;
@@ -117,6 +117,8 @@ public class TLUser extends TLAbsUser {
         flags = restricted ? (flags | 262144) : (flags & ~262144);
         flags = min ? (flags | 1048576) : (flags & ~1048576);
         flags = botInlineGeo ? (flags | 2097152) : (flags & ~2097152);
+        flags = support ? (flags | 8388608) : (flags & ~8388608);
+        flags = scam ? (flags | 16777216) : (flags & ~16777216);
         flags = accessHash != null ? (flags | 1) : (flags & ~1);
         flags = firstName != null ? (flags | 2) : (flags & ~2);
         flags = lastName != null ? (flags | 4) : (flags & ~4);
@@ -174,7 +176,7 @@ public class TLUser extends TLAbsUser {
         }
         if ((flags & 262144) != 0) {
             if (restrictionReason == null) throwNullFieldException("restrictionReason", flags);
-            writeString(restrictionReason, stream);
+            writeTLVector(restrictionReason, stream);
         }
         if ((flags & 524288) != 0) {
             if (botInlinePlaceholder == null) throwNullFieldException("botInlinePlaceholder", flags);
@@ -201,6 +203,8 @@ public class TLUser extends TLAbsUser {
         restricted = (flags & 262144) != 0;
         min = (flags & 1048576) != 0;
         botInlineGeo = (flags & 2097152) != 0;
+        support = (flags & 8388608) != 0;
+        scam = (flags & 16777216) != 0;
         id = readInt(stream);
         accessHash = (flags & 1) != 0 ? readLong(stream) : null;
         firstName = (flags & 2) != 0 ? readTLString(stream) : null;
@@ -210,7 +214,7 @@ public class TLUser extends TLAbsUser {
         photo = (flags & 32) != 0 ? readTLObject(stream, context, TLAbsUserProfilePhoto.class, -1) : null;
         status = (flags & 64) != 0 ? readTLObject(stream, context, TLAbsUserStatus.class, -1) : null;
         botInfoVersion = (flags & 16384) != 0 ? readInt(stream) : null;
-        restrictionReason = (flags & 262144) != 0 ? readTLString(stream) : null;
+        restrictionReason = (flags & 262144) != 0 ? readTLVector(stream, context) : null;
         botInlinePlaceholder = (flags & 524288) != 0 ? readTLString(stream) : null;
         langCode = (flags & 4194304) != 0 ? readTLString(stream) : null;
     }
@@ -256,7 +260,7 @@ public class TLUser extends TLAbsUser {
         }
         if ((flags & 262144) != 0) {
             if (restrictionReason == null) throwNullFieldException("restrictionReason", flags);
-            size += computeTLStringSerializedSize(restrictionReason);
+            size += restrictionReason.computeSerializedSize();
         }
         if ((flags & 524288) != 0) {
             if (botInlinePlaceholder == null) throwNullFieldException("botInlinePlaceholder", flags);
@@ -367,6 +371,22 @@ public class TLUser extends TLAbsUser {
         this.botInlineGeo = botInlineGeo;
     }
 
+    public boolean getSupport() {
+        return support;
+    }
+
+    public void setSupport(boolean support) {
+        this.support = support;
+    }
+
+    public boolean getScam() {
+        return scam;
+    }
+
+    public void setScam(boolean scam) {
+        this.scam = scam;
+    }
+
     public int getId() {
         return id;
     }
@@ -439,11 +459,11 @@ public class TLUser extends TLAbsUser {
         this.botInfoVersion = botInfoVersion;
     }
 
-    public String getRestrictionReason() {
+    public TLVector<TLRestrictionReason> getRestrictionReason() {
         return restrictionReason;
     }
 
-    public void setRestrictionReason(String restrictionReason) {
+    public void setRestrictionReason(TLVector<TLRestrictionReason> restrictionReason) {
         this.restrictionReason = restrictionReason;
     }
 

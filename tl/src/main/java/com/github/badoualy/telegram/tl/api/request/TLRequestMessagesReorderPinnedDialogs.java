@@ -1,45 +1,44 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
+import com.github.badoualy.telegram.tl.api.TLAbsInputDialogPeer;
 import com.github.badoualy.telegram.tl.core.TLBool;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesReorderPinnedDialogs extends TLMethod<TLBool> {
-
-    public static final int CONSTRUCTOR_ID = 0x959ff644;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
     protected boolean force;
 
-    protected TLVector<TLAbsInputPeer> order;
+    protected int folderId;
 
-    private final String _constructor = "messages.reorderPinnedDialogs#959ff644";
+    protected TLVector<TLAbsInputDialogPeer> order;
+
+    private final String _constructor = "messages.reorderPinnedDialogs#0";
 
     public TLRequestMessagesReorderPinnedDialogs() {
     }
 
-    public TLRequestMessagesReorderPinnedDialogs(boolean force, TLVector<TLAbsInputPeer> order) {
+    public TLRequestMessagesReorderPinnedDialogs(boolean force, int folderId, TLVector<TLAbsInputDialogPeer> order) {
         this.force = force;
+        this.folderId = folderId;
         this.order = order;
     }
 
@@ -51,9 +50,7 @@ public class TLRequestMessagesReorderPinnedDialogs extends TLMethod<TLBool> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLBool)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLBool) response;
     }
@@ -68,6 +65,7 @@ public class TLRequestMessagesReorderPinnedDialogs extends TLMethod<TLBool> {
         computeFlags();
 
         writeInt(flags, stream);
+        writeInt(folderId, stream);
         writeTLVector(order, stream);
     }
 
@@ -76,6 +74,7 @@ public class TLRequestMessagesReorderPinnedDialogs extends TLMethod<TLBool> {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         force = (flags & 1) != 0;
+        folderId = readInt(stream);
         order = readTLVector(stream, context);
     }
 
@@ -84,6 +83,7 @@ public class TLRequestMessagesReorderPinnedDialogs extends TLMethod<TLBool> {
         computeFlags();
 
         int size = SIZE_CONSTRUCTOR_ID;
+        size += SIZE_INT32;
         size += SIZE_INT32;
         size += order.computeSerializedSize();
         return size;
@@ -107,11 +107,19 @@ public class TLRequestMessagesReorderPinnedDialogs extends TLMethod<TLBool> {
         this.force = force;
     }
 
-    public TLVector<TLAbsInputPeer> getOrder() {
+    public int getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(int folderId) {
+        this.folderId = folderId;
+    }
+
+    public TLVector<TLAbsInputDialogPeer> getOrder() {
         return order;
     }
 
-    public void setOrder(TLVector<TLAbsInputPeer> order) {
+    public void setOrder(TLVector<TLAbsInputDialogPeer> order) {
         this.order = order;
     }
 }

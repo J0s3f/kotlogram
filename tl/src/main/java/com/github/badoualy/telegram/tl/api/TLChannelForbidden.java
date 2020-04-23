@@ -1,29 +1,23 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelForbidden extends TLAbsChat {
-
-    public static final int CONSTRUCTOR_ID = 0x8537784f;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -35,23 +29,27 @@ public class TLChannelForbidden extends TLAbsChat {
 
     protected String title;
 
-    private final String _constructor = "channelForbidden#8537784f";
+    protected Integer untilDate;
+
+    private final String _constructor = "channelForbidden#0";
 
     public TLChannelForbidden() {
     }
 
-    public TLChannelForbidden(boolean broadcast, boolean megagroup, int id, long accessHash, String title) {
+    public TLChannelForbidden(boolean broadcast, boolean megagroup, int id, long accessHash, String title, Integer untilDate) {
         this.broadcast = broadcast;
         this.megagroup = megagroup;
         this.id = id;
         this.accessHash = accessHash;
         this.title = title;
+        this.untilDate = untilDate;
     }
 
     private void computeFlags() {
         flags = 0;
         flags = broadcast ? (flags | 32) : (flags & ~32);
         flags = megagroup ? (flags | 256) : (flags & ~256);
+        flags = untilDate != null ? (flags | 65536) : (flags & ~65536);
     }
 
     @Override
@@ -62,6 +60,10 @@ public class TLChannelForbidden extends TLAbsChat {
         writeInt(id, stream);
         writeLong(accessHash, stream);
         writeString(title, stream);
+        if ((flags & 65536) != 0) {
+            if (untilDate == null) throwNullFieldException("untilDate", flags);
+            writeInt(untilDate, stream);
+        }
     }
 
     @Override
@@ -73,6 +75,7 @@ public class TLChannelForbidden extends TLAbsChat {
         id = readInt(stream);
         accessHash = readLong(stream);
         title = readTLString(stream);
+        untilDate = (flags & 65536) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -84,6 +87,10 @@ public class TLChannelForbidden extends TLAbsChat {
         size += SIZE_INT32;
         size += SIZE_INT64;
         size += computeTLStringSerializedSize(title);
+        if ((flags & 65536) != 0) {
+            if (untilDate == null) throwNullFieldException("untilDate", flags);
+            size += SIZE_INT32;
+        }
         return size;
     }
 
@@ -135,5 +142,13 @@ public class TLChannelForbidden extends TLAbsChat {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public Integer getUntilDate() {
+        return untilDate;
+    }
+
+    public void setUntilDate(Integer untilDate) {
+        this.untilDate = untilDate;
     }
 }

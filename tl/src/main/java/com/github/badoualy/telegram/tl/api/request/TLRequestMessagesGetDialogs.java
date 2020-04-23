@@ -1,33 +1,33 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.messages.TLAbsDialogs;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
-
-    public static final int CONSTRUCTOR_ID = 0x191ba9c5;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
     protected boolean excludePinned;
+
+    protected Integer folderId;
 
     protected int offsetDate;
 
@@ -37,17 +37,21 @@ public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
 
     protected int limit;
 
-    private final String _constructor = "messages.getDialogs#191ba9c5";
+    protected int hash;
+
+    private final String _constructor = "messages.getDialogs#0";
 
     public TLRequestMessagesGetDialogs() {
     }
 
-    public TLRequestMessagesGetDialogs(boolean excludePinned, int offsetDate, int offsetId, TLAbsInputPeer offsetPeer, int limit) {
+    public TLRequestMessagesGetDialogs(boolean excludePinned, Integer folderId, int offsetDate, int offsetId, TLAbsInputPeer offsetPeer, int limit, int hash) {
         this.excludePinned = excludePinned;
+        this.folderId = folderId;
         this.offsetDate = offsetDate;
         this.offsetId = offsetId;
         this.offsetPeer = offsetPeer;
         this.limit = limit;
+        this.hash = hash;
     }
 
     @Override
@@ -58,9 +62,7 @@ public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsDialogs)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsDialogs) response;
     }
@@ -68,6 +70,7 @@ public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
     private void computeFlags() {
         flags = 0;
         flags = excludePinned ? (flags | 1) : (flags & ~1);
+        flags = folderId != null ? (flags | 2) : (flags & ~2);
     }
 
     @Override
@@ -75,10 +78,15 @@ public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
         computeFlags();
 
         writeInt(flags, stream);
+        if ((flags & 2) != 0) {
+            if (folderId == null) throwNullFieldException("folderId", flags);
+            writeInt(folderId, stream);
+        }
         writeInt(offsetDate, stream);
         writeInt(offsetId, stream);
         writeTLObject(offsetPeer, stream);
         writeInt(limit, stream);
+        writeInt(hash, stream);
     }
 
     @Override
@@ -86,10 +94,12 @@ public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         excludePinned = (flags & 1) != 0;
+        folderId = (flags & 2) != 0 ? readInt(stream) : null;
         offsetDate = readInt(stream);
         offsetId = readInt(stream);
         offsetPeer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
         limit = readInt(stream);
+        hash = readInt(stream);
     }
 
     @Override
@@ -98,9 +108,14 @@ public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
+        if ((flags & 2) != 0) {
+            if (folderId == null) throwNullFieldException("folderId", flags);
+            size += SIZE_INT32;
+        }
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += offsetPeer.computeSerializedSize();
+        size += SIZE_INT32;
         size += SIZE_INT32;
         return size;
     }
@@ -121,6 +136,14 @@ public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
 
     public void setExcludePinned(boolean excludePinned) {
         this.excludePinned = excludePinned;
+    }
+
+    public Integer getFolderId() {
+        return folderId;
+    }
+
+    public void setFolderId(Integer folderId) {
+        this.folderId = folderId;
     }
 
     public int getOffsetDate() {
@@ -153,5 +176,13 @@ public class TLRequestMessagesGetDialogs extends TLMethod<TLAbsDialogs> {
 
     public void setLimit(int limit) {
         this.limit = limit;
+    }
+
+    public int getHash() {
+        return hash;
+    }
+
+    public void setHash(int hash) {
+        this.hash = hash;
     }
 }

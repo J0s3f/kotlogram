@@ -1,35 +1,28 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLBytes;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCall extends TLAbsPhoneCall {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0xffe6ab67;
+    protected int flags;
+
+    protected boolean p2pAllowed;
 
     protected long accessHash;
 
@@ -45,18 +38,17 @@ public class TLPhoneCall extends TLAbsPhoneCall {
 
     protected TLPhoneCallProtocol protocol;
 
-    protected TLPhoneConnection connection;
-
-    protected TLVector<TLPhoneConnection> alternativeConnections;
+    protected TLVector<TLPhoneConnection> connections;
 
     protected int startDate;
 
-    private final String _constructor = "phoneCall#ffe6ab67";
+    private final String _constructor = "phoneCall#0";
 
     public TLPhoneCall() {
     }
 
-    public TLPhoneCall(long id, long accessHash, int date, int adminId, int participantId, TLBytes gAOrB, long keyFingerprint, TLPhoneCallProtocol protocol, TLPhoneConnection connection, TLVector<TLPhoneConnection> alternativeConnections, int startDate) {
+    public TLPhoneCall(boolean p2pAllowed, long id, long accessHash, int date, int adminId, int participantId, TLBytes gAOrB, long keyFingerprint, TLPhoneCallProtocol protocol, TLVector<TLPhoneConnection> connections, int startDate) {
+        this.p2pAllowed = p2pAllowed;
         this.id = id;
         this.accessHash = accessHash;
         this.date = date;
@@ -65,13 +57,20 @@ public class TLPhoneCall extends TLAbsPhoneCall {
         this.gAOrB = gAOrB;
         this.keyFingerprint = keyFingerprint;
         this.protocol = protocol;
-        this.connection = connection;
-        this.alternativeConnections = alternativeConnections;
+        this.connections = connections;
         this.startDate = startDate;
+    }
+
+    private void computeFlags() {
+        flags = 0;
+        flags = p2pAllowed ? (flags | 32) : (flags & ~32);
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        computeFlags();
+
+        writeInt(flags, stream);
         writeLong(id, stream);
         writeLong(accessHash, stream);
         writeInt(date, stream);
@@ -80,14 +79,15 @@ public class TLPhoneCall extends TLAbsPhoneCall {
         writeTLBytes(gAOrB, stream);
         writeLong(keyFingerprint, stream);
         writeTLObject(protocol, stream);
-        writeTLObject(connection, stream);
-        writeTLVector(alternativeConnections, stream);
+        writeTLVector(connections, stream);
         writeInt(startDate, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        flags = readInt(stream);
+        p2pAllowed = (flags & 32) != 0;
         id = readLong(stream);
         accessHash = readLong(stream);
         date = readInt(stream);
@@ -96,14 +96,16 @@ public class TLPhoneCall extends TLAbsPhoneCall {
         gAOrB = readTLBytes(stream, context);
         keyFingerprint = readLong(stream);
         protocol = readTLObject(stream, context, TLPhoneCallProtocol.class, TLPhoneCallProtocol.CONSTRUCTOR_ID);
-        connection = readTLObject(stream, context, TLPhoneConnection.class, TLPhoneConnection.CONSTRUCTOR_ID);
-        alternativeConnections = readTLVector(stream, context);
+        connections = readTLVector(stream, context);
         startDate = readInt(stream);
     }
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
+        size += SIZE_INT32;
         size += SIZE_INT64;
         size += SIZE_INT64;
         size += SIZE_INT32;
@@ -112,8 +114,7 @@ public class TLPhoneCall extends TLAbsPhoneCall {
         size += computeTLBytesSerializedSize(gAOrB);
         size += SIZE_INT64;
         size += protocol.computeSerializedSize();
-        size += connection.computeSerializedSize();
-        size += alternativeConnections.computeSerializedSize();
+        size += connections.computeSerializedSize();
         size += SIZE_INT32;
         return size;
     }
@@ -126,6 +127,14 @@ public class TLPhoneCall extends TLAbsPhoneCall {
     @Override
     public int getConstructorId() {
         return CONSTRUCTOR_ID;
+    }
+
+    public boolean getP2pAllowed() {
+        return p2pAllowed;
+    }
+
+    public void setP2pAllowed(boolean p2pAllowed) {
+        this.p2pAllowed = p2pAllowed;
     }
 
     public long getId() {
@@ -192,20 +201,12 @@ public class TLPhoneCall extends TLAbsPhoneCall {
         this.protocol = protocol;
     }
 
-    public TLPhoneConnection getConnection() {
-        return connection;
+    public TLVector<TLPhoneConnection> getConnections() {
+        return connections;
     }
 
-    public void setConnection(TLPhoneConnection connection) {
-        this.connection = connection;
-    }
-
-    public TLVector<TLPhoneConnection> getAlternativeConnections() {
-        return alternativeConnections;
-    }
-
-    public void setAlternativeConnections(TLVector<TLPhoneConnection> alternativeConnections) {
-        this.alternativeConnections = alternativeConnections;
+    public void setConnections(TLVector<TLPhoneConnection> connections) {
+        this.connections = connections;
     }
 
     public int getStartDate() {

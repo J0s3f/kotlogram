@@ -1,29 +1,25 @@
 package com.github.badoualy.telegram.tl.api.channels;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsChannelParticipant;
 import com.github.badoualy.telegram.tl.api.TLAbsUser;
-import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
-public class TLChannelParticipants extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0xf56ee2a8;
+public class TLChannelParticipants extends TLAbsChannelParticipants {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int count;
 
@@ -31,7 +27,7 @@ public class TLChannelParticipants extends TLObject {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "channels.channelParticipants#f56ee2a8";
+    private final String _constructor = "channels.channelParticipants#0";
 
     public TLChannelParticipants() {
     }

@@ -1,34 +1,33 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLAuthorization extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0x7bf2e6f6;
-
-    protected long hash;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
+
+    protected boolean current;
+
+    protected boolean officialApp;
+
+    protected boolean passwordPending;
+
+    protected long hash;
 
     protected String deviceModel;
 
@@ -52,14 +51,16 @@ public class TLAuthorization extends TLObject {
 
     protected String region;
 
-    private final String _constructor = "authorization#7bf2e6f6";
+    private final String _constructor = "authorization#0";
 
     public TLAuthorization() {
     }
 
-    public TLAuthorization(long hash, int flags, String deviceModel, String platform, String systemVersion, int apiId, String appName, String appVersion, int dateCreated, int dateActive, String ip, String country, String region) {
+    public TLAuthorization(boolean current, boolean officialApp, boolean passwordPending, long hash, String deviceModel, String platform, String systemVersion, int apiId, String appName, String appVersion, int dateCreated, int dateActive, String ip, String country, String region) {
+        this.current = current;
+        this.officialApp = officialApp;
+        this.passwordPending = passwordPending;
         this.hash = hash;
-        this.flags = flags;
         this.deviceModel = deviceModel;
         this.platform = platform;
         this.systemVersion = systemVersion;
@@ -73,10 +74,19 @@ public class TLAuthorization extends TLObject {
         this.region = region;
     }
 
+    private void computeFlags() {
+        flags = 0;
+        flags = current ? (flags | 1) : (flags & ~1);
+        flags = officialApp ? (flags | 2) : (flags & ~2);
+        flags = passwordPending ? (flags | 4) : (flags & ~4);
+    }
+
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
-        writeLong(hash, stream);
+        computeFlags();
+
         writeInt(flags, stream);
+        writeLong(hash, stream);
         writeString(deviceModel, stream);
         writeString(platform, stream);
         writeString(systemVersion, stream);
@@ -93,8 +103,11 @@ public class TLAuthorization extends TLObject {
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        hash = readLong(stream);
         flags = readInt(stream);
+        current = (flags & 1) != 0;
+        officialApp = (flags & 2) != 0;
+        passwordPending = (flags & 4) != 0;
+        hash = readLong(stream);
         deviceModel = readTLString(stream);
         platform = readTLString(stream);
         systemVersion = readTLString(stream);
@@ -110,9 +123,11 @@ public class TLAuthorization extends TLObject {
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
-        size += SIZE_INT64;
         size += SIZE_INT32;
+        size += SIZE_INT64;
         size += computeTLStringSerializedSize(deviceModel);
         size += computeTLStringSerializedSize(platform);
         size += computeTLStringSerializedSize(systemVersion);
@@ -137,20 +152,36 @@ public class TLAuthorization extends TLObject {
         return CONSTRUCTOR_ID;
     }
 
+    public boolean getCurrent() {
+        return current;
+    }
+
+    public void setCurrent(boolean current) {
+        this.current = current;
+    }
+
+    public boolean getOfficialApp() {
+        return officialApp;
+    }
+
+    public void setOfficialApp(boolean officialApp) {
+        this.officialApp = officialApp;
+    }
+
+    public boolean getPasswordPending() {
+        return passwordPending;
+    }
+
+    public void setPasswordPending(boolean passwordPending) {
+        this.passwordPending = passwordPending;
+    }
+
     public long getHash() {
         return hash;
     }
 
     public void setHash(long hash) {
         this.hash = hash;
-    }
-
-    public int getFlags() {
-        return flags;
-    }
-
-    public void setFlags(int flags) {
-        this.flags = flags;
     }
 
     public String getDeviceModel() {

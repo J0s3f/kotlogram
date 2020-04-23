@@ -1,32 +1,27 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLBytes;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCallAccepted extends TLAbsPhoneCall {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x6d003d3f;
+    protected int flags;
+
+    protected boolean video;
 
     protected long accessHash;
 
@@ -40,12 +35,13 @@ public class TLPhoneCallAccepted extends TLAbsPhoneCall {
 
     protected TLPhoneCallProtocol protocol;
 
-    private final String _constructor = "phoneCallAccepted#6d003d3f";
+    private final String _constructor = "phoneCallAccepted#0";
 
     public TLPhoneCallAccepted() {
     }
 
-    public TLPhoneCallAccepted(long id, long accessHash, int date, int adminId, int participantId, TLBytes gB, TLPhoneCallProtocol protocol) {
+    public TLPhoneCallAccepted(boolean video, long id, long accessHash, int date, int adminId, int participantId, TLBytes gB, TLPhoneCallProtocol protocol) {
+        this.video = video;
         this.id = id;
         this.accessHash = accessHash;
         this.date = date;
@@ -55,8 +51,16 @@ public class TLPhoneCallAccepted extends TLAbsPhoneCall {
         this.protocol = protocol;
     }
 
+    private void computeFlags() {
+        flags = 0;
+        flags = video ? (flags | 32) : (flags & ~32);
+    }
+
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        computeFlags();
+
+        writeInt(flags, stream);
         writeLong(id, stream);
         writeLong(accessHash, stream);
         writeInt(date, stream);
@@ -69,6 +73,8 @@ public class TLPhoneCallAccepted extends TLAbsPhoneCall {
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        flags = readInt(stream);
+        video = (flags & 32) != 0;
         id = readLong(stream);
         accessHash = readLong(stream);
         date = readInt(stream);
@@ -80,7 +86,10 @@ public class TLPhoneCallAccepted extends TLAbsPhoneCall {
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
+        size += SIZE_INT32;
         size += SIZE_INT64;
         size += SIZE_INT64;
         size += SIZE_INT32;
@@ -99,6 +108,14 @@ public class TLPhoneCallAccepted extends TLAbsPhoneCall {
     @Override
     public int getConstructorId() {
         return CONSTRUCTOR_ID;
+    }
+
+    public boolean getVideo() {
+        return video;
+    }
+
+    public void setVideo(boolean video) {
+        this.video = video;
     }
 
     public long getId() {

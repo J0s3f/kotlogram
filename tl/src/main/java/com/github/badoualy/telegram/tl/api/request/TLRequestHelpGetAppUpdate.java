@@ -1,26 +1,35 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.help.TLAbsAppUpdate;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
+import java.io.OutputStream;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetAppUpdate extends TLMethod<TLAbsAppUpdate> {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0xae2de196;
+    protected String source;
 
-    private final String _constructor = "help.getAppUpdate#ae2de196";
+    private final String _constructor = "help.getAppUpdate#0";
 
     public TLRequestHelpGetAppUpdate() {
+    }
+
+    public TLRequestHelpGetAppUpdate(String source) {
+        this.source = source;
     }
 
     @Override
@@ -31,11 +40,27 @@ public class TLRequestHelpGetAppUpdate extends TLMethod<TLAbsAppUpdate> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsAppUpdate)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsAppUpdate) response;
+    }
+
+    @Override
+    public void serializeBody(OutputStream stream) throws IOException {
+        writeString(source, stream);
+    }
+
+    @Override
+    @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
+    public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        source = readTLString(stream);
+    }
+
+    @Override
+    public int computeSerializedSize() {
+        int size = SIZE_CONSTRUCTOR_ID;
+        size += computeTLStringSerializedSize(source);
+        return size;
     }
 
     @Override
@@ -46,5 +71,13 @@ public class TLRequestHelpGetAppUpdate extends TLMethod<TLAbsAppUpdate> {
     @Override
     public int getConstructorId() {
         return CONSTRUCTOR_ID;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 }

@@ -1,42 +1,39 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.api.TLInputWebFileLocation;
+import com.github.badoualy.telegram.tl.api.TLAbsInputWebFileLocation;
 import com.github.badoualy.telegram.tl.api.upload.TLWebFile;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestUploadGetWebFile extends TLMethod<TLWebFile> {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x24e6818d;
-
-    protected TLInputWebFileLocation location;
+    protected TLAbsInputWebFileLocation location;
 
     protected int offset;
 
     protected int limit;
 
-    private final String _constructor = "upload.getWebFile#24e6818d";
+    private final String _constructor = "upload.getWebFile#0";
 
     public TLRequestUploadGetWebFile() {
     }
 
-    public TLRequestUploadGetWebFile(TLInputWebFileLocation location, int offset, int limit) {
+    public TLRequestUploadGetWebFile(TLAbsInputWebFileLocation location, int offset, int limit) {
         this.location = location;
         this.offset = offset;
         this.limit = limit;
@@ -50,9 +47,7 @@ public class TLRequestUploadGetWebFile extends TLMethod<TLWebFile> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLWebFile)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLWebFile) response;
     }
@@ -67,7 +62,7 @@ public class TLRequestUploadGetWebFile extends TLMethod<TLWebFile> {
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
-        location = readTLObject(stream, context, TLInputWebFileLocation.class, TLInputWebFileLocation.CONSTRUCTOR_ID);
+        location = readTLObject(stream, context, TLAbsInputWebFileLocation.class, -1);
         offset = readInt(stream);
         limit = readInt(stream);
     }
@@ -91,11 +86,11 @@ public class TLRequestUploadGetWebFile extends TLMethod<TLWebFile> {
         return CONSTRUCTOR_ID;
     }
 
-    public TLInputWebFileLocation getLocation() {
+    public TLAbsInputWebFileLocation getLocation() {
         return location;
     }
 
-    public void setLocation(TLInputWebFileLocation location) {
+    public void setLocation(TLAbsInputWebFileLocation location) {
         this.location = location;
     }
 

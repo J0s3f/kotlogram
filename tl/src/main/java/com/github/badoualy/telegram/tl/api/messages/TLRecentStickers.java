@@ -1,60 +1,71 @@
 package com.github.badoualy.telegram.tl.api.messages;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsDocument;
+import com.github.badoualy.telegram.tl.api.TLStickerPack;
+import com.github.badoualy.telegram.tl.core.TLIntVector;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRecentStickers extends TLAbsRecentStickers {
-
-    public static final int CONSTRUCTOR_ID = 0x5ce20970;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int hash;
 
+    protected TLVector<TLStickerPack> packs;
+
     protected TLVector<TLAbsDocument> stickers;
 
-    private final String _constructor = "messages.recentStickers#5ce20970";
+    protected TLIntVector dates;
+
+    private final String _constructor = "messages.recentStickers#0";
 
     public TLRecentStickers() {
     }
 
-    public TLRecentStickers(int hash, TLVector<TLAbsDocument> stickers) {
+    public TLRecentStickers(int hash, TLVector<TLStickerPack> packs, TLVector<TLAbsDocument> stickers, TLIntVector dates) {
         this.hash = hash;
+        this.packs = packs;
         this.stickers = stickers;
+        this.dates = dates;
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
         writeInt(hash, stream);
+        writeTLVector(packs, stream);
         writeTLVector(stickers, stream);
+        writeTLVector(dates, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         hash = readInt(stream);
+        packs = readTLVector(stream, context);
         stickers = readTLVector(stream, context);
+        dates = readTLIntVector(stream, context);
     }
 
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
+        size += packs.computeSerializedSize();
         size += stickers.computeSerializedSize();
+        size += dates.computeSerializedSize();
         return size;
     }
 
@@ -76,11 +87,27 @@ public class TLRecentStickers extends TLAbsRecentStickers {
         this.hash = hash;
     }
 
+    public TLVector<TLStickerPack> getPacks() {
+        return packs;
+    }
+
+    public void setPacks(TLVector<TLStickerPack> packs) {
+        this.packs = packs;
+    }
+
     public TLVector<TLAbsDocument> getStickers() {
         return stickers;
     }
 
     public void setStickers(TLVector<TLAbsDocument> stickers) {
         this.stickers = stickers;
+    }
+
+    public TLIntVector getDates() {
+        return dates;
+    }
+
+    public void setDates(TLIntVector dates) {
+        this.dates = dates;
     }
 }

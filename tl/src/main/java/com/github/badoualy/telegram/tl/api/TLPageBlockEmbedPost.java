@@ -1,34 +1,23 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockEmbedPost extends TLAbsPageBlock {
-
-    public static final int CONSTRUCTOR_ID = 0x292c7be9;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected String url;
 
@@ -42,14 +31,14 @@ public class TLPageBlockEmbedPost extends TLAbsPageBlock {
 
     protected TLVector<TLAbsPageBlock> blocks;
 
-    protected TLAbsRichText caption;
+    protected TLPageCaption caption;
 
-    private final String _constructor = "pageBlockEmbedPost#292c7be9";
+    private final String _constructor = "pageBlockEmbedPost#0";
 
     public TLPageBlockEmbedPost() {
     }
 
-    public TLPageBlockEmbedPost(String url, long webpageId, long authorPhotoId, String author, int date, TLVector<TLAbsPageBlock> blocks, TLAbsRichText caption) {
+    public TLPageBlockEmbedPost(String url, long webpageId, long authorPhotoId, String author, int date, TLVector<TLAbsPageBlock> blocks, TLPageCaption caption) {
         this.url = url;
         this.webpageId = webpageId;
         this.authorPhotoId = authorPhotoId;
@@ -79,7 +68,7 @@ public class TLPageBlockEmbedPost extends TLAbsPageBlock {
         author = readTLString(stream);
         date = readInt(stream);
         blocks = readTLVector(stream, context);
-        caption = readTLObject(stream, context, TLAbsRichText.class, -1);
+        caption = readTLObject(stream, context, TLPageCaption.class, TLPageCaption.CONSTRUCTOR_ID);
     }
 
     @Override
@@ -153,11 +142,11 @@ public class TLPageBlockEmbedPost extends TLAbsPageBlock {
         this.blocks = blocks;
     }
 
-    public TLAbsRichText getCaption() {
+    public TLPageCaption getCaption() {
         return caption;
     }
 
-    public void setCaption(TLAbsRichText caption) {
+    public void setCaption(TLPageCaption caption) {
         this.caption = caption;
     }
 }

@@ -1,32 +1,26 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPaymentCredentials;
 import com.github.badoualy.telegram.tl.api.payments.TLAbsPaymentResult;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPaymentsSendPaymentForm extends TLMethod<TLAbsPaymentResult> {
-
-    public static final int CONSTRUCTOR_ID = 0x2b8879b3;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -38,7 +32,7 @@ public class TLRequestPaymentsSendPaymentForm extends TLMethod<TLAbsPaymentResul
 
     protected TLAbsInputPaymentCredentials credentials;
 
-    private final String _constructor = "payments.sendPaymentForm#2b8879b3";
+    private final String _constructor = "payments.sendPaymentForm#0";
 
     public TLRequestPaymentsSendPaymentForm() {
     }
@@ -58,9 +52,7 @@ public class TLRequestPaymentsSendPaymentForm extends TLMethod<TLAbsPaymentResul
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsPaymentResult)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsPaymentResult) response;
     }

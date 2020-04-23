@@ -1,7 +1,11 @@
 package com.github.badoualy.telegram.tl.api.account;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.core.TLBytes;
 import com.github.badoualy.telegram.tl.core.TLObject;
+import java.lang.String;
 
 /**
  * Abstraction level for the following constructors:
@@ -14,7 +18,6 @@ import com.github.badoualy.telegram.tl.core.TLObject;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public abstract class TLAbsPassword extends TLObject {
-
     protected TLBytes newSalt;
 
     protected String emailUnconfirmedPattern;

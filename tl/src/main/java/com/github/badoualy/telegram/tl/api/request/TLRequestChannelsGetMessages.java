@@ -1,40 +1,39 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputChannel;
+import com.github.badoualy.telegram.tl.api.TLAbsInputMessage;
 import com.github.badoualy.telegram.tl.api.messages.TLAbsMessages;
-import com.github.badoualy.telegram.tl.core.TLIntVector;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLIntVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsGetMessages extends TLMethod<TLAbsMessages> {
-
-    public static final int CONSTRUCTOR_ID = 0x93d7b347;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLAbsInputChannel channel;
 
-    protected TLIntVector id;
+    protected TLVector<TLAbsInputMessage> id;
 
-    private final String _constructor = "channels.getMessages#93d7b347";
+    private final String _constructor = "channels.getMessages#0";
 
     public TLRequestChannelsGetMessages() {
     }
 
-    public TLRequestChannelsGetMessages(TLAbsInputChannel channel, TLIntVector id) {
+    public TLRequestChannelsGetMessages(TLAbsInputChannel channel, TLVector<TLAbsInputMessage> id) {
         this.channel = channel;
         this.id = id;
     }
@@ -47,9 +46,7 @@ public class TLRequestChannelsGetMessages extends TLMethod<TLAbsMessages> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsMessages)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsMessages) response;
     }
@@ -64,7 +61,7 @@ public class TLRequestChannelsGetMessages extends TLMethod<TLAbsMessages> {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         channel = readTLObject(stream, context, TLAbsInputChannel.class, -1);
-        id = readTLIntVector(stream, context);
+        id = readTLVector(stream, context);
     }
 
     @Override
@@ -93,11 +90,11 @@ public class TLRequestChannelsGetMessages extends TLMethod<TLAbsMessages> {
         this.channel = channel;
     }
 
-    public TLIntVector getId() {
+    public TLVector<TLAbsInputMessage> getId() {
         return id;
     }
 
-    public void setId(TLIntVector id) {
+    public void setId(TLVector<TLAbsInputMessage> id) {
         this.id = id;
     }
 }

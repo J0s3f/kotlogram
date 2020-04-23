@@ -1,58 +1,76 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMediaDocument extends TLAbsInputMedia {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x1a77f29c;
+    protected int flags;
 
     protected TLAbsInputDocument id;
 
-    protected String caption;
+    protected Integer ttlSeconds;
 
-    private final String _constructor = "inputMediaDocument#1a77f29c";
+    private final String _constructor = "inputMediaDocument#0";
 
     public TLInputMediaDocument() {
     }
 
-    public TLInputMediaDocument(TLAbsInputDocument id, String caption) {
+    public TLInputMediaDocument(TLAbsInputDocument id, Integer ttlSeconds) {
         this.id = id;
-        this.caption = caption;
+        this.ttlSeconds = ttlSeconds;
+    }
+
+    private void computeFlags() {
+        flags = 0;
+        flags = ttlSeconds != null ? (flags | 1) : (flags & ~1);
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        computeFlags();
+
+        writeInt(flags, stream);
         writeTLObject(id, stream);
-        writeString(caption, stream);
+        if ((flags & 1) != 0) {
+            if (ttlSeconds == null) throwNullFieldException("ttlSeconds", flags);
+            writeInt(ttlSeconds, stream);
+        }
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        flags = readInt(stream);
         id = readTLObject(stream, context, TLAbsInputDocument.class, -1);
-        caption = readTLString(stream);
+        ttlSeconds = (flags & 1) != 0 ? readInt(stream) : null;
     }
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
+        size += SIZE_INT32;
         size += id.computeSerializedSize();
-        size += computeTLStringSerializedSize(caption);
+        if ((flags & 1) != 0) {
+            if (ttlSeconds == null) throwNullFieldException("ttlSeconds", flags);
+            size += SIZE_INT32;
+        }
         return size;
     }
 
@@ -74,11 +92,11 @@ public class TLInputMediaDocument extends TLAbsInputMedia {
         this.id = id;
     }
 
-    public String getCaption() {
-        return caption;
+    public Integer getTtlSeconds() {
+        return ttlSeconds;
     }
 
-    public void setCaption(String caption) {
-        this.caption = caption;
+    public void setTtlSeconds(Integer ttlSeconds) {
+        this.ttlSeconds = ttlSeconds;
     }
 }

@@ -1,36 +1,30 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.core.TLVector;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLBytes;
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDocument extends TLAbsDocument {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x87232bc7;
+    protected int flags;
 
     protected long accessHash;
+
+    protected TLBytes fileReference;
 
     protected int date;
 
@@ -38,68 +32,84 @@ public class TLDocument extends TLAbsDocument {
 
     protected int size;
 
-    protected TLAbsPhotoSize thumb;
+    protected TLVector<TLAbsPhotoSize> thumbs;
 
     protected int dcId;
 
-    protected int version;
-
     protected TLVector<TLAbsDocumentAttribute> attributes;
 
-    private final String _constructor = "document#87232bc7";
+    private final String _constructor = "document#0";
 
     public TLDocument() {
     }
 
-    public TLDocument(long id, long accessHash, int date, String mimeType, int size, TLAbsPhotoSize thumb, int dcId, int version, TLVector<TLAbsDocumentAttribute> attributes) {
+    public TLDocument(long id, long accessHash, TLBytes fileReference, int date, String mimeType, int size, TLVector<TLAbsPhotoSize> thumbs, int dcId, TLVector<TLAbsDocumentAttribute> attributes) {
         this.id = id;
         this.accessHash = accessHash;
+        this.fileReference = fileReference;
         this.date = date;
         this.mimeType = mimeType;
         this.size = size;
-        this.thumb = thumb;
+        this.thumbs = thumbs;
         this.dcId = dcId;
-        this.version = version;
         this.attributes = attributes;
+    }
+
+    private void computeFlags() {
+        flags = 0;
+        flags = thumbs != null ? (flags | 1) : (flags & ~1);
     }
 
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        computeFlags();
+
+        writeInt(flags, stream);
         writeLong(id, stream);
         writeLong(accessHash, stream);
+        writeTLBytes(fileReference, stream);
         writeInt(date, stream);
         writeString(mimeType, stream);
         writeInt(size, stream);
-        writeTLObject(thumb, stream);
+        if ((flags & 1) != 0) {
+            if (thumbs == null) throwNullFieldException("thumbs", flags);
+            writeTLVector(thumbs, stream);
+        }
         writeInt(dcId, stream);
-        writeInt(version, stream);
         writeTLVector(attributes, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        flags = readInt(stream);
         id = readLong(stream);
         accessHash = readLong(stream);
+        fileReference = readTLBytes(stream, context);
         date = readInt(stream);
         mimeType = readTLString(stream);
         size = readInt(stream);
-        thumb = readTLObject(stream, context, TLAbsPhotoSize.class, -1);
+        thumbs = (flags & 1) != 0 ? readTLVector(stream, context) : null;
         dcId = readInt(stream);
-        version = readInt(stream);
         attributes = readTLVector(stream, context);
     }
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
+        size += SIZE_INT32;
         size += SIZE_INT64;
         size += SIZE_INT64;
+        size += computeTLBytesSerializedSize(fileReference);
         size += SIZE_INT32;
         size += computeTLStringSerializedSize(mimeType);
         size += SIZE_INT32;
-        size += thumb.computeSerializedSize();
-        size += SIZE_INT32;
+        if ((flags & 1) != 0) {
+            if (thumbs == null) throwNullFieldException("thumbs", flags);
+            size += thumbs.computeSerializedSize();
+        }
         size += SIZE_INT32;
         size += attributes.computeSerializedSize();
         return size;
@@ -131,6 +141,14 @@ public class TLDocument extends TLAbsDocument {
         this.accessHash = accessHash;
     }
 
+    public TLBytes getFileReference() {
+        return fileReference;
+    }
+
+    public void setFileReference(TLBytes fileReference) {
+        this.fileReference = fileReference;
+    }
+
     public int getDate() {
         return date;
     }
@@ -155,12 +173,12 @@ public class TLDocument extends TLAbsDocument {
         this.size = size;
     }
 
-    public TLAbsPhotoSize getThumb() {
-        return thumb;
+    public TLVector<TLAbsPhotoSize> getThumbs() {
+        return thumbs;
     }
 
-    public void setThumb(TLAbsPhotoSize thumb) {
-        this.thumb = thumb;
+    public void setThumbs(TLVector<TLAbsPhotoSize> thumbs) {
+        this.thumbs = thumbs;
     }
 
     public int getDcId() {
@@ -169,14 +187,6 @@ public class TLDocument extends TLAbsDocument {
 
     public void setDcId(int dcId) {
         this.dcId = dcId;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
     }
 
     public TLVector<TLAbsDocumentAttribute> getAttributes() {

@@ -1,43 +1,54 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLBool;
+import com.github.badoualy.telegram.tl.core.TLBytes;
+import com.github.badoualy.telegram.tl.core.TLIntVector;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountRegisterDevice extends TLMethod<TLBool> {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x637ea878;
+    protected int flags;
+
+    protected boolean noMuted;
 
     protected int tokenType;
 
     protected String token;
 
-    private final String _constructor = "account.registerDevice#637ea878";
+    protected boolean appSandbox;
+
+    protected TLBytes secret;
+
+    protected TLIntVector otherUids;
+
+    private final String _constructor = "account.registerDevice#0";
 
     public TLRequestAccountRegisterDevice() {
     }
 
-    public TLRequestAccountRegisterDevice(int tokenType, String token) {
+    public TLRequestAccountRegisterDevice(boolean noMuted, int tokenType, String token, boolean appSandbox, TLBytes secret, TLIntVector otherUids) {
+        this.noMuted = noMuted;
         this.tokenType = tokenType;
         this.token = token;
+        this.appSandbox = appSandbox;
+        this.secret = secret;
+        this.otherUids = otherUids;
     }
 
     @Override
@@ -48,31 +59,51 @@ public class TLRequestAccountRegisterDevice extends TLMethod<TLBool> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLBool)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLBool) response;
     }
 
+    private void computeFlags() {
+        flags = 0;
+        flags = noMuted ? (flags | 1) : (flags & ~1);
+    }
+
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
+        computeFlags();
+
+        writeInt(flags, stream);
         writeInt(tokenType, stream);
         writeString(token, stream);
+        writeBoolean(appSandbox, stream);
+        writeTLBytes(secret, stream);
+        writeTLVector(otherUids, stream);
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
+        flags = readInt(stream);
+        noMuted = (flags & 1) != 0;
         tokenType = readInt(stream);
         token = readTLString(stream);
+        appSandbox = readTLBool(stream);
+        secret = readTLBytes(stream, context);
+        otherUids = readTLIntVector(stream, context);
     }
 
     @Override
     public int computeSerializedSize() {
+        computeFlags();
+
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
+        size += SIZE_INT32;
         size += computeTLStringSerializedSize(token);
+        size += SIZE_BOOLEAN;
+        size += computeTLBytesSerializedSize(secret);
+        size += otherUids.computeSerializedSize();
         return size;
     }
 
@@ -84,6 +115,14 @@ public class TLRequestAccountRegisterDevice extends TLMethod<TLBool> {
     @Override
     public int getConstructorId() {
         return CONSTRUCTOR_ID;
+    }
+
+    public boolean getNoMuted() {
+        return noMuted;
+    }
+
+    public void setNoMuted(boolean noMuted) {
+        this.noMuted = noMuted;
     }
 
     public int getTokenType() {
@@ -100,5 +139,29 @@ public class TLRequestAccountRegisterDevice extends TLMethod<TLBool> {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public boolean getAppSandbox() {
+        return appSandbox;
+    }
+
+    public void setAppSandbox(boolean appSandbox) {
+        this.appSandbox = appSandbox;
+    }
+
+    public TLBytes getSecret() {
+        return secret;
+    }
+
+    public void setSecret(TLBytes secret) {
+        this.secret = secret;
+    }
+
+    public TLIntVector getOtherUids() {
+        return otherUids;
+    }
+
+    public void setOtherUids(TLIntVector otherUids) {
+        this.otherUids = otherUids;
     }
 }

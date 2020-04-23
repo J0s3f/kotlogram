@@ -1,43 +1,42 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputBotInlineMessageMediaAuto extends TLAbsInputBotInlineMessage {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
-    public static final int CONSTRUCTOR_ID = 0x292fed13;
+    protected String message;
 
-    protected String caption;
+    protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "inputBotInlineMessageMediaAuto#292fed13";
+    private final String _constructor = "inputBotInlineMessageMediaAuto#0";
 
     public TLInputBotInlineMessageMediaAuto() {
     }
 
-    public TLInputBotInlineMessageMediaAuto(String caption, TLAbsReplyMarkup replyMarkup) {
-        this.caption = caption;
+    public TLInputBotInlineMessageMediaAuto(String message, TLVector<TLAbsMessageEntity> entities, TLAbsReplyMarkup replyMarkup) {
+        this.message = message;
+        this.entities = entities;
         this.replyMarkup = replyMarkup;
     }
 
     private void computeFlags() {
         flags = 0;
+        flags = entities != null ? (flags | 2) : (flags & ~2);
         flags = replyMarkup != null ? (flags | 4) : (flags & ~4);
     }
 
@@ -46,7 +45,11 @@ public class TLInputBotInlineMessageMediaAuto extends TLAbsInputBotInlineMessage
         computeFlags();
 
         writeInt(flags, stream);
-        writeString(caption, stream);
+        writeString(message, stream);
+        if ((flags & 2) != 0) {
+            if (entities == null) throwNullFieldException("entities", flags);
+            writeTLVector(entities, stream);
+        }
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             writeTLObject(replyMarkup, stream);
@@ -57,7 +60,8 @@ public class TLInputBotInlineMessageMediaAuto extends TLAbsInputBotInlineMessage
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
-        caption = readTLString(stream);
+        message = readTLString(stream);
+        entities = (flags & 2) != 0 ? readTLVector(stream, context) : null;
         replyMarkup = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsReplyMarkup.class, -1) : null;
     }
 
@@ -67,7 +71,11 @@ public class TLInputBotInlineMessageMediaAuto extends TLAbsInputBotInlineMessage
 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
-        size += computeTLStringSerializedSize(caption);
+        size += computeTLStringSerializedSize(message);
+        if ((flags & 2) != 0) {
+            if (entities == null) throwNullFieldException("entities", flags);
+            size += entities.computeSerializedSize();
+        }
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             size += replyMarkup.computeSerializedSize();
@@ -85,12 +93,20 @@ public class TLInputBotInlineMessageMediaAuto extends TLAbsInputBotInlineMessage
         return CONSTRUCTOR_ID;
     }
 
-    public String getCaption() {
-        return caption;
+    public String getMessage() {
+        return message;
     }
 
-    public void setCaption(String caption) {
-        this.caption = caption;
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public TLVector<TLAbsMessageEntity> getEntities() {
+        return entities;
+    }
+
+    public void setEntities(TLVector<TLAbsMessageEntity> entities) {
+        this.entities = entities;
     }
 
     public TLAbsReplyMarkup getReplyMarkup() {

@@ -1,26 +1,24 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
-public class TLPeerNotifySettings extends TLAbsPeerNotifySettings {
-
-    public static final int CONSTRUCTOR_ID = 0x9acda4c0;
+public class TLPeerNotifySettings extends TLObject {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -28,16 +26,16 @@ public class TLPeerNotifySettings extends TLAbsPeerNotifySettings {
 
     protected boolean silent;
 
-    protected int muteUntil;
+    protected Integer muteUntil;
 
     protected String sound;
 
-    private final String _constructor = "peerNotifySettings#9acda4c0";
+    private final String _constructor = "peerNotifySettings#0";
 
     public TLPeerNotifySettings() {
     }
 
-    public TLPeerNotifySettings(boolean showPreviews, boolean silent, int muteUntil, String sound) {
+    public TLPeerNotifySettings(boolean showPreviews, boolean silent, Integer muteUntil, String sound) {
         this.showPreviews = showPreviews;
         this.silent = silent;
         this.muteUntil = muteUntil;
@@ -46,8 +44,10 @@ public class TLPeerNotifySettings extends TLAbsPeerNotifySettings {
 
     private void computeFlags() {
         flags = 0;
-        flags = showPreviews ? (flags | 1) : (flags & ~1);
-        flags = silent ? (flags | 2) : (flags & ~2);
+        flags = showPreviews != null ? (flags | 1) : (flags & ~1);
+        flags = silent != null ? (flags | 2) : (flags & ~2);
+        flags = muteUntil != null ? (flags | 4) : (flags & ~4);
+        flags = sound != null ? (flags | 8) : (flags & ~8);
     }
 
     @Override
@@ -55,18 +55,30 @@ public class TLPeerNotifySettings extends TLAbsPeerNotifySettings {
         computeFlags();
 
         writeInt(flags, stream);
-        writeInt(muteUntil, stream);
-        writeString(sound, stream);
+        if ((flags & 1) != 0) {
+            writeBoolean(showPreviews, stream);
+        }
+        if ((flags & 2) != 0) {
+            writeBoolean(silent, stream);
+        }
+        if ((flags & 4) != 0) {
+            if (muteUntil == null) throwNullFieldException("muteUntil", flags);
+            writeInt(muteUntil, stream);
+        }
+        if ((flags & 8) != 0) {
+            if (sound == null) throwNullFieldException("sound", flags);
+            writeString(sound, stream);
+        }
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
-        showPreviews = (flags & 1) != 0;
-        silent = (flags & 2) != 0;
-        muteUntil = readInt(stream);
-        sound = readTLString(stream);
+        showPreviews = (flags & 1) != 0 ? readTLBool(stream) : false;
+        silent = (flags & 2) != 0 ? readTLBool(stream) : false;
+        muteUntil = (flags & 4) != 0 ? readInt(stream) : null;
+        sound = (flags & 8) != 0 ? readTLString(stream) : null;
     }
 
     @Override
@@ -75,8 +87,20 @@ public class TLPeerNotifySettings extends TLAbsPeerNotifySettings {
 
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
-        size += SIZE_INT32;
-        size += computeTLStringSerializedSize(sound);
+        if ((flags & 1) != 0) {
+            size += SIZE_BOOLEAN;
+        }
+        if ((flags & 2) != 0) {
+            size += SIZE_BOOLEAN;
+        }
+        if ((flags & 4) != 0) {
+            if (muteUntil == null) throwNullFieldException("muteUntil", flags);
+            size += SIZE_INT32;
+        }
+        if ((flags & 8) != 0) {
+            if (sound == null) throwNullFieldException("sound", flags);
+            size += computeTLStringSerializedSize(sound);
+        }
         return size;
     }
 
@@ -106,11 +130,11 @@ public class TLPeerNotifySettings extends TLAbsPeerNotifySettings {
         this.silent = silent;
     }
 
-    public int getMuteUntil() {
+    public Integer getMuteUntil() {
         return muteUntil;
     }
 
-    public void setMuteUntil(int muteUntil) {
+    public void setMuteUntil(Integer muteUntil) {
         this.muteUntil = muteUntil;
     }
 
@@ -120,20 +144,5 @@ public class TLPeerNotifySettings extends TLAbsPeerNotifySettings {
 
     public void setSound(String sound) {
         this.sound = sound;
-    }
-
-    @Override
-    public final boolean isEmpty() {
-        return false;
-    }
-
-    @Override
-    public final boolean isNotEmpty() {
-        return true;
-    }
-
-    @Override
-    public final TLPeerNotifySettings getAsPeerNotifySettings() {
-        return this;
     }
 }

@@ -1,30 +1,23 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readDouble;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeDouble;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_DOUBLE;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputAppEvent extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0x770656a8;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected double time;
 
@@ -32,14 +25,14 @@ public class TLInputAppEvent extends TLObject {
 
     protected long peer;
 
-    protected String data;
+    protected TLAbsJSONValue data;
 
-    private final String _constructor = "inputAppEvent#770656a8";
+    private final String _constructor = "inputAppEvent#0";
 
     public TLInputAppEvent() {
     }
 
-    public TLInputAppEvent(double time, String type, long peer, String data) {
+    public TLInputAppEvent(double time, String type, long peer, TLAbsJSONValue data) {
         this.time = time;
         this.type = type;
         this.peer = peer;
@@ -51,7 +44,7 @@ public class TLInputAppEvent extends TLObject {
         writeDouble(time, stream);
         writeString(type, stream);
         writeLong(peer, stream);
-        writeString(data, stream);
+        writeTLObject(data, stream);
     }
 
     @Override
@@ -60,7 +53,7 @@ public class TLInputAppEvent extends TLObject {
         time = readDouble(stream);
         type = readTLString(stream);
         peer = readLong(stream);
-        data = readTLString(stream);
+        data = readTLObject(stream, context, TLAbsJSONValue.class, -1);
     }
 
     @Override
@@ -69,7 +62,7 @@ public class TLInputAppEvent extends TLObject {
         size += SIZE_DOUBLE;
         size += computeTLStringSerializedSize(type);
         size += SIZE_INT64;
-        size += computeTLStringSerializedSize(data);
+        size += data.computeSerializedSize();
         return size;
     }
 
@@ -107,11 +100,11 @@ public class TLInputAppEvent extends TLObject {
         this.peer = peer;
     }
 
-    public String getData() {
+    public TLAbsJSONValue getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(TLAbsJSONValue data) {
         this.data = data;
     }
 }

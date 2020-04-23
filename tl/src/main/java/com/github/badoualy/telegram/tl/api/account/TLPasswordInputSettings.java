@@ -1,35 +1,30 @@
 package com.github.badoualy.telegram.tl.api.account;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsPasswordKdfAlgo;
+import com.github.badoualy.telegram.tl.api.TLSecureSecretSettings;
 import com.github.badoualy.telegram.tl.core.TLBytes;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBytes;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLBytes;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLBytesSerializedSize;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPasswordInputSettings extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0x86916deb;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
-    protected TLBytes newSalt;
+    protected TLAbsPasswordKdfAlgo newAlgo;
 
     protected TLBytes newPasswordHash;
 
@@ -37,24 +32,28 @@ public class TLPasswordInputSettings extends TLObject {
 
     protected String email;
 
-    private final String _constructor = "account.passwordInputSettings#86916deb";
+    protected TLSecureSecretSettings newSecureSettings;
+
+    private final String _constructor = "account.passwordInputSettings#0";
 
     public TLPasswordInputSettings() {
     }
 
-    public TLPasswordInputSettings(TLBytes newSalt, TLBytes newPasswordHash, String hint, String email) {
-        this.newSalt = newSalt;
+    public TLPasswordInputSettings(TLAbsPasswordKdfAlgo newAlgo, TLBytes newPasswordHash, String hint, String email, TLSecureSecretSettings newSecureSettings) {
+        this.newAlgo = newAlgo;
         this.newPasswordHash = newPasswordHash;
         this.hint = hint;
         this.email = email;
+        this.newSecureSettings = newSecureSettings;
     }
 
     private void computeFlags() {
         flags = 0;
-        flags = newSalt != null ? (flags | 1) : (flags & ~1);
+        flags = newAlgo != null ? (flags | 1) : (flags & ~1);
         flags = newPasswordHash != null ? (flags | 1) : (flags & ~1);
         flags = hint != null ? (flags | 1) : (flags & ~1);
         flags = email != null ? (flags | 2) : (flags & ~2);
+        flags = newSecureSettings != null ? (flags | 4) : (flags & ~4);
     }
 
     @Override
@@ -63,8 +62,8 @@ public class TLPasswordInputSettings extends TLObject {
 
         writeInt(flags, stream);
         if ((flags & 1) != 0) {
-            if (newSalt == null) throwNullFieldException("newSalt", flags);
-            writeTLBytes(newSalt, stream);
+            if (newAlgo == null) throwNullFieldException("newAlgo", flags);
+            writeTLObject(newAlgo, stream);
         }
         if ((flags & 1) != 0) {
             if (newPasswordHash == null) throwNullFieldException("newPasswordHash", flags);
@@ -78,16 +77,21 @@ public class TLPasswordInputSettings extends TLObject {
             if (email == null) throwNullFieldException("email", flags);
             writeString(email, stream);
         }
+        if ((flags & 4) != 0) {
+            if (newSecureSettings == null) throwNullFieldException("newSecureSettings", flags);
+            writeTLObject(newSecureSettings, stream);
+        }
     }
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
-        newSalt = (flags & 1) != 0 ? readTLBytes(stream, context) : null;
+        newAlgo = (flags & 1) != 0 ? readTLObject(stream, context, TLAbsPasswordKdfAlgo.class, -1) : null;
         newPasswordHash = (flags & 1) != 0 ? readTLBytes(stream, context) : null;
         hint = (flags & 1) != 0 ? readTLString(stream) : null;
         email = (flags & 2) != 0 ? readTLString(stream) : null;
+        newSecureSettings = (flags & 4) != 0 ? readTLObject(stream, context, TLSecureSecretSettings.class, TLSecureSecretSettings.CONSTRUCTOR_ID) : null;
     }
 
     @Override
@@ -97,8 +101,8 @@ public class TLPasswordInputSettings extends TLObject {
         int size = SIZE_CONSTRUCTOR_ID;
         size += SIZE_INT32;
         if ((flags & 1) != 0) {
-            if (newSalt == null) throwNullFieldException("newSalt", flags);
-            size += computeTLBytesSerializedSize(newSalt);
+            if (newAlgo == null) throwNullFieldException("newAlgo", flags);
+            size += newAlgo.computeSerializedSize();
         }
         if ((flags & 1) != 0) {
             if (newPasswordHash == null) throwNullFieldException("newPasswordHash", flags);
@@ -111,6 +115,10 @@ public class TLPasswordInputSettings extends TLObject {
         if ((flags & 2) != 0) {
             if (email == null) throwNullFieldException("email", flags);
             size += computeTLStringSerializedSize(email);
+        }
+        if ((flags & 4) != 0) {
+            if (newSecureSettings == null) throwNullFieldException("newSecureSettings", flags);
+            size += newSecureSettings.computeSerializedSize();
         }
         return size;
     }
@@ -125,12 +133,12 @@ public class TLPasswordInputSettings extends TLObject {
         return CONSTRUCTOR_ID;
     }
 
-    public TLBytes getNewSalt() {
-        return newSalt;
+    public TLAbsPasswordKdfAlgo getNewAlgo() {
+        return newAlgo;
     }
 
-    public void setNewSalt(TLBytes newSalt) {
-        this.newSalt = newSalt;
+    public void setNewAlgo(TLAbsPasswordKdfAlgo newAlgo) {
+        this.newAlgo = newAlgo;
     }
 
     public TLBytes getNewPasswordHash() {
@@ -155,5 +163,13 @@ public class TLPasswordInputSettings extends TLObject {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public TLSecureSecretSettings getNewSecureSettings() {
+        return newSecureSettings;
+    }
+
+    public void setNewSecureSettings(TLSecureSecretSettings newSecureSettings) {
+        this.newSecureSettings = newSecureSettings;
     }
 }

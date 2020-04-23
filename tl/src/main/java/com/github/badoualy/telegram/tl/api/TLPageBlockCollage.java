@@ -1,36 +1,34 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockCollage extends TLAbsPageBlock {
-
-    public static final int CONSTRUCTOR_ID = 0x8b31c4f;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLVector<TLAbsPageBlock> items;
 
-    protected TLAbsRichText caption;
+    protected TLPageCaption caption;
 
-    private final String _constructor = "pageBlockCollage#8b31c4f";
+    private final String _constructor = "pageBlockCollage#0";
 
     public TLPageBlockCollage() {
     }
 
-    public TLPageBlockCollage(TLVector<TLAbsPageBlock> items, TLAbsRichText caption) {
+    public TLPageBlockCollage(TLVector<TLAbsPageBlock> items, TLPageCaption caption) {
         this.items = items;
         this.caption = caption;
     }
@@ -45,7 +43,7 @@ public class TLPageBlockCollage extends TLAbsPageBlock {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         items = readTLVector(stream, context);
-        caption = readTLObject(stream, context, TLAbsRichText.class, -1);
+        caption = readTLObject(stream, context, TLPageCaption.class, TLPageCaption.CONSTRUCTOR_ID);
     }
 
     @Override
@@ -74,11 +72,11 @@ public class TLPageBlockCollage extends TLAbsPageBlock {
         this.items = items;
     }
 
-    public TLAbsRichText getCaption() {
+    public TLPageCaption getCaption() {
         return caption;
     }
 
-    public void setCaption(TLAbsRichText caption) {
+    public void setCaption(TLPageCaption caption) {
         this.caption = caption;
     }
 }

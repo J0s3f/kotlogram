@@ -1,27 +1,25 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.api.auth.TLAuthorization;
+import com.github.badoualy.telegram.tl.api.auth.TLAbsAuthorization;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
-public class TLRequestAuthSignIn extends TLMethod<TLAuthorization> {
-
-    public static final int CONSTRUCTOR_ID = 0xbcd51581;
+public class TLRequestAuthSignIn extends TLMethod<TLAbsAuthorization> {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected String phoneNumber;
 
@@ -29,7 +27,7 @@ public class TLRequestAuthSignIn extends TLMethod<TLAuthorization> {
 
     protected String phoneCode;
 
-    private final String _constructor = "auth.signIn#bcd51581";
+    private final String _constructor = "auth.signIn#0";
 
     public TLRequestAuthSignIn() {
     }
@@ -42,17 +40,15 @@ public class TLRequestAuthSignIn extends TLMethod<TLAuthorization> {
 
     @Override
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
-    public TLAuthorization deserializeResponse(InputStream stream, TLContext context) throws IOException {
+    public TLAbsAuthorization deserializeResponse(InputStream stream, TLContext context) throws IOException {
         final TLObject response = readTLObject(stream, context);
         if (response == null) {
             throw new IOException("Unable to parse response");
         }
-        if (!(response instanceof TLAuthorization)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+        if (!(response instanceof TLAbsAuthorization)) {
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
-        return (TLAuthorization) response;
+        return (TLAbsAuthorization) response;
     }
 
     @Override

@@ -1,43 +1,31 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannel extends TLAbsChat {
-
-    public static final int CONSTRUCTOR_ID = 0xa14dca52;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
     protected boolean creator;
 
-    protected boolean kicked;
-
     protected boolean left;
-
-    protected boolean editor;
-
-    protected boolean moderator;
 
     protected boolean broadcast;
 
@@ -47,11 +35,17 @@ public class TLChannel extends TLAbsChat {
 
     protected boolean restricted;
 
-    protected boolean democracy;
-
     protected boolean signatures;
 
     protected boolean min;
+
+    protected boolean scam;
+
+    protected boolean hasLink;
+
+    protected boolean hasGeo;
+
+    protected boolean slowmodeEnabled;
 
     protected Long accessHash;
 
@@ -65,26 +59,34 @@ public class TLChannel extends TLAbsChat {
 
     protected int version;
 
-    protected String restrictionReason;
+    protected TLVector<TLRestrictionReason> restrictionReason;
 
-    private final String _constructor = "channel#a14dca52";
+    protected TLChatAdminRights adminRights;
+
+    protected TLChatBannedRights bannedRights;
+
+    protected TLChatBannedRights defaultBannedRights;
+
+    protected Integer participantsCount;
+
+    private final String _constructor = "channel#0";
 
     public TLChannel() {
     }
 
-    public TLChannel(boolean creator, boolean kicked, boolean left, boolean editor, boolean moderator, boolean broadcast, boolean verified, boolean megagroup, boolean restricted, boolean democracy, boolean signatures, boolean min, int id, Long accessHash, String title, String username, TLAbsChatPhoto photo, int date, int version, String restrictionReason) {
+    public TLChannel(boolean creator, boolean left, boolean broadcast, boolean verified, boolean megagroup, boolean restricted, boolean signatures, boolean min, boolean scam, boolean hasLink, boolean hasGeo, boolean slowmodeEnabled, int id, Long accessHash, String title, String username, TLAbsChatPhoto photo, int date, int version, TLVector<TLRestrictionReason> restrictionReason, TLChatAdminRights adminRights, TLChatBannedRights bannedRights, TLChatBannedRights defaultBannedRights, Integer participantsCount) {
         this.creator = creator;
-        this.kicked = kicked;
         this.left = left;
-        this.editor = editor;
-        this.moderator = moderator;
         this.broadcast = broadcast;
         this.verified = verified;
         this.megagroup = megagroup;
         this.restricted = restricted;
-        this.democracy = democracy;
         this.signatures = signatures;
         this.min = min;
+        this.scam = scam;
+        this.hasLink = hasLink;
+        this.hasGeo = hasGeo;
+        this.slowmodeEnabled = slowmodeEnabled;
         this.id = id;
         this.accessHash = accessHash;
         this.title = title;
@@ -93,25 +95,33 @@ public class TLChannel extends TLAbsChat {
         this.date = date;
         this.version = version;
         this.restrictionReason = restrictionReason;
+        this.adminRights = adminRights;
+        this.bannedRights = bannedRights;
+        this.defaultBannedRights = defaultBannedRights;
+        this.participantsCount = participantsCount;
     }
 
     private void computeFlags() {
         flags = 0;
         flags = creator ? (flags | 1) : (flags & ~1);
-        flags = kicked ? (flags | 2) : (flags & ~2);
         flags = left ? (flags | 4) : (flags & ~4);
-        flags = editor ? (flags | 8) : (flags & ~8);
-        flags = moderator ? (flags | 16) : (flags & ~16);
         flags = broadcast ? (flags | 32) : (flags & ~32);
         flags = verified ? (flags | 128) : (flags & ~128);
         flags = megagroup ? (flags | 256) : (flags & ~256);
         flags = restricted ? (flags | 512) : (flags & ~512);
-        flags = democracy ? (flags | 1024) : (flags & ~1024);
         flags = signatures ? (flags | 2048) : (flags & ~2048);
         flags = min ? (flags | 4096) : (flags & ~4096);
+        flags = scam ? (flags | 524288) : (flags & ~524288);
+        flags = hasLink ? (flags | 1048576) : (flags & ~1048576);
+        flags = hasGeo ? (flags | 2097152) : (flags & ~2097152);
+        flags = slowmodeEnabled ? (flags | 4194304) : (flags & ~4194304);
         flags = accessHash != null ? (flags | 8192) : (flags & ~8192);
         flags = username != null ? (flags | 64) : (flags & ~64);
         flags = restrictionReason != null ? (flags | 512) : (flags & ~512);
+        flags = adminRights != null ? (flags | 16384) : (flags & ~16384);
+        flags = bannedRights != null ? (flags | 32768) : (flags & ~32768);
+        flags = defaultBannedRights != null ? (flags | 262144) : (flags & ~262144);
+        flags = participantsCount != null ? (flags | 131072) : (flags & ~131072);
 
         // Following parameters might be forced to true by another field that updated the flags
         restricted = (flags & 512) != 0;
@@ -137,7 +147,23 @@ public class TLChannel extends TLAbsChat {
         writeInt(version, stream);
         if ((flags & 512) != 0) {
             if (restrictionReason == null) throwNullFieldException("restrictionReason", flags);
-            writeString(restrictionReason, stream);
+            writeTLVector(restrictionReason, stream);
+        }
+        if ((flags & 16384) != 0) {
+            if (adminRights == null) throwNullFieldException("adminRights", flags);
+            writeTLObject(adminRights, stream);
+        }
+        if ((flags & 32768) != 0) {
+            if (bannedRights == null) throwNullFieldException("bannedRights", flags);
+            writeTLObject(bannedRights, stream);
+        }
+        if ((flags & 262144) != 0) {
+            if (defaultBannedRights == null) throwNullFieldException("defaultBannedRights", flags);
+            writeTLObject(defaultBannedRights, stream);
+        }
+        if ((flags & 131072) != 0) {
+            if (participantsCount == null) throwNullFieldException("participantsCount", flags);
+            writeInt(participantsCount, stream);
         }
     }
 
@@ -146,17 +172,17 @@ public class TLChannel extends TLAbsChat {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         creator = (flags & 1) != 0;
-        kicked = (flags & 2) != 0;
         left = (flags & 4) != 0;
-        editor = (flags & 8) != 0;
-        moderator = (flags & 16) != 0;
         broadcast = (flags & 32) != 0;
         verified = (flags & 128) != 0;
         megagroup = (flags & 256) != 0;
         restricted = (flags & 512) != 0;
-        democracy = (flags & 1024) != 0;
         signatures = (flags & 2048) != 0;
         min = (flags & 4096) != 0;
+        scam = (flags & 524288) != 0;
+        hasLink = (flags & 1048576) != 0;
+        hasGeo = (flags & 2097152) != 0;
+        slowmodeEnabled = (flags & 4194304) != 0;
         id = readInt(stream);
         accessHash = (flags & 8192) != 0 ? readLong(stream) : null;
         title = readTLString(stream);
@@ -164,7 +190,11 @@ public class TLChannel extends TLAbsChat {
         photo = readTLObject(stream, context, TLAbsChatPhoto.class, -1);
         date = readInt(stream);
         version = readInt(stream);
-        restrictionReason = (flags & 512) != 0 ? readTLString(stream) : null;
+        restrictionReason = (flags & 512) != 0 ? readTLVector(stream, context) : null;
+        adminRights = (flags & 16384) != 0 ? readTLObject(stream, context, TLChatAdminRights.class, TLChatAdminRights.CONSTRUCTOR_ID) : null;
+        bannedRights = (flags & 32768) != 0 ? readTLObject(stream, context, TLChatBannedRights.class, TLChatBannedRights.CONSTRUCTOR_ID) : null;
+        defaultBannedRights = (flags & 262144) != 0 ? readTLObject(stream, context, TLChatBannedRights.class, TLChatBannedRights.CONSTRUCTOR_ID) : null;
+        participantsCount = (flags & 131072) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -188,7 +218,23 @@ public class TLChannel extends TLAbsChat {
         size += SIZE_INT32;
         if ((flags & 512) != 0) {
             if (restrictionReason == null) throwNullFieldException("restrictionReason", flags);
-            size += computeTLStringSerializedSize(restrictionReason);
+            size += restrictionReason.computeSerializedSize();
+        }
+        if ((flags & 16384) != 0) {
+            if (adminRights == null) throwNullFieldException("adminRights", flags);
+            size += adminRights.computeSerializedSize();
+        }
+        if ((flags & 32768) != 0) {
+            if (bannedRights == null) throwNullFieldException("bannedRights", flags);
+            size += bannedRights.computeSerializedSize();
+        }
+        if ((flags & 262144) != 0) {
+            if (defaultBannedRights == null) throwNullFieldException("defaultBannedRights", flags);
+            size += defaultBannedRights.computeSerializedSize();
+        }
+        if ((flags & 131072) != 0) {
+            if (participantsCount == null) throwNullFieldException("participantsCount", flags);
+            size += SIZE_INT32;
         }
         return size;
     }
@@ -211,36 +257,12 @@ public class TLChannel extends TLAbsChat {
         this.creator = creator;
     }
 
-    public boolean getKicked() {
-        return kicked;
-    }
-
-    public void setKicked(boolean kicked) {
-        this.kicked = kicked;
-    }
-
     public boolean getLeft() {
         return left;
     }
 
     public void setLeft(boolean left) {
         this.left = left;
-    }
-
-    public boolean getEditor() {
-        return editor;
-    }
-
-    public void setEditor(boolean editor) {
-        this.editor = editor;
-    }
-
-    public boolean getModerator() {
-        return moderator;
-    }
-
-    public void setModerator(boolean moderator) {
-        this.moderator = moderator;
     }
 
     public boolean getBroadcast() {
@@ -275,14 +297,6 @@ public class TLChannel extends TLAbsChat {
         this.restricted = restricted;
     }
 
-    public boolean getDemocracy() {
-        return democracy;
-    }
-
-    public void setDemocracy(boolean democracy) {
-        this.democracy = democracy;
-    }
-
     public boolean getSignatures() {
         return signatures;
     }
@@ -297,6 +311,38 @@ public class TLChannel extends TLAbsChat {
 
     public void setMin(boolean min) {
         this.min = min;
+    }
+
+    public boolean getScam() {
+        return scam;
+    }
+
+    public void setScam(boolean scam) {
+        this.scam = scam;
+    }
+
+    public boolean getHasLink() {
+        return hasLink;
+    }
+
+    public void setHasLink(boolean hasLink) {
+        this.hasLink = hasLink;
+    }
+
+    public boolean getHasGeo() {
+        return hasGeo;
+    }
+
+    public void setHasGeo(boolean hasGeo) {
+        this.hasGeo = hasGeo;
+    }
+
+    public boolean getSlowmodeEnabled() {
+        return slowmodeEnabled;
+    }
+
+    public void setSlowmodeEnabled(boolean slowmodeEnabled) {
+        this.slowmodeEnabled = slowmodeEnabled;
     }
 
     public int getId() {
@@ -355,11 +401,43 @@ public class TLChannel extends TLAbsChat {
         this.version = version;
     }
 
-    public String getRestrictionReason() {
+    public TLVector<TLRestrictionReason> getRestrictionReason() {
         return restrictionReason;
     }
 
-    public void setRestrictionReason(String restrictionReason) {
+    public void setRestrictionReason(TLVector<TLRestrictionReason> restrictionReason) {
         this.restrictionReason = restrictionReason;
+    }
+
+    public TLChatAdminRights getAdminRights() {
+        return adminRights;
+    }
+
+    public void setAdminRights(TLChatAdminRights adminRights) {
+        this.adminRights = adminRights;
+    }
+
+    public TLChatBannedRights getBannedRights() {
+        return bannedRights;
+    }
+
+    public void setBannedRights(TLChatBannedRights bannedRights) {
+        this.bannedRights = bannedRights;
+    }
+
+    public TLChatBannedRights getDefaultBannedRights() {
+        return defaultBannedRights;
+    }
+
+    public void setDefaultBannedRights(TLChatBannedRights defaultBannedRights) {
+        this.defaultBannedRights = defaultBannedRights;
+    }
+
+    public Integer getParticipantsCount() {
+        return participantsCount;
+    }
+
+    public void setParticipantsCount(Integer participantsCount) {
+        this.participantsCount = participantsCount;
     }
 }

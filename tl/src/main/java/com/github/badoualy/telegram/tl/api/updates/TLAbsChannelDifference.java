@@ -1,25 +1,26 @@
 package com.github.badoualy.telegram.tl.api.updates;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.core.TLObject;
+import java.lang.Integer;
 
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLChannelDifference}: updates.channelDifference#2064674e</li>
- * <li>{@link TLChannelDifferenceEmpty}: updates.channelDifferenceEmpty#3e11affb</li>
- * <li>{@link TLChannelDifferenceTooLong}: updates.channelDifferenceTooLong#410dee07</li>
+ * <li>{@link TLChannelDifference}: updates.channelDifference#0</li>
+ * <li>{@link TLChannelDifferenceEmpty}: updates.channelDifferenceEmpty#0</li>
+ * <li>{@link TLChannelDifferenceTooLong}: updates.channelDifferenceTooLong#0</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public abstract class TLAbsChannelDifference extends TLObject {
-
     protected int flags;
 
     protected boolean _final;
-
-    protected int pts;
 
     protected Integer timeout;
 
@@ -32,14 +33,6 @@ public abstract class TLAbsChannelDifference extends TLObject {
 
     public void setFinal(boolean _final) {
         this._final = _final;
-    }
-
-    public int getPts() {
-        return pts;
-    }
-
-    public void setPts(int pts) {
-        this.pts = pts;
     }
 
     public Integer getTimeout() {

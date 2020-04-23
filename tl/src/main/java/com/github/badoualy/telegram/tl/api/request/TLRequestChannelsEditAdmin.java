@@ -1,44 +1,47 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.api.TLAbsChannelParticipantRole;
 import com.github.badoualy.telegram.tl.api.TLAbsInputChannel;
 import com.github.badoualy.telegram.tl.api.TLAbsInputUser;
 import com.github.badoualy.telegram.tl.api.TLAbsUpdates;
+import com.github.badoualy.telegram.tl.api.TLChatAdminRights;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsEditAdmin extends TLMethod<TLAbsUpdates> {
-
-    public static final int CONSTRUCTOR_ID = 0xeb7611d0;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected TLAbsInputChannel channel;
 
     protected TLAbsInputUser userId;
 
-    protected TLAbsChannelParticipantRole role;
+    protected TLChatAdminRights adminRights;
 
-    private final String _constructor = "channels.editAdmin#eb7611d0";
+    protected String rank;
+
+    private final String _constructor = "channels.editAdmin#0";
 
     public TLRequestChannelsEditAdmin() {
     }
 
-    public TLRequestChannelsEditAdmin(TLAbsInputChannel channel, TLAbsInputUser userId, TLAbsChannelParticipantRole role) {
+    public TLRequestChannelsEditAdmin(TLAbsInputChannel channel, TLAbsInputUser userId, TLChatAdminRights adminRights, String rank) {
         this.channel = channel;
         this.userId = userId;
-        this.role = role;
+        this.adminRights = adminRights;
+        this.rank = rank;
     }
 
     @Override
@@ -49,9 +52,7 @@ public class TLRequestChannelsEditAdmin extends TLMethod<TLAbsUpdates> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsUpdates)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsUpdates) response;
     }
@@ -60,7 +61,8 @@ public class TLRequestChannelsEditAdmin extends TLMethod<TLAbsUpdates> {
     public void serializeBody(OutputStream stream) throws IOException {
         writeTLObject(channel, stream);
         writeTLObject(userId, stream);
-        writeTLObject(role, stream);
+        writeTLObject(adminRights, stream);
+        writeString(rank, stream);
     }
 
     @Override
@@ -68,7 +70,8 @@ public class TLRequestChannelsEditAdmin extends TLMethod<TLAbsUpdates> {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         channel = readTLObject(stream, context, TLAbsInputChannel.class, -1);
         userId = readTLObject(stream, context, TLAbsInputUser.class, -1);
-        role = readTLObject(stream, context, TLAbsChannelParticipantRole.class, -1);
+        adminRights = readTLObject(stream, context, TLChatAdminRights.class, TLChatAdminRights.CONSTRUCTOR_ID);
+        rank = readTLString(stream);
     }
 
     @Override
@@ -76,7 +79,8 @@ public class TLRequestChannelsEditAdmin extends TLMethod<TLAbsUpdates> {
         int size = SIZE_CONSTRUCTOR_ID;
         size += channel.computeSerializedSize();
         size += userId.computeSerializedSize();
-        size += role.computeSerializedSize();
+        size += adminRights.computeSerializedSize();
+        size += computeTLStringSerializedSize(rank);
         return size;
     }
 
@@ -106,11 +110,19 @@ public class TLRequestChannelsEditAdmin extends TLMethod<TLAbsUpdates> {
         this.userId = userId;
     }
 
-    public TLAbsChannelParticipantRole getRole() {
-        return role;
+    public TLChatAdminRights getAdminRights() {
+        return adminRights;
     }
 
-    public void setRole(TLAbsChannelParticipantRole role) {
-        this.role = role;
+    public void setAdminRights(TLChatAdminRights adminRights) {
+        this.adminRights = adminRights;
+    }
+
+    public String getRank() {
+        return rank;
+    }
+
+    public void setRank(String rank) {
+        this.rank = rank;
     }
 }

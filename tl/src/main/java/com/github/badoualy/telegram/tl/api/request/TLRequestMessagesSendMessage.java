@@ -1,5 +1,8 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.TLAbsMessageEntity;
@@ -8,33 +11,20 @@ import com.github.badoualy.telegram.tl.api.TLAbsUpdates;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
-
-    public static final int CONSTRUCTOR_ID = 0xfa88427a;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -58,12 +48,14 @@ public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "messages.sendMessage#fa88427a";
+    protected Integer scheduleDate;
+
+    private final String _constructor = "messages.sendMessage#0";
 
     public TLRequestMessagesSendMessage() {
     }
 
-    public TLRequestMessagesSendMessage(boolean noWebpage, boolean silent, boolean background, boolean clearDraft, TLAbsInputPeer peer, Integer replyToMsgId, String message, long randomId, TLAbsReplyMarkup replyMarkup, TLVector<TLAbsMessageEntity> entities) {
+    public TLRequestMessagesSendMessage(boolean noWebpage, boolean silent, boolean background, boolean clearDraft, TLAbsInputPeer peer, Integer replyToMsgId, String message, long randomId, TLAbsReplyMarkup replyMarkup, TLVector<TLAbsMessageEntity> entities, Integer scheduleDate) {
         this.noWebpage = noWebpage;
         this.silent = silent;
         this.background = background;
@@ -74,6 +66,7 @@ public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
         this.randomId = randomId;
         this.replyMarkup = replyMarkup;
         this.entities = entities;
+        this.scheduleDate = scheduleDate;
     }
 
     @Override
@@ -84,9 +77,7 @@ public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsUpdates)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsUpdates) response;
     }
@@ -100,6 +91,7 @@ public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
         flags = replyToMsgId != null ? (flags | 1) : (flags & ~1);
         flags = replyMarkup != null ? (flags | 4) : (flags & ~4);
         flags = entities != null ? (flags | 8) : (flags & ~8);
+        flags = scheduleDate != null ? (flags | 1024) : (flags & ~1024);
     }
 
     @Override
@@ -122,6 +114,10 @@ public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
             if (entities == null) throwNullFieldException("entities", flags);
             writeTLVector(entities, stream);
         }
+        if ((flags & 1024) != 0) {
+            if (scheduleDate == null) throwNullFieldException("scheduleDate", flags);
+            writeInt(scheduleDate, stream);
+        }
     }
 
     @Override
@@ -138,6 +134,7 @@ public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
         randomId = readLong(stream);
         replyMarkup = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsReplyMarkup.class, -1) : null;
         entities = (flags & 8) != 0 ? readTLVector(stream, context) : null;
+        scheduleDate = (flags & 1024) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -160,6 +157,10 @@ public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
         if ((flags & 8) != 0) {
             if (entities == null) throwNullFieldException("entities", flags);
             size += entities.computeSerializedSize();
+        }
+        if ((flags & 1024) != 0) {
+            if (scheduleDate == null) throwNullFieldException("scheduleDate", flags);
+            size += SIZE_INT32;
         }
         return size;
     }
@@ -252,5 +253,13 @@ public class TLRequestMessagesSendMessage extends TLMethod<TLAbsUpdates> {
 
     public void setEntities(TLVector<TLAbsMessageEntity> entities) {
         this.entities = entities;
+    }
+
+    public Integer getScheduleDate() {
+        return scheduleDate;
+    }
+
+    public void setScheduleDate(Integer scheduleDate) {
+        this.scheduleDate = scheduleDate;
     }
 }

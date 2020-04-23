@@ -1,37 +1,41 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLBool;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeBoolean;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_BOOLEAN;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLConfig extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0xcb601684;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
     protected boolean phonecallsEnabled;
+
+    protected boolean defaultP2pContacts;
+
+    protected boolean preloadFeaturedStickers;
+
+    protected boolean ignorePhoneEntities;
+
+    protected boolean revokePmInbox;
+
+    protected boolean blockedMode;
+
+    protected boolean pfsEnabled;
 
     protected int date;
 
@@ -42,6 +46,8 @@ public class TLConfig extends TLObject {
     protected int thisDc;
 
     protected TLVector<TLDcOption> dcOptions;
+
+    protected String dcTxtDomainName;
 
     protected int chatSizeMax;
 
@@ -61,8 +67,6 @@ public class TLConfig extends TLObject {
 
     protected int notifyDefaultDelayMs;
 
-    protected int chatBigSize;
-
     protected int pushChatPeriodMs;
 
     protected int pushChatLimit;
@@ -71,13 +75,23 @@ public class TLConfig extends TLObject {
 
     protected int editTimeLimit;
 
+    protected int revokeTimeLimit;
+
+    protected int revokePmTimeLimit;
+
     protected int ratingEDecay;
 
     protected int stickersRecentLimit;
 
+    protected int stickersFavedLimit;
+
+    protected int channelsReadMediaPeriod;
+
     protected Integer tmpSessions;
 
     protected int pinnedDialogsCountMax;
+
+    protected int pinnedInfolderCountMax;
 
     protected int callReceiveTimeoutMs;
 
@@ -89,20 +103,47 @@ public class TLConfig extends TLObject {
 
     protected String meUrlPrefix;
 
-    protected TLVector<TLDisabledFeature> disabledFeatures;
+    protected String autoupdateUrlPrefix;
 
-    private final String _constructor = "config#cb601684";
+    protected String gifSearchUsername;
+
+    protected String venueSearchUsername;
+
+    protected String imgSearchUsername;
+
+    protected String staticMapsProvider;
+
+    protected int captionLengthMax;
+
+    protected int messageLengthMax;
+
+    protected int webfileDcId;
+
+    protected String suggestedLangCode;
+
+    protected Integer langPackVersion;
+
+    protected Integer baseLangPackVersion;
+
+    private final String _constructor = "config#0";
 
     public TLConfig() {
     }
 
-    public TLConfig(boolean phonecallsEnabled, int date, int expires, boolean testMode, int thisDc, TLVector<TLDcOption> dcOptions, int chatSizeMax, int megagroupSizeMax, int forwardedCountMax, int onlineUpdatePeriodMs, int offlineBlurTimeoutMs, int offlineIdleTimeoutMs, int onlineCloudTimeoutMs, int notifyCloudDelayMs, int notifyDefaultDelayMs, int chatBigSize, int pushChatPeriodMs, int pushChatLimit, int savedGifsLimit, int editTimeLimit, int ratingEDecay, int stickersRecentLimit, Integer tmpSessions, int pinnedDialogsCountMax, int callReceiveTimeoutMs, int callRingTimeoutMs, int callConnectTimeoutMs, int callPacketTimeoutMs, String meUrlPrefix, TLVector<TLDisabledFeature> disabledFeatures) {
+    public TLConfig(boolean phonecallsEnabled, boolean defaultP2pContacts, boolean preloadFeaturedStickers, boolean ignorePhoneEntities, boolean revokePmInbox, boolean blockedMode, boolean pfsEnabled, int date, int expires, boolean testMode, int thisDc, TLVector<TLDcOption> dcOptions, String dcTxtDomainName, int chatSizeMax, int megagroupSizeMax, int forwardedCountMax, int onlineUpdatePeriodMs, int offlineBlurTimeoutMs, int offlineIdleTimeoutMs, int onlineCloudTimeoutMs, int notifyCloudDelayMs, int notifyDefaultDelayMs, int pushChatPeriodMs, int pushChatLimit, int savedGifsLimit, int editTimeLimit, int revokeTimeLimit, int revokePmTimeLimit, int ratingEDecay, int stickersRecentLimit, int stickersFavedLimit, int channelsReadMediaPeriod, Integer tmpSessions, int pinnedDialogsCountMax, int pinnedInfolderCountMax, int callReceiveTimeoutMs, int callRingTimeoutMs, int callConnectTimeoutMs, int callPacketTimeoutMs, String meUrlPrefix, String autoupdateUrlPrefix, String gifSearchUsername, String venueSearchUsername, String imgSearchUsername, String staticMapsProvider, int captionLengthMax, int messageLengthMax, int webfileDcId, String suggestedLangCode, Integer langPackVersion, Integer baseLangPackVersion) {
         this.phonecallsEnabled = phonecallsEnabled;
+        this.defaultP2pContacts = defaultP2pContacts;
+        this.preloadFeaturedStickers = preloadFeaturedStickers;
+        this.ignorePhoneEntities = ignorePhoneEntities;
+        this.revokePmInbox = revokePmInbox;
+        this.blockedMode = blockedMode;
+        this.pfsEnabled = pfsEnabled;
         this.date = date;
         this.expires = expires;
         this.testMode = testMode;
         this.thisDc = thisDc;
         this.dcOptions = dcOptions;
+        this.dcTxtDomainName = dcTxtDomainName;
         this.chatSizeMax = chatSizeMax;
         this.megagroupSizeMax = megagroupSizeMax;
         this.forwardedCountMax = forwardedCountMax;
@@ -112,27 +153,55 @@ public class TLConfig extends TLObject {
         this.onlineCloudTimeoutMs = onlineCloudTimeoutMs;
         this.notifyCloudDelayMs = notifyCloudDelayMs;
         this.notifyDefaultDelayMs = notifyDefaultDelayMs;
-        this.chatBigSize = chatBigSize;
         this.pushChatPeriodMs = pushChatPeriodMs;
         this.pushChatLimit = pushChatLimit;
         this.savedGifsLimit = savedGifsLimit;
         this.editTimeLimit = editTimeLimit;
+        this.revokeTimeLimit = revokeTimeLimit;
+        this.revokePmTimeLimit = revokePmTimeLimit;
         this.ratingEDecay = ratingEDecay;
         this.stickersRecentLimit = stickersRecentLimit;
+        this.stickersFavedLimit = stickersFavedLimit;
+        this.channelsReadMediaPeriod = channelsReadMediaPeriod;
         this.tmpSessions = tmpSessions;
         this.pinnedDialogsCountMax = pinnedDialogsCountMax;
+        this.pinnedInfolderCountMax = pinnedInfolderCountMax;
         this.callReceiveTimeoutMs = callReceiveTimeoutMs;
         this.callRingTimeoutMs = callRingTimeoutMs;
         this.callConnectTimeoutMs = callConnectTimeoutMs;
         this.callPacketTimeoutMs = callPacketTimeoutMs;
         this.meUrlPrefix = meUrlPrefix;
-        this.disabledFeatures = disabledFeatures;
+        this.autoupdateUrlPrefix = autoupdateUrlPrefix;
+        this.gifSearchUsername = gifSearchUsername;
+        this.venueSearchUsername = venueSearchUsername;
+        this.imgSearchUsername = imgSearchUsername;
+        this.staticMapsProvider = staticMapsProvider;
+        this.captionLengthMax = captionLengthMax;
+        this.messageLengthMax = messageLengthMax;
+        this.webfileDcId = webfileDcId;
+        this.suggestedLangCode = suggestedLangCode;
+        this.langPackVersion = langPackVersion;
+        this.baseLangPackVersion = baseLangPackVersion;
     }
 
     private void computeFlags() {
         flags = 0;
         flags = phonecallsEnabled ? (flags | 2) : (flags & ~2);
+        flags = defaultP2pContacts ? (flags | 8) : (flags & ~8);
+        flags = preloadFeaturedStickers ? (flags | 16) : (flags & ~16);
+        flags = ignorePhoneEntities ? (flags | 32) : (flags & ~32);
+        flags = revokePmInbox ? (flags | 64) : (flags & ~64);
+        flags = blockedMode ? (flags | 256) : (flags & ~256);
+        flags = pfsEnabled ? (flags | 8192) : (flags & ~8192);
         flags = tmpSessions != null ? (flags | 1) : (flags & ~1);
+        flags = autoupdateUrlPrefix != null ? (flags | 128) : (flags & ~128);
+        flags = gifSearchUsername != null ? (flags | 512) : (flags & ~512);
+        flags = venueSearchUsername != null ? (flags | 1024) : (flags & ~1024);
+        flags = imgSearchUsername != null ? (flags | 2048) : (flags & ~2048);
+        flags = staticMapsProvider != null ? (flags | 4096) : (flags & ~4096);
+        flags = suggestedLangCode != null ? (flags | 4) : (flags & ~4);
+        flags = langPackVersion != null ? (flags | 4) : (flags & ~4);
+        flags = baseLangPackVersion != null ? (flags | 4) : (flags & ~4);
     }
 
     @Override
@@ -145,6 +214,7 @@ public class TLConfig extends TLObject {
         writeBoolean(testMode, stream);
         writeInt(thisDc, stream);
         writeTLVector(dcOptions, stream);
+        writeString(dcTxtDomainName, stream);
         writeInt(chatSizeMax, stream);
         writeInt(megagroupSizeMax, stream);
         writeInt(forwardedCountMax, stream);
@@ -154,24 +224,62 @@ public class TLConfig extends TLObject {
         writeInt(onlineCloudTimeoutMs, stream);
         writeInt(notifyCloudDelayMs, stream);
         writeInt(notifyDefaultDelayMs, stream);
-        writeInt(chatBigSize, stream);
         writeInt(pushChatPeriodMs, stream);
         writeInt(pushChatLimit, stream);
         writeInt(savedGifsLimit, stream);
         writeInt(editTimeLimit, stream);
+        writeInt(revokeTimeLimit, stream);
+        writeInt(revokePmTimeLimit, stream);
         writeInt(ratingEDecay, stream);
         writeInt(stickersRecentLimit, stream);
+        writeInt(stickersFavedLimit, stream);
+        writeInt(channelsReadMediaPeriod, stream);
         if ((flags & 1) != 0) {
             if (tmpSessions == null) throwNullFieldException("tmpSessions", flags);
             writeInt(tmpSessions, stream);
         }
         writeInt(pinnedDialogsCountMax, stream);
+        writeInt(pinnedInfolderCountMax, stream);
         writeInt(callReceiveTimeoutMs, stream);
         writeInt(callRingTimeoutMs, stream);
         writeInt(callConnectTimeoutMs, stream);
         writeInt(callPacketTimeoutMs, stream);
         writeString(meUrlPrefix, stream);
-        writeTLVector(disabledFeatures, stream);
+        if ((flags & 128) != 0) {
+            if (autoupdateUrlPrefix == null) throwNullFieldException("autoupdateUrlPrefix", flags);
+            writeString(autoupdateUrlPrefix, stream);
+        }
+        if ((flags & 512) != 0) {
+            if (gifSearchUsername == null) throwNullFieldException("gifSearchUsername", flags);
+            writeString(gifSearchUsername, stream);
+        }
+        if ((flags & 1024) != 0) {
+            if (venueSearchUsername == null) throwNullFieldException("venueSearchUsername", flags);
+            writeString(venueSearchUsername, stream);
+        }
+        if ((flags & 2048) != 0) {
+            if (imgSearchUsername == null) throwNullFieldException("imgSearchUsername", flags);
+            writeString(imgSearchUsername, stream);
+        }
+        if ((flags & 4096) != 0) {
+            if (staticMapsProvider == null) throwNullFieldException("staticMapsProvider", flags);
+            writeString(staticMapsProvider, stream);
+        }
+        writeInt(captionLengthMax, stream);
+        writeInt(messageLengthMax, stream);
+        writeInt(webfileDcId, stream);
+        if ((flags & 4) != 0) {
+            if (suggestedLangCode == null) throwNullFieldException("suggestedLangCode", flags);
+            writeString(suggestedLangCode, stream);
+        }
+        if ((flags & 4) != 0) {
+            if (langPackVersion == null) throwNullFieldException("langPackVersion", flags);
+            writeInt(langPackVersion, stream);
+        }
+        if ((flags & 4) != 0) {
+            if (baseLangPackVersion == null) throwNullFieldException("baseLangPackVersion", flags);
+            writeInt(baseLangPackVersion, stream);
+        }
     }
 
     @Override
@@ -179,11 +287,18 @@ public class TLConfig extends TLObject {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         phonecallsEnabled = (flags & 2) != 0;
+        defaultP2pContacts = (flags & 8) != 0;
+        preloadFeaturedStickers = (flags & 16) != 0;
+        ignorePhoneEntities = (flags & 32) != 0;
+        revokePmInbox = (flags & 64) != 0;
+        blockedMode = (flags & 256) != 0;
+        pfsEnabled = (flags & 8192) != 0;
         date = readInt(stream);
         expires = readInt(stream);
         testMode = readTLBool(stream);
         thisDc = readInt(stream);
         dcOptions = readTLVector(stream, context);
+        dcTxtDomainName = readTLString(stream);
         chatSizeMax = readInt(stream);
         megagroupSizeMax = readInt(stream);
         forwardedCountMax = readInt(stream);
@@ -193,21 +308,35 @@ public class TLConfig extends TLObject {
         onlineCloudTimeoutMs = readInt(stream);
         notifyCloudDelayMs = readInt(stream);
         notifyDefaultDelayMs = readInt(stream);
-        chatBigSize = readInt(stream);
         pushChatPeriodMs = readInt(stream);
         pushChatLimit = readInt(stream);
         savedGifsLimit = readInt(stream);
         editTimeLimit = readInt(stream);
+        revokeTimeLimit = readInt(stream);
+        revokePmTimeLimit = readInt(stream);
         ratingEDecay = readInt(stream);
         stickersRecentLimit = readInt(stream);
+        stickersFavedLimit = readInt(stream);
+        channelsReadMediaPeriod = readInt(stream);
         tmpSessions = (flags & 1) != 0 ? readInt(stream) : null;
         pinnedDialogsCountMax = readInt(stream);
+        pinnedInfolderCountMax = readInt(stream);
         callReceiveTimeoutMs = readInt(stream);
         callRingTimeoutMs = readInt(stream);
         callConnectTimeoutMs = readInt(stream);
         callPacketTimeoutMs = readInt(stream);
         meUrlPrefix = readTLString(stream);
-        disabledFeatures = readTLVector(stream, context);
+        autoupdateUrlPrefix = (flags & 128) != 0 ? readTLString(stream) : null;
+        gifSearchUsername = (flags & 512) != 0 ? readTLString(stream) : null;
+        venueSearchUsername = (flags & 1024) != 0 ? readTLString(stream) : null;
+        imgSearchUsername = (flags & 2048) != 0 ? readTLString(stream) : null;
+        staticMapsProvider = (flags & 4096) != 0 ? readTLString(stream) : null;
+        captionLengthMax = readInt(stream);
+        messageLengthMax = readInt(stream);
+        webfileDcId = readInt(stream);
+        suggestedLangCode = (flags & 4) != 0 ? readTLString(stream) : null;
+        langPackVersion = (flags & 4) != 0 ? readInt(stream) : null;
+        baseLangPackVersion = (flags & 4) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -221,6 +350,10 @@ public class TLConfig extends TLObject {
         size += SIZE_BOOLEAN;
         size += SIZE_INT32;
         size += dcOptions.computeSerializedSize();
+        size += computeTLStringSerializedSize(dcTxtDomainName);
+        size += SIZE_INT32;
+        size += SIZE_INT32;
+        size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
@@ -246,8 +379,43 @@ public class TLConfig extends TLObject {
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
+        size += SIZE_INT32;
         size += computeTLStringSerializedSize(meUrlPrefix);
-        size += disabledFeatures.computeSerializedSize();
+        if ((flags & 128) != 0) {
+            if (autoupdateUrlPrefix == null) throwNullFieldException("autoupdateUrlPrefix", flags);
+            size += computeTLStringSerializedSize(autoupdateUrlPrefix);
+        }
+        if ((flags & 512) != 0) {
+            if (gifSearchUsername == null) throwNullFieldException("gifSearchUsername", flags);
+            size += computeTLStringSerializedSize(gifSearchUsername);
+        }
+        if ((flags & 1024) != 0) {
+            if (venueSearchUsername == null) throwNullFieldException("venueSearchUsername", flags);
+            size += computeTLStringSerializedSize(venueSearchUsername);
+        }
+        if ((flags & 2048) != 0) {
+            if (imgSearchUsername == null) throwNullFieldException("imgSearchUsername", flags);
+            size += computeTLStringSerializedSize(imgSearchUsername);
+        }
+        if ((flags & 4096) != 0) {
+            if (staticMapsProvider == null) throwNullFieldException("staticMapsProvider", flags);
+            size += computeTLStringSerializedSize(staticMapsProvider);
+        }
+        size += SIZE_INT32;
+        size += SIZE_INT32;
+        size += SIZE_INT32;
+        if ((flags & 4) != 0) {
+            if (suggestedLangCode == null) throwNullFieldException("suggestedLangCode", flags);
+            size += computeTLStringSerializedSize(suggestedLangCode);
+        }
+        if ((flags & 4) != 0) {
+            if (langPackVersion == null) throwNullFieldException("langPackVersion", flags);
+            size += SIZE_INT32;
+        }
+        if ((flags & 4) != 0) {
+            if (baseLangPackVersion == null) throwNullFieldException("baseLangPackVersion", flags);
+            size += SIZE_INT32;
+        }
         return size;
     }
 
@@ -267,6 +435,54 @@ public class TLConfig extends TLObject {
 
     public void setPhonecallsEnabled(boolean phonecallsEnabled) {
         this.phonecallsEnabled = phonecallsEnabled;
+    }
+
+    public boolean getDefaultP2pContacts() {
+        return defaultP2pContacts;
+    }
+
+    public void setDefaultP2pContacts(boolean defaultP2pContacts) {
+        this.defaultP2pContacts = defaultP2pContacts;
+    }
+
+    public boolean getPreloadFeaturedStickers() {
+        return preloadFeaturedStickers;
+    }
+
+    public void setPreloadFeaturedStickers(boolean preloadFeaturedStickers) {
+        this.preloadFeaturedStickers = preloadFeaturedStickers;
+    }
+
+    public boolean getIgnorePhoneEntities() {
+        return ignorePhoneEntities;
+    }
+
+    public void setIgnorePhoneEntities(boolean ignorePhoneEntities) {
+        this.ignorePhoneEntities = ignorePhoneEntities;
+    }
+
+    public boolean getRevokePmInbox() {
+        return revokePmInbox;
+    }
+
+    public void setRevokePmInbox(boolean revokePmInbox) {
+        this.revokePmInbox = revokePmInbox;
+    }
+
+    public boolean getBlockedMode() {
+        return blockedMode;
+    }
+
+    public void setBlockedMode(boolean blockedMode) {
+        this.blockedMode = blockedMode;
+    }
+
+    public boolean getPfsEnabled() {
+        return pfsEnabled;
+    }
+
+    public void setPfsEnabled(boolean pfsEnabled) {
+        this.pfsEnabled = pfsEnabled;
     }
 
     public int getDate() {
@@ -307,6 +523,14 @@ public class TLConfig extends TLObject {
 
     public void setDcOptions(TLVector<TLDcOption> dcOptions) {
         this.dcOptions = dcOptions;
+    }
+
+    public String getDcTxtDomainName() {
+        return dcTxtDomainName;
+    }
+
+    public void setDcTxtDomainName(String dcTxtDomainName) {
+        this.dcTxtDomainName = dcTxtDomainName;
     }
 
     public int getChatSizeMax() {
@@ -381,14 +605,6 @@ public class TLConfig extends TLObject {
         this.notifyDefaultDelayMs = notifyDefaultDelayMs;
     }
 
-    public int getChatBigSize() {
-        return chatBigSize;
-    }
-
-    public void setChatBigSize(int chatBigSize) {
-        this.chatBigSize = chatBigSize;
-    }
-
     public int getPushChatPeriodMs() {
         return pushChatPeriodMs;
     }
@@ -421,6 +637,22 @@ public class TLConfig extends TLObject {
         this.editTimeLimit = editTimeLimit;
     }
 
+    public int getRevokeTimeLimit() {
+        return revokeTimeLimit;
+    }
+
+    public void setRevokeTimeLimit(int revokeTimeLimit) {
+        this.revokeTimeLimit = revokeTimeLimit;
+    }
+
+    public int getRevokePmTimeLimit() {
+        return revokePmTimeLimit;
+    }
+
+    public void setRevokePmTimeLimit(int revokePmTimeLimit) {
+        this.revokePmTimeLimit = revokePmTimeLimit;
+    }
+
     public int getRatingEDecay() {
         return ratingEDecay;
     }
@@ -437,6 +669,22 @@ public class TLConfig extends TLObject {
         this.stickersRecentLimit = stickersRecentLimit;
     }
 
+    public int getStickersFavedLimit() {
+        return stickersFavedLimit;
+    }
+
+    public void setStickersFavedLimit(int stickersFavedLimit) {
+        this.stickersFavedLimit = stickersFavedLimit;
+    }
+
+    public int getChannelsReadMediaPeriod() {
+        return channelsReadMediaPeriod;
+    }
+
+    public void setChannelsReadMediaPeriod(int channelsReadMediaPeriod) {
+        this.channelsReadMediaPeriod = channelsReadMediaPeriod;
+    }
+
     public Integer getTmpSessions() {
         return tmpSessions;
     }
@@ -451,6 +699,14 @@ public class TLConfig extends TLObject {
 
     public void setPinnedDialogsCountMax(int pinnedDialogsCountMax) {
         this.pinnedDialogsCountMax = pinnedDialogsCountMax;
+    }
+
+    public int getPinnedInfolderCountMax() {
+        return pinnedInfolderCountMax;
+    }
+
+    public void setPinnedInfolderCountMax(int pinnedInfolderCountMax) {
+        this.pinnedInfolderCountMax = pinnedInfolderCountMax;
     }
 
     public int getCallReceiveTimeoutMs() {
@@ -493,11 +749,91 @@ public class TLConfig extends TLObject {
         this.meUrlPrefix = meUrlPrefix;
     }
 
-    public TLVector<TLDisabledFeature> getDisabledFeatures() {
-        return disabledFeatures;
+    public String getAutoupdateUrlPrefix() {
+        return autoupdateUrlPrefix;
     }
 
-    public void setDisabledFeatures(TLVector<TLDisabledFeature> disabledFeatures) {
-        this.disabledFeatures = disabledFeatures;
+    public void setAutoupdateUrlPrefix(String autoupdateUrlPrefix) {
+        this.autoupdateUrlPrefix = autoupdateUrlPrefix;
+    }
+
+    public String getGifSearchUsername() {
+        return gifSearchUsername;
+    }
+
+    public void setGifSearchUsername(String gifSearchUsername) {
+        this.gifSearchUsername = gifSearchUsername;
+    }
+
+    public String getVenueSearchUsername() {
+        return venueSearchUsername;
+    }
+
+    public void setVenueSearchUsername(String venueSearchUsername) {
+        this.venueSearchUsername = venueSearchUsername;
+    }
+
+    public String getImgSearchUsername() {
+        return imgSearchUsername;
+    }
+
+    public void setImgSearchUsername(String imgSearchUsername) {
+        this.imgSearchUsername = imgSearchUsername;
+    }
+
+    public String getStaticMapsProvider() {
+        return staticMapsProvider;
+    }
+
+    public void setStaticMapsProvider(String staticMapsProvider) {
+        this.staticMapsProvider = staticMapsProvider;
+    }
+
+    public int getCaptionLengthMax() {
+        return captionLengthMax;
+    }
+
+    public void setCaptionLengthMax(int captionLengthMax) {
+        this.captionLengthMax = captionLengthMax;
+    }
+
+    public int getMessageLengthMax() {
+        return messageLengthMax;
+    }
+
+    public void setMessageLengthMax(int messageLengthMax) {
+        this.messageLengthMax = messageLengthMax;
+    }
+
+    public int getWebfileDcId() {
+        return webfileDcId;
+    }
+
+    public void setWebfileDcId(int webfileDcId) {
+        this.webfileDcId = webfileDcId;
+    }
+
+    public String getSuggestedLangCode() {
+        return suggestedLangCode;
+    }
+
+    public void setSuggestedLangCode(String suggestedLangCode) {
+        this.suggestedLangCode = suggestedLangCode;
+    }
+
+    public Integer getLangPackVersion() {
+        return langPackVersion;
+    }
+
+    public void setLangPackVersion(Integer langPackVersion) {
+        this.langPackVersion = langPackVersion;
+    }
+
+    public Integer getBaseLangPackVersion() {
+        return baseLangPackVersion;
+    }
+
+    public void setBaseLangPackVersion(Integer baseLangPackVersion) {
+        this.baseLangPackVersion = baseLangPackVersion;
     }
 }

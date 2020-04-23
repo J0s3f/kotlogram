@@ -1,6 +1,10 @@
 package com.github.badoualy.telegram.tl.api.request;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsInputMedia;
 import com.github.badoualy.telegram.tl.api.TLAbsInputPeer;
 import com.github.badoualy.telegram.tl.api.TLAbsMessageEntity;
 import com.github.badoualy.telegram.tl.api.TLAbsReplyMarkup;
@@ -8,30 +12,20 @@ import com.github.badoualy.telegram.tl.api.TLAbsUpdates;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
-
-    public static final int CONSTRUCTOR_ID = 0xce91e4ca;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -43,22 +37,28 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
 
     protected String message;
 
+    protected TLAbsInputMedia media;
+
     protected TLAbsReplyMarkup replyMarkup;
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "messages.editMessage#ce91e4ca";
+    protected Integer scheduleDate;
+
+    private final String _constructor = "messages.editMessage#0";
 
     public TLRequestMessagesEditMessage() {
     }
 
-    public TLRequestMessagesEditMessage(boolean noWebpage, TLAbsInputPeer peer, int id, String message, TLAbsReplyMarkup replyMarkup, TLVector<TLAbsMessageEntity> entities) {
+    public TLRequestMessagesEditMessage(boolean noWebpage, TLAbsInputPeer peer, int id, String message, TLAbsInputMedia media, TLAbsReplyMarkup replyMarkup, TLVector<TLAbsMessageEntity> entities, Integer scheduleDate) {
         this.noWebpage = noWebpage;
         this.peer = peer;
         this.id = id;
         this.message = message;
+        this.media = media;
         this.replyMarkup = replyMarkup;
         this.entities = entities;
+        this.scheduleDate = scheduleDate;
     }
 
     @Override
@@ -69,9 +69,7 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
             throw new IOException("Unable to parse response");
         }
         if (!(response instanceof TLAbsUpdates)) {
-            throw new IOException(
-                    "Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response
-                            .getClass().getCanonicalName());
+            throw new IOException("Incorrect response type, expected " + getClass().getCanonicalName() + ", found " + response.getClass().getCanonicalName());
         }
         return (TLAbsUpdates) response;
     }
@@ -80,8 +78,10 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
         flags = 0;
         flags = noWebpage ? (flags | 2) : (flags & ~2);
         flags = message != null ? (flags | 2048) : (flags & ~2048);
+        flags = media != null ? (flags | 16384) : (flags & ~16384);
         flags = replyMarkup != null ? (flags | 4) : (flags & ~4);
         flags = entities != null ? (flags | 8) : (flags & ~8);
+        flags = scheduleDate != null ? (flags | 32768) : (flags & ~32768);
     }
 
     @Override
@@ -95,6 +95,10 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
             if (message == null) throwNullFieldException("message", flags);
             writeString(message, stream);
         }
+        if ((flags & 16384) != 0) {
+            if (media == null) throwNullFieldException("media", flags);
+            writeTLObject(media, stream);
+        }
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             writeTLObject(replyMarkup, stream);
@@ -102,6 +106,10 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
         if ((flags & 8) != 0) {
             if (entities == null) throwNullFieldException("entities", flags);
             writeTLVector(entities, stream);
+        }
+        if ((flags & 32768) != 0) {
+            if (scheduleDate == null) throwNullFieldException("scheduleDate", flags);
+            writeInt(scheduleDate, stream);
         }
     }
 
@@ -113,8 +121,10 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
         peer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
         id = readInt(stream);
         message = (flags & 2048) != 0 ? readTLString(stream) : null;
+        media = (flags & 16384) != 0 ? readTLObject(stream, context, TLAbsInputMedia.class, -1) : null;
         replyMarkup = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsReplyMarkup.class, -1) : null;
         entities = (flags & 8) != 0 ? readTLVector(stream, context) : null;
+        scheduleDate = (flags & 32768) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -129,6 +139,10 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
             if (message == null) throwNullFieldException("message", flags);
             size += computeTLStringSerializedSize(message);
         }
+        if ((flags & 16384) != 0) {
+            if (media == null) throwNullFieldException("media", flags);
+            size += media.computeSerializedSize();
+        }
         if ((flags & 4) != 0) {
             if (replyMarkup == null) throwNullFieldException("replyMarkup", flags);
             size += replyMarkup.computeSerializedSize();
@@ -136,6 +150,10 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
         if ((flags & 8) != 0) {
             if (entities == null) throwNullFieldException("entities", flags);
             size += entities.computeSerializedSize();
+        }
+        if ((flags & 32768) != 0) {
+            if (scheduleDate == null) throwNullFieldException("scheduleDate", flags);
+            size += SIZE_INT32;
         }
         return size;
     }
@@ -182,6 +200,14 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
         this.message = message;
     }
 
+    public TLAbsInputMedia getMedia() {
+        return media;
+    }
+
+    public void setMedia(TLAbsInputMedia media) {
+        this.media = media;
+    }
+
     public TLAbsReplyMarkup getReplyMarkup() {
         return replyMarkup;
     }
@@ -196,5 +222,13 @@ public class TLRequestMessagesEditMessage extends TLMethod<TLAbsUpdates> {
 
     public void setEntities(TLVector<TLAbsMessageEntity> entities) {
         this.entities = entities;
+    }
+
+    public Integer getScheduleDate() {
+        return scheduleDate;
+    }
+
+    public void setScheduleDate(Integer scheduleDate) {
+        this.scheduleDate = scheduleDate;
     }
 }

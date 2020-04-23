@@ -1,31 +1,25 @@
 package com.github.badoualy.telegram.tl.api;
 
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
+
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLVector;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLObject;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Integer;
+import java.lang.Long;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessage extends TLAbsMessage {
-
-    public static final int CONSTRUCTOR_ID = 0xc09be45f;
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected int flags;
 
@@ -38,6 +32,12 @@ public class TLMessage extends TLAbsMessage {
     protected boolean silent;
 
     protected boolean post;
+
+    protected boolean fromScheduled;
+
+    protected boolean legacy;
+
+    protected boolean editHide;
 
     protected Integer fromId;
 
@@ -63,17 +63,26 @@ public class TLMessage extends TLAbsMessage {
 
     protected Integer editDate;
 
-    private final String _constructor = "message#c09be45f";
+    protected String postAuthor;
+
+    protected Long groupedId;
+
+    protected TLVector<TLRestrictionReason> restrictionReason;
+
+    private final String _constructor = "message#0";
 
     public TLMessage() {
     }
 
-    public TLMessage(boolean out, boolean mentioned, boolean mediaUnread, boolean silent, boolean post, int id, Integer fromId, TLAbsPeer toId, TLMessageFwdHeader fwdFrom, Integer viaBotId, Integer replyToMsgId, int date, String message, TLAbsMessageMedia media, TLAbsReplyMarkup replyMarkup, TLVector<TLAbsMessageEntity> entities, Integer views, Integer editDate) {
+    public TLMessage(boolean out, boolean mentioned, boolean mediaUnread, boolean silent, boolean post, boolean fromScheduled, boolean legacy, boolean editHide, int id, Integer fromId, TLAbsPeer toId, TLMessageFwdHeader fwdFrom, Integer viaBotId, Integer replyToMsgId, int date, String message, TLAbsMessageMedia media, TLAbsReplyMarkup replyMarkup, TLVector<TLAbsMessageEntity> entities, Integer views, Integer editDate, String postAuthor, Long groupedId, TLVector<TLRestrictionReason> restrictionReason) {
         this.out = out;
         this.mentioned = mentioned;
         this.mediaUnread = mediaUnread;
         this.silent = silent;
         this.post = post;
+        this.fromScheduled = fromScheduled;
+        this.legacy = legacy;
+        this.editHide = editHide;
         this.id = id;
         this.fromId = fromId;
         this.toId = toId;
@@ -87,6 +96,9 @@ public class TLMessage extends TLAbsMessage {
         this.entities = entities;
         this.views = views;
         this.editDate = editDate;
+        this.postAuthor = postAuthor;
+        this.groupedId = groupedId;
+        this.restrictionReason = restrictionReason;
     }
 
     private void computeFlags() {
@@ -96,6 +108,9 @@ public class TLMessage extends TLAbsMessage {
         flags = mediaUnread ? (flags | 32) : (flags & ~32);
         flags = silent ? (flags | 8192) : (flags & ~8192);
         flags = post ? (flags | 16384) : (flags & ~16384);
+        flags = fromScheduled ? (flags | 262144) : (flags & ~262144);
+        flags = legacy ? (flags | 524288) : (flags & ~524288);
+        flags = editHide ? (flags | 2097152) : (flags & ~2097152);
         flags = fromId != null ? (flags | 256) : (flags & ~256);
         flags = fwdFrom != null ? (flags | 4) : (flags & ~4);
         flags = viaBotId != null ? (flags | 2048) : (flags & ~2048);
@@ -105,6 +120,9 @@ public class TLMessage extends TLAbsMessage {
         flags = entities != null ? (flags | 128) : (flags & ~128);
         flags = views != null ? (flags | 1024) : (flags & ~1024);
         flags = editDate != null ? (flags | 32768) : (flags & ~32768);
+        flags = postAuthor != null ? (flags | 65536) : (flags & ~65536);
+        flags = groupedId != null ? (flags | 131072) : (flags & ~131072);
+        flags = restrictionReason != null ? (flags | 4194304) : (flags & ~4194304);
     }
 
     @Override
@@ -152,6 +170,18 @@ public class TLMessage extends TLAbsMessage {
             if (editDate == null) throwNullFieldException("editDate", flags);
             writeInt(editDate, stream);
         }
+        if ((flags & 65536) != 0) {
+            if (postAuthor == null) throwNullFieldException("postAuthor", flags);
+            writeString(postAuthor, stream);
+        }
+        if ((flags & 131072) != 0) {
+            if (groupedId == null) throwNullFieldException("groupedId", flags);
+            writeLong(groupedId, stream);
+        }
+        if ((flags & 4194304) != 0) {
+            if (restrictionReason == null) throwNullFieldException("restrictionReason", flags);
+            writeTLVector(restrictionReason, stream);
+        }
     }
 
     @Override
@@ -163,11 +193,13 @@ public class TLMessage extends TLAbsMessage {
         mediaUnread = (flags & 32) != 0;
         silent = (flags & 8192) != 0;
         post = (flags & 16384) != 0;
+        fromScheduled = (flags & 262144) != 0;
+        legacy = (flags & 524288) != 0;
+        editHide = (flags & 2097152) != 0;
         id = readInt(stream);
         fromId = (flags & 256) != 0 ? readInt(stream) : null;
         toId = readTLObject(stream, context, TLAbsPeer.class, -1);
-        fwdFrom = (flags & 4) != 0 ? readTLObject(stream, context, TLMessageFwdHeader.class,
-                                                  TLMessageFwdHeader.CONSTRUCTOR_ID) : null;
+        fwdFrom = (flags & 4) != 0 ? readTLObject(stream, context, TLMessageFwdHeader.class, TLMessageFwdHeader.CONSTRUCTOR_ID) : null;
         viaBotId = (flags & 2048) != 0 ? readInt(stream) : null;
         replyToMsgId = (flags & 8) != 0 ? readInt(stream) : null;
         date = readInt(stream);
@@ -177,6 +209,9 @@ public class TLMessage extends TLAbsMessage {
         entities = (flags & 128) != 0 ? readTLVector(stream, context) : null;
         views = (flags & 1024) != 0 ? readInt(stream) : null;
         editDate = (flags & 32768) != 0 ? readInt(stream) : null;
+        postAuthor = (flags & 65536) != 0 ? readTLString(stream) : null;
+        groupedId = (flags & 131072) != 0 ? readLong(stream) : null;
+        restrictionReason = (flags & 4194304) != 0 ? readTLVector(stream, context) : null;
     }
 
     @Override
@@ -224,6 +259,18 @@ public class TLMessage extends TLAbsMessage {
         if ((flags & 32768) != 0) {
             if (editDate == null) throwNullFieldException("editDate", flags);
             size += SIZE_INT32;
+        }
+        if ((flags & 65536) != 0) {
+            if (postAuthor == null) throwNullFieldException("postAuthor", flags);
+            size += computeTLStringSerializedSize(postAuthor);
+        }
+        if ((flags & 131072) != 0) {
+            if (groupedId == null) throwNullFieldException("groupedId", flags);
+            size += SIZE_INT64;
+        }
+        if ((flags & 4194304) != 0) {
+            if (restrictionReason == null) throwNullFieldException("restrictionReason", flags);
+            size += restrictionReason.computeSerializedSize();
         }
         return size;
     }
@@ -276,6 +323,30 @@ public class TLMessage extends TLAbsMessage {
 
     public void setPost(boolean post) {
         this.post = post;
+    }
+
+    public boolean getFromScheduled() {
+        return fromScheduled;
+    }
+
+    public void setFromScheduled(boolean fromScheduled) {
+        this.fromScheduled = fromScheduled;
+    }
+
+    public boolean getLegacy() {
+        return legacy;
+    }
+
+    public void setLegacy(boolean legacy) {
+        this.legacy = legacy;
+    }
+
+    public boolean getEditHide() {
+        return editHide;
+    }
+
+    public void setEditHide(boolean editHide) {
+        this.editHide = editHide;
     }
 
     public int getId() {
@@ -380,5 +451,29 @@ public class TLMessage extends TLAbsMessage {
 
     public void setEditDate(Integer editDate) {
         this.editDate = editDate;
+    }
+
+    public String getPostAuthor() {
+        return postAuthor;
+    }
+
+    public void setPostAuthor(String postAuthor) {
+        this.postAuthor = postAuthor;
+    }
+
+    public Long getGroupedId() {
+        return groupedId;
+    }
+
+    public void setGroupedId(Long groupedId) {
+        this.groupedId = groupedId;
+    }
+
+    public TLVector<TLRestrictionReason> getRestrictionReason() {
+        return restrictionReason;
+    }
+
+    public void setRestrictionReason(TLVector<TLRestrictionReason> restrictionReason) {
+        this.restrictionReason = restrictionReason;
     }
 }

@@ -1,58 +1,37 @@
 package com.github.badoualy.telegram.tl.api;
 
-import com.github.badoualy.telegram.tl.TLContext;
-import com.github.badoualy.telegram.tl.core.TLObject;
-import com.github.badoualy.telegram.tl.core.TLVector;
+import static com.github.badoualy.telegram.tl.StreamUtils.*;
+import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
+import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
-import static com.github.badoualy.telegram.tl.StreamUtils.readInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.readLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLString;
-import static com.github.badoualy.telegram.tl.StreamUtils.readTLVector;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeInt;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeLong;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeString;
-import static com.github.badoualy.telegram.tl.StreamUtils.writeTLVector;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_CONSTRUCTOR_ID;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT32;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.SIZE_INT64;
-import static com.github.badoualy.telegram.tl.TLObjectUtils.computeTLStringSerializedSize;
+import java.lang.Override;
+import java.lang.String;
+import java.lang.SuppressWarnings;
 
 /**
  * @author Yannick Badoual yann.badoual@gmail.com
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
-public class TLWebDocument extends TLObject {
-
-    public static final int CONSTRUCTOR_ID = 0xc61acbd8;
-
-    protected String url;
+public class TLWebDocument extends TLAbsWebDocument {
+    public static final int CONSTRUCTOR_ID = 0x0;
 
     protected long accessHash;
 
-    protected int size;
-
-    protected String mimeType;
-
-    protected TLVector<TLAbsDocumentAttribute> attributes;
-
-    protected int dcId;
-
-    private final String _constructor = "webDocument#c61acbd8";
+    private final String _constructor = "webDocument#0";
 
     public TLWebDocument() {
     }
 
-    public TLWebDocument(String url, long accessHash, int size, String mimeType, TLVector<TLAbsDocumentAttribute> attributes, int dcId) {
+    public TLWebDocument(String url, long accessHash, int size, String mimeType, TLVector<TLAbsDocumentAttribute> attributes) {
         this.url = url;
         this.accessHash = accessHash;
         this.size = size;
         this.mimeType = mimeType;
         this.attributes = attributes;
-        this.dcId = dcId;
     }
 
     @Override
@@ -62,7 +41,6 @@ public class TLWebDocument extends TLObject {
         writeInt(size, stream);
         writeString(mimeType, stream);
         writeTLVector(attributes, stream);
-        writeInt(dcId, stream);
     }
 
     @Override
@@ -73,7 +51,6 @@ public class TLWebDocument extends TLObject {
         size = readInt(stream);
         mimeType = readTLString(stream);
         attributes = readTLVector(stream, context);
-        dcId = readInt(stream);
     }
 
     @Override
@@ -84,7 +61,6 @@ public class TLWebDocument extends TLObject {
         size += SIZE_INT32;
         size += computeTLStringSerializedSize(mimeType);
         size += attributes.computeSerializedSize();
-        size += SIZE_INT32;
         return size;
     }
 
@@ -136,13 +112,5 @@ public class TLWebDocument extends TLObject {
 
     public void setAttributes(TLVector<TLAbsDocumentAttribute> attributes) {
         this.attributes = attributes;
-    }
-
-    public int getDcId() {
-        return dcId;
-    }
-
-    public void setDcId(int dcId) {
-        this.dcId = dcId;
     }
 }
