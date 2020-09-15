@@ -16,6 +16,16 @@ import com.github.badoualy.telegram.tl.core.TLObject;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public abstract class TLAbsFeaturedStickers extends TLObject {
+    protected int count;
+
     public TLAbsFeaturedStickers() {
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 }

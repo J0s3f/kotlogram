@@ -37,12 +37,14 @@ public class TLChatAdminRights extends TLObject {
 
     protected boolean addAdmins;
 
+    protected boolean anonymous;
+
     private final String _constructor = "chatAdminRights#0";
 
     public TLChatAdminRights() {
     }
 
-    public TLChatAdminRights(boolean changeInfo, boolean postMessages, boolean editMessages, boolean deleteMessages, boolean banUsers, boolean inviteUsers, boolean pinMessages, boolean addAdmins) {
+    public TLChatAdminRights(boolean changeInfo, boolean postMessages, boolean editMessages, boolean deleteMessages, boolean banUsers, boolean inviteUsers, boolean pinMessages, boolean addAdmins, boolean anonymous) {
         this.changeInfo = changeInfo;
         this.postMessages = postMessages;
         this.editMessages = editMessages;
@@ -51,6 +53,7 @@ public class TLChatAdminRights extends TLObject {
         this.inviteUsers = inviteUsers;
         this.pinMessages = pinMessages;
         this.addAdmins = addAdmins;
+        this.anonymous = anonymous;
     }
 
     private void computeFlags() {
@@ -63,6 +66,7 @@ public class TLChatAdminRights extends TLObject {
         flags = inviteUsers ? (flags | 32) : (flags & ~32);
         flags = pinMessages ? (flags | 128) : (flags & ~128);
         flags = addAdmins ? (flags | 512) : (flags & ~512);
+        flags = anonymous ? (flags | 1024) : (flags & ~1024);
     }
 
     @Override
@@ -84,6 +88,7 @@ public class TLChatAdminRights extends TLObject {
         inviteUsers = (flags & 32) != 0;
         pinMessages = (flags & 128) != 0;
         addAdmins = (flags & 512) != 0;
+        anonymous = (flags & 1024) != 0;
     }
 
     @Override
@@ -167,5 +172,13 @@ public class TLChatAdminRights extends TLObject {
 
     public void setAddAdmins(boolean addAdmins) {
         this.addAdmins = addAdmins;
+    }
+
+    public boolean getAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(boolean anonymous) {
+        this.anonymous = anonymous;
     }
 }

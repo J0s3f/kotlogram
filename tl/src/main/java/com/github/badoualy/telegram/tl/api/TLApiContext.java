@@ -53,8 +53,8 @@ import com.github.badoualy.telegram.tl.api.help.TLInviteText;
 import com.github.badoualy.telegram.tl.api.help.TLNoAppUpdate;
 import com.github.badoualy.telegram.tl.api.help.TLPassportConfig;
 import com.github.badoualy.telegram.tl.api.help.TLPassportConfigNotModified;
-import com.github.badoualy.telegram.tl.api.help.TLProxyDataEmpty;
-import com.github.badoualy.telegram.tl.api.help.TLProxyDataPromo;
+import com.github.badoualy.telegram.tl.api.help.TLPromoData;
+import com.github.badoualy.telegram.tl.api.help.TLPromoDataEmpty;
 import com.github.badoualy.telegram.tl.api.help.TLRecentMeUrls;
 import com.github.badoualy.telegram.tl.api.help.TLSupport;
 import com.github.badoualy.telegram.tl.api.help.TLSupportName;
@@ -103,6 +103,8 @@ import com.github.badoualy.telegram.tl.api.messages.TLStickerSetInstallResultArc
 import com.github.badoualy.telegram.tl.api.messages.TLStickerSetInstallResultSuccess;
 import com.github.badoualy.telegram.tl.api.messages.TLStickers;
 import com.github.badoualy.telegram.tl.api.messages.TLStickersNotModified;
+import com.github.badoualy.telegram.tl.api.messages.TLVotesList;
+import com.github.badoualy.telegram.tl.api.payments.TLBankCardData;
 import com.github.badoualy.telegram.tl.api.payments.TLPaymentForm;
 import com.github.badoualy.telegram.tl.api.payments.TLPaymentReceipt;
 import com.github.badoualy.telegram.tl.api.payments.TLPaymentResult;
@@ -111,6 +113,7 @@ import com.github.badoualy.telegram.tl.api.payments.TLSavedInfo;
 import com.github.badoualy.telegram.tl.api.payments.TLValidatedRequestedInfo;
 import com.github.badoualy.telegram.tl.api.photos.TLPhotos;
 import com.github.badoualy.telegram.tl.api.photos.TLPhotosSlice;
+import com.github.badoualy.telegram.tl.api.stats.TLBroadcastStats;
 import com.github.badoualy.telegram.tl.api.storage.TLFileGif;
 import com.github.badoualy.telegram.tl.api.storage.TLFileJpeg;
 import com.github.badoualy.telegram.tl.api.storage.TLFileMov;
@@ -146,7 +149,7 @@ public class TLApiContext extends TLContext {
     private static TLApiContext instance;
 
     public TLApiContext() {
-        super(793);
+        super(819);
     }
 
     public static TLApiContext getInstance() {
@@ -192,6 +195,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLSentCodeTypeSms.CONSTRUCTOR_ID, TLSentCodeTypeSms.class);
         registerClass(TLAuthorization.CONSTRUCTOR_ID, TLAuthorization.class);
         registerClass(TLAutoDownloadSettings.CONSTRUCTOR_ID, TLAutoDownloadSettings.class);
+        registerClass(TLBankCardOpenUrl.CONSTRUCTOR_ID, TLBankCardOpenUrl.class);
         registerClass(TLBaseThemeArctic.CONSTRUCTOR_ID, TLBaseThemeArctic.class);
         registerClass(TLBaseThemeClassic.CONSTRUCTOR_ID, TLBaseThemeClassic.class);
         registerClass(TLBaseThemeDay.CONSTRUCTOR_ID, TLBaseThemeDay.class);
@@ -290,6 +294,8 @@ public class TLApiContext extends TLContext {
         registerClass(TLDataJSON.CONSTRUCTOR_ID, TLDataJSON.class);
         registerClass(TLDcOption.CONSTRUCTOR_ID, TLDcOption.class);
         registerClass(TLDialog.CONSTRUCTOR_ID, TLDialog.class);
+        registerClass(TLDialogFilter.CONSTRUCTOR_ID, TLDialogFilter.class);
+        registerClass(TLDialogFilterSuggested.CONSTRUCTOR_ID, TLDialogFilterSuggested.class);
         registerClass(TLDialogFolder.CONSTRUCTOR_ID, TLDialogFolder.class);
         registerClass(TLDialogPeer.CONSTRUCTOR_ID, TLDialogPeer.class);
         registerClass(TLDialogPeerFolder.CONSTRUCTOR_ID, TLDialogPeerFolder.class);
@@ -335,8 +341,8 @@ public class TLApiContext extends TLContext {
         registerClass(TLNoAppUpdate.CONSTRUCTOR_ID, TLNoAppUpdate.class);
         registerClass(TLPassportConfig.CONSTRUCTOR_ID, TLPassportConfig.class);
         registerClass(TLPassportConfigNotModified.CONSTRUCTOR_ID, TLPassportConfigNotModified.class);
-        registerClass(TLProxyDataEmpty.CONSTRUCTOR_ID, TLProxyDataEmpty.class);
-        registerClass(TLProxyDataPromo.CONSTRUCTOR_ID, TLProxyDataPromo.class);
+        registerClass(TLPromoData.CONSTRUCTOR_ID, TLPromoData.class);
+        registerClass(TLPromoDataEmpty.CONSTRUCTOR_ID, TLPromoDataEmpty.class);
         registerClass(TLRecentMeUrls.CONSTRUCTOR_ID, TLRecentMeUrls.class);
         registerClass(TLSupport.CONSTRUCTOR_ID, TLSupport.class);
         registerClass(TLSupportName.CONSTRUCTOR_ID, TLSupportName.class);
@@ -390,6 +396,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLInputGeoPointEmpty.CONSTRUCTOR_ID, TLInputGeoPointEmpty.class);
         registerClass(TLInputKeyboardButtonUrlAuth.CONSTRUCTOR_ID, TLInputKeyboardButtonUrlAuth.class);
         registerClass(TLInputMediaContact.CONSTRUCTOR_ID, TLInputMediaContact.class);
+        registerClass(TLInputMediaDice.CONSTRUCTOR_ID, TLInputMediaDice.class);
         registerClass(TLInputMediaDocument.CONSTRUCTOR_ID, TLInputMediaDocument.class);
         registerClass(TLInputMediaDocumentExternal.CONSTRUCTOR_ID, TLInputMediaDocumentExternal.class);
         registerClass(TLInputMediaEmpty.CONSTRUCTOR_ID, TLInputMediaEmpty.class);
@@ -476,6 +483,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLInputSecureValue.CONSTRUCTOR_ID, TLInputSecureValue.class);
         registerClass(TLInputSingleMedia.CONSTRUCTOR_ID, TLInputSingleMedia.class);
         registerClass(TLInputStickerSetAnimatedEmoji.CONSTRUCTOR_ID, TLInputStickerSetAnimatedEmoji.class);
+        registerClass(TLInputStickerSetDice.CONSTRUCTOR_ID, TLInputStickerSetDice.class);
         registerClass(TLInputStickerSetEmpty.CONSTRUCTOR_ID, TLInputStickerSetEmpty.class);
         registerClass(TLInputStickerSetID.CONSTRUCTOR_ID, TLInputStickerSetID.class);
         registerClass(TLInputStickerSetItem.CONSTRUCTOR_ID, TLInputStickerSetItem.class);
@@ -511,6 +519,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLKeyboardButtonGame.CONSTRUCTOR_ID, TLKeyboardButtonGame.class);
         registerClass(TLKeyboardButtonRequestGeoLocation.CONSTRUCTOR_ID, TLKeyboardButtonRequestGeoLocation.class);
         registerClass(TLKeyboardButtonRequestPhone.CONSTRUCTOR_ID, TLKeyboardButtonRequestPhone.class);
+        registerClass(TLKeyboardButtonRequestPoll.CONSTRUCTOR_ID, TLKeyboardButtonRequestPoll.class);
         registerClass(TLKeyboardButtonRow.CONSTRUCTOR_ID, TLKeyboardButtonRow.class);
         registerClass(TLKeyboardButtonSwitchInline.CONSTRUCTOR_ID, TLKeyboardButtonSwitchInline.class);
         registerClass(TLKeyboardButtonUrl.CONSTRUCTOR_ID, TLKeyboardButtonUrl.class);
@@ -547,6 +556,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLMessageActionSecureValuesSent.CONSTRUCTOR_ID, TLMessageActionSecureValuesSent.class);
         registerClass(TLMessageActionSecureValuesSentMe.CONSTRUCTOR_ID, TLMessageActionSecureValuesSentMe.class);
         registerClass(TLMessageEmpty.CONSTRUCTOR_ID, TLMessageEmpty.class);
+        registerClass(TLMessageEntityBankCard.CONSTRUCTOR_ID, TLMessageEntityBankCard.class);
         registerClass(TLMessageEntityBlockquote.CONSTRUCTOR_ID, TLMessageEntityBlockquote.class);
         registerClass(TLMessageEntityBold.CONSTRUCTOR_ID, TLMessageEntityBold.class);
         registerClass(TLMessageEntityBotCommand.CONSTRUCTOR_ID, TLMessageEntityBotCommand.class);
@@ -565,7 +575,9 @@ public class TLApiContext extends TLContext {
         registerClass(TLMessageEntityUnknown.CONSTRUCTOR_ID, TLMessageEntityUnknown.class);
         registerClass(TLMessageEntityUrl.CONSTRUCTOR_ID, TLMessageEntityUrl.class);
         registerClass(TLMessageFwdHeader.CONSTRUCTOR_ID, TLMessageFwdHeader.class);
+        registerClass(TLMessageInteractionCounters.CONSTRUCTOR_ID, TLMessageInteractionCounters.class);
         registerClass(TLMessageMediaContact.CONSTRUCTOR_ID, TLMessageMediaContact.class);
+        registerClass(TLMessageMediaDice.CONSTRUCTOR_ID, TLMessageMediaDice.class);
         registerClass(TLMessageMediaDocument.CONSTRUCTOR_ID, TLMessageMediaDocument.class);
         registerClass(TLMessageMediaEmpty.CONSTRUCTOR_ID, TLMessageMediaEmpty.class);
         registerClass(TLMessageMediaGame.CONSTRUCTOR_ID, TLMessageMediaGame.class);
@@ -579,6 +591,9 @@ public class TLApiContext extends TLContext {
         registerClass(TLMessageMediaWebPage.CONSTRUCTOR_ID, TLMessageMediaWebPage.class);
         registerClass(TLMessageRange.CONSTRUCTOR_ID, TLMessageRange.class);
         registerClass(TLMessageService.CONSTRUCTOR_ID, TLMessageService.class);
+        registerClass(TLMessageUserVote.CONSTRUCTOR_ID, TLMessageUserVote.class);
+        registerClass(TLMessageUserVoteInputOption.CONSTRUCTOR_ID, TLMessageUserVoteInputOption.class);
+        registerClass(TLMessageUserVoteMultiple.CONSTRUCTOR_ID, TLMessageUserVoteMultiple.class);
         registerClass(TLAffectedHistory.CONSTRUCTOR_ID, TLAffectedHistory.class);
         registerClass(TLAffectedMessages.CONSTRUCTOR_ID, TLAffectedMessages.class);
         registerClass(TLAllStickers.CONSTRUCTOR_ID, TLAllStickers.class);
@@ -621,6 +636,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLStickerSetInstallResultSuccess.CONSTRUCTOR_ID, TLStickerSetInstallResultSuccess.class);
         registerClass(TLStickers.CONSTRUCTOR_ID, TLStickers.class);
         registerClass(TLStickersNotModified.CONSTRUCTOR_ID, TLStickersNotModified.class);
+        registerClass(TLVotesList.CONSTRUCTOR_ID, TLVotesList.class);
         registerClass(TLNearestDc.CONSTRUCTOR_ID, TLNearestDc.class);
         registerClass(TLNotifyBroadcasts.CONSTRUCTOR_ID, TLNotifyBroadcasts.class);
         registerClass(TLNotifyChats.CONSTRUCTOR_ID, TLNotifyChats.class);
@@ -669,6 +685,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLPaymentCharge.CONSTRUCTOR_ID, TLPaymentCharge.class);
         registerClass(TLPaymentRequestedInfo.CONSTRUCTOR_ID, TLPaymentRequestedInfo.class);
         registerClass(TLPaymentSavedCredentialsCard.CONSTRUCTOR_ID, TLPaymentSavedCredentialsCard.class);
+        registerClass(TLBankCardData.CONSTRUCTOR_ID, TLBankCardData.class);
         registerClass(TLPaymentForm.CONSTRUCTOR_ID, TLPaymentForm.class);
         registerClass(TLPaymentReceipt.CONSTRUCTOR_ID, TLPaymentReceipt.class);
         registerClass(TLPaymentResult.CONSTRUCTOR_ID, TLPaymentResult.class);
@@ -679,6 +696,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLPeerChat.CONSTRUCTOR_ID, TLPeerChat.class);
         registerClass(TLPeerLocated.CONSTRUCTOR_ID, TLPeerLocated.class);
         registerClass(TLPeerNotifySettings.CONSTRUCTOR_ID, TLPeerNotifySettings.class);
+        registerClass(TLPeerSelfLocated.CONSTRUCTOR_ID, TLPeerSelfLocated.class);
         registerClass(TLPeerSettings.CONSTRUCTOR_ID, TLPeerSettings.class);
         registerClass(TLPeerUser.CONSTRUCTOR_ID, TLPeerUser.class);
         registerClass(com.github.badoualy.telegram.tl.api.phone.TLPhoneCall.CONSTRUCTOR_ID, com.github.badoualy.telegram.tl.api.phone.TLPhoneCall.class);
@@ -787,6 +805,13 @@ public class TLApiContext extends TLContext {
         registerClass(TLSendMessageUploadRoundAction.CONSTRUCTOR_ID, TLSendMessageUploadRoundAction.class);
         registerClass(TLSendMessageUploadVideoAction.CONSTRUCTOR_ID, TLSendMessageUploadVideoAction.class);
         registerClass(TLShippingOption.CONSTRUCTOR_ID, TLShippingOption.class);
+        registerClass(TLBroadcastStats.CONSTRUCTOR_ID, TLBroadcastStats.class);
+        registerClass(TLStatsAbsValueAndPrev.CONSTRUCTOR_ID, TLStatsAbsValueAndPrev.class);
+        registerClass(TLStatsDateRangeDays.CONSTRUCTOR_ID, TLStatsDateRangeDays.class);
+        registerClass(TLStatsGraph.CONSTRUCTOR_ID, TLStatsGraph.class);
+        registerClass(TLStatsGraphAsync.CONSTRUCTOR_ID, TLStatsGraphAsync.class);
+        registerClass(TLStatsGraphError.CONSTRUCTOR_ID, TLStatsGraphError.class);
+        registerClass(TLStatsPercentValue.CONSTRUCTOR_ID, TLStatsPercentValue.class);
         registerClass(TLStatsURL.CONSTRUCTOR_ID, TLStatsURL.class);
         registerClass(TLStickerPack.CONSTRUCTOR_ID, TLStickerPack.class);
         registerClass(TLStickerSet.CONSTRUCTOR_ID, TLStickerSet.class);
@@ -857,6 +882,9 @@ public class TLApiContext extends TLContext {
         registerClass(TLUpdateDeleteChannelMessages.CONSTRUCTOR_ID, TLUpdateDeleteChannelMessages.class);
         registerClass(TLUpdateDeleteMessages.CONSTRUCTOR_ID, TLUpdateDeleteMessages.class);
         registerClass(TLUpdateDeleteScheduledMessages.CONSTRUCTOR_ID, TLUpdateDeleteScheduledMessages.class);
+        registerClass(TLUpdateDialogFilter.CONSTRUCTOR_ID, TLUpdateDialogFilter.class);
+        registerClass(TLUpdateDialogFilterOrder.CONSTRUCTOR_ID, TLUpdateDialogFilterOrder.class);
+        registerClass(TLUpdateDialogFilters.CONSTRUCTOR_ID, TLUpdateDialogFilters.class);
         registerClass(TLUpdateDialogPinned.CONSTRUCTOR_ID, TLUpdateDialogPinned.class);
         registerClass(TLUpdateDialogUnreadMark.CONSTRUCTOR_ID, TLUpdateDialogUnreadMark.class);
         registerClass(TLUpdateDraftMessage.CONSTRUCTOR_ID, TLUpdateDraftMessage.class);
@@ -874,6 +902,7 @@ public class TLApiContext extends TLContext {
         registerClass(TLUpdateLoginToken.CONSTRUCTOR_ID, TLUpdateLoginToken.class);
         registerClass(TLUpdateMessageID.CONSTRUCTOR_ID, TLUpdateMessageID.class);
         registerClass(TLUpdateMessagePoll.CONSTRUCTOR_ID, TLUpdateMessagePoll.class);
+        registerClass(TLUpdateMessagePollVote.CONSTRUCTOR_ID, TLUpdateMessagePollVote.class);
         registerClass(TLUpdateNewChannelMessage.CONSTRUCTOR_ID, TLUpdateNewChannelMessage.class);
         registerClass(TLUpdateNewEncryptedMessage.CONSTRUCTOR_ID, TLUpdateNewEncryptedMessage.class);
         registerClass(TLUpdateNewMessage.CONSTRUCTOR_ID, TLUpdateNewMessage.class);

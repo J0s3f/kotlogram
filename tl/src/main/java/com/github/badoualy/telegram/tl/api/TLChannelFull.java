@@ -28,11 +28,11 @@ public class TLChannelFull extends TLAbsChatFull {
 
     protected boolean hiddenPrehistory;
 
-    protected boolean canViewStats;
-
     protected boolean canSetLocation;
 
     protected boolean hasScheduled;
+
+    protected boolean canViewStats;
 
     protected Integer participantsCount;
 
@@ -72,6 +72,8 @@ public class TLChannelFull extends TLAbsChatFull {
 
     protected Integer slowmodeNextSendDate;
 
+    protected Integer statsDc;
+
     protected int pts;
 
     private final String _constructor = "channelFull#0";
@@ -79,14 +81,14 @@ public class TLChannelFull extends TLAbsChatFull {
     public TLChannelFull() {
     }
 
-    public TLChannelFull(boolean canViewParticipants, boolean canSetUsername, boolean canSetStickers, boolean hiddenPrehistory, boolean canViewStats, boolean canSetLocation, boolean hasScheduled, int id, String about, Integer participantsCount, Integer adminsCount, Integer kickedCount, Integer bannedCount, Integer onlineCount, int readInboxMaxId, int readOutboxMaxId, int unreadCount, TLAbsPhoto chatPhoto, TLPeerNotifySettings notifySettings, TLAbsExportedChatInvite exportedInvite, TLVector<TLBotInfo> botInfo, Integer migratedFromChatId, Integer migratedFromMaxId, Integer pinnedMsgId, TLStickerSet stickerset, Integer availableMinId, Integer folderId, Integer linkedChatId, TLAbsChannelLocation location, Integer slowmodeSeconds, Integer slowmodeNextSendDate, int pts) {
+    public TLChannelFull(boolean canViewParticipants, boolean canSetUsername, boolean canSetStickers, boolean hiddenPrehistory, boolean canSetLocation, boolean hasScheduled, boolean canViewStats, int id, String about, Integer participantsCount, Integer adminsCount, Integer kickedCount, Integer bannedCount, Integer onlineCount, int readInboxMaxId, int readOutboxMaxId, int unreadCount, TLAbsPhoto chatPhoto, TLPeerNotifySettings notifySettings, TLAbsExportedChatInvite exportedInvite, TLVector<TLBotInfo> botInfo, Integer migratedFromChatId, Integer migratedFromMaxId, Integer pinnedMsgId, TLStickerSet stickerset, Integer availableMinId, Integer folderId, Integer linkedChatId, TLAbsChannelLocation location, Integer slowmodeSeconds, Integer slowmodeNextSendDate, Integer statsDc, int pts) {
         this.canViewParticipants = canViewParticipants;
         this.canSetUsername = canSetUsername;
         this.canSetStickers = canSetStickers;
         this.hiddenPrehistory = hiddenPrehistory;
-        this.canViewStats = canViewStats;
         this.canSetLocation = canSetLocation;
         this.hasScheduled = hasScheduled;
+        this.canViewStats = canViewStats;
         this.id = id;
         this.about = about;
         this.participantsCount = participantsCount;
@@ -111,6 +113,7 @@ public class TLChannelFull extends TLAbsChatFull {
         this.location = location;
         this.slowmodeSeconds = slowmodeSeconds;
         this.slowmodeNextSendDate = slowmodeNextSendDate;
+        this.statsDc = statsDc;
         this.pts = pts;
     }
 
@@ -120,9 +123,9 @@ public class TLChannelFull extends TLAbsChatFull {
         flags = canSetUsername ? (flags | 64) : (flags & ~64);
         flags = canSetStickers ? (flags | 128) : (flags & ~128);
         flags = hiddenPrehistory ? (flags | 1024) : (flags & ~1024);
-        flags = canViewStats ? (flags | 4096) : (flags & ~4096);
         flags = canSetLocation ? (flags | 65536) : (flags & ~65536);
         flags = hasScheduled ? (flags | 524288) : (flags & ~524288);
+        flags = canViewStats ? (flags | 1048576) : (flags & ~1048576);
         flags = participantsCount != null ? (flags | 1) : (flags & ~1);
         flags = adminsCount != null ? (flags | 2) : (flags & ~2);
         flags = kickedCount != null ? (flags | 4) : (flags & ~4);
@@ -138,6 +141,7 @@ public class TLChannelFull extends TLAbsChatFull {
         flags = location != null ? (flags | 32768) : (flags & ~32768);
         flags = slowmodeSeconds != null ? (flags | 131072) : (flags & ~131072);
         flags = slowmodeNextSendDate != null ? (flags | 262144) : (flags & ~262144);
+        flags = statsDc != null ? (flags | 4096) : (flags & ~4096);
     }
 
     @Override
@@ -214,6 +218,10 @@ public class TLChannelFull extends TLAbsChatFull {
             if (slowmodeNextSendDate == null) throwNullFieldException("slowmodeNextSendDate", flags);
             writeInt(slowmodeNextSendDate, stream);
         }
+        if ((flags & 4096) != 0) {
+            if (statsDc == null) throwNullFieldException("statsDc", flags);
+            writeInt(statsDc, stream);
+        }
         writeInt(pts, stream);
     }
 
@@ -225,9 +233,9 @@ public class TLChannelFull extends TLAbsChatFull {
         canSetUsername = (flags & 64) != 0;
         canSetStickers = (flags & 128) != 0;
         hiddenPrehistory = (flags & 1024) != 0;
-        canViewStats = (flags & 4096) != 0;
         canSetLocation = (flags & 65536) != 0;
         hasScheduled = (flags & 524288) != 0;
+        canViewStats = (flags & 1048576) != 0;
         id = readInt(stream);
         about = readTLString(stream);
         participantsCount = (flags & 1) != 0 ? readInt(stream) : null;
@@ -252,6 +260,7 @@ public class TLChannelFull extends TLAbsChatFull {
         location = (flags & 32768) != 0 ? readTLObject(stream, context, TLAbsChannelLocation.class, -1) : null;
         slowmodeSeconds = (flags & 131072) != 0 ? readInt(stream) : null;
         slowmodeNextSendDate = (flags & 262144) != 0 ? readInt(stream) : null;
+        statsDc = (flags & 4096) != 0 ? readInt(stream) : null;
         pts = readInt(stream);
     }
 
@@ -330,6 +339,10 @@ public class TLChannelFull extends TLAbsChatFull {
             if (slowmodeNextSendDate == null) throwNullFieldException("slowmodeNextSendDate", flags);
             size += SIZE_INT32;
         }
+        if ((flags & 4096) != 0) {
+            if (statsDc == null) throwNullFieldException("statsDc", flags);
+            size += SIZE_INT32;
+        }
         size += SIZE_INT32;
         return size;
     }
@@ -376,14 +389,6 @@ public class TLChannelFull extends TLAbsChatFull {
         this.hiddenPrehistory = hiddenPrehistory;
     }
 
-    public boolean getCanViewStats() {
-        return canViewStats;
-    }
-
-    public void setCanViewStats(boolean canViewStats) {
-        this.canViewStats = canViewStats;
-    }
-
     public boolean getCanSetLocation() {
         return canSetLocation;
     }
@@ -398,6 +403,14 @@ public class TLChannelFull extends TLAbsChatFull {
 
     public void setHasScheduled(boolean hasScheduled) {
         this.hasScheduled = hasScheduled;
+    }
+
+    public boolean getCanViewStats() {
+        return canViewStats;
+    }
+
+    public void setCanViewStats(boolean canViewStats) {
+        this.canViewStats = canViewStats;
     }
 
     public int getId() {
@@ -590,6 +603,14 @@ public class TLChannelFull extends TLAbsChatFull {
 
     public void setSlowmodeNextSendDate(Integer slowmodeNextSendDate) {
         this.slowmodeNextSendDate = slowmodeNextSendDate;
+    }
+
+    public Integer getStatsDc() {
+        return statsDc;
+    }
+
+    public void setStatsDc(Integer statsDc) {
+        this.statsDc = statsDc;
     }
 
     public int getPts() {

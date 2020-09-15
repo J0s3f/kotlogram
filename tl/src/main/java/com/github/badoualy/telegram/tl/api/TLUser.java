@@ -49,6 +49,8 @@ public class TLUser extends TLAbsUser {
 
     protected boolean scam;
 
+    protected boolean applyMinPhoto;
+
     protected Long accessHash;
 
     protected String firstName;
@@ -76,7 +78,7 @@ public class TLUser extends TLAbsUser {
     public TLUser() {
     }
 
-    public TLUser(boolean self, boolean contact, boolean mutualContact, boolean deleted, boolean bot, boolean botChatHistory, boolean botNochats, boolean verified, boolean restricted, boolean min, boolean botInlineGeo, boolean support, boolean scam, int id, Long accessHash, String firstName, String lastName, String username, String phone, TLAbsUserProfilePhoto photo, TLAbsUserStatus status, Integer botInfoVersion, TLVector<TLRestrictionReason> restrictionReason, String botInlinePlaceholder, String langCode) {
+    public TLUser(boolean self, boolean contact, boolean mutualContact, boolean deleted, boolean bot, boolean botChatHistory, boolean botNochats, boolean verified, boolean restricted, boolean min, boolean botInlineGeo, boolean support, boolean scam, boolean applyMinPhoto, int id, Long accessHash, String firstName, String lastName, String username, String phone, TLAbsUserProfilePhoto photo, TLAbsUserStatus status, Integer botInfoVersion, TLVector<TLRestrictionReason> restrictionReason, String botInlinePlaceholder, String langCode) {
         this.self = self;
         this.contact = contact;
         this.mutualContact = mutualContact;
@@ -90,6 +92,7 @@ public class TLUser extends TLAbsUser {
         this.botInlineGeo = botInlineGeo;
         this.support = support;
         this.scam = scam;
+        this.applyMinPhoto = applyMinPhoto;
         this.id = id;
         this.accessHash = accessHash;
         this.firstName = firstName;
@@ -119,6 +122,7 @@ public class TLUser extends TLAbsUser {
         flags = botInlineGeo ? (flags | 2097152) : (flags & ~2097152);
         flags = support ? (flags | 8388608) : (flags & ~8388608);
         flags = scam ? (flags | 16777216) : (flags & ~16777216);
+        flags = applyMinPhoto ? (flags | 33554432) : (flags & ~33554432);
         flags = accessHash != null ? (flags | 1) : (flags & ~1);
         flags = firstName != null ? (flags | 2) : (flags & ~2);
         flags = lastName != null ? (flags | 4) : (flags & ~4);
@@ -205,6 +209,7 @@ public class TLUser extends TLAbsUser {
         botInlineGeo = (flags & 2097152) != 0;
         support = (flags & 8388608) != 0;
         scam = (flags & 16777216) != 0;
+        applyMinPhoto = (flags & 33554432) != 0;
         id = readInt(stream);
         accessHash = (flags & 1) != 0 ? readLong(stream) : null;
         firstName = (flags & 2) != 0 ? readTLString(stream) : null;
@@ -385,6 +390,14 @@ public class TLUser extends TLAbsUser {
 
     public void setScam(boolean scam) {
         this.scam = scam;
+    }
+
+    public boolean getApplyMinPhoto() {
+        return applyMinPhoto;
+    }
+
+    public void setApplyMinPhoto(boolean applyMinPhoto) {
+        this.applyMinPhoto = applyMinPhoto;
     }
 
     public int getId() {

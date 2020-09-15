@@ -49,7 +49,7 @@ public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
         flags = 0;
         flags = needRating ? (flags | 4) : (flags & ~4);
         flags = needDebug ? (flags | 8) : (flags & ~8);
-        flags = video ? (flags | 32) : (flags & ~32);
+        flags = video ? (flags | 64) : (flags & ~64);
         flags = reason != null ? (flags | 1) : (flags & ~1);
         flags = duration != null ? (flags | 2) : (flags & ~2);
     }
@@ -76,7 +76,7 @@ public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
         flags = readInt(stream);
         needRating = (flags & 4) != 0;
         needDebug = (flags & 8) != 0;
-        video = (flags & 32) != 0;
+        video = (flags & 64) != 0;
         id = readLong(stream);
         reason = (flags & 1) != 0 ? readTLObject(stream, context, TLAbsPhoneCallDiscardReason.class, -1) : null;
         duration = (flags & 2) != 0 ? readInt(stream) : null;

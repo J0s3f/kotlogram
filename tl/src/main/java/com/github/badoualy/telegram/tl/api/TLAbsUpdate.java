@@ -35,6 +35,9 @@ import com.github.badoualy.telegram.tl.core.TLObject;
  * <li>{@link TLUpdateDeleteChannelMessages}: updateDeleteChannelMessages#0</li>
  * <li>{@link TLUpdateDeleteMessages}: updateDeleteMessages#0</li>
  * <li>{@link TLUpdateDeleteScheduledMessages}: updateDeleteScheduledMessages#0</li>
+ * <li>{@link TLUpdateDialogFilter}: updateDialogFilter#0</li>
+ * <li>{@link TLUpdateDialogFilterOrder}: updateDialogFilterOrder#0</li>
+ * <li>{@link TLUpdateDialogFilters}: updateDialogFilters#0</li>
  * <li>{@link TLUpdateDialogPinned}: updateDialogPinned#0</li>
  * <li>{@link TLUpdateDialogUnreadMark}: updateDialogUnreadMark#0</li>
  * <li>{@link TLUpdateDraftMessage}: updateDraftMessage#0</li>
@@ -52,6 +55,7 @@ import com.github.badoualy.telegram.tl.core.TLObject;
  * <li>{@link TLUpdateLoginToken}: updateLoginToken#0</li>
  * <li>{@link TLUpdateMessageID}: updateMessageID#0</li>
  * <li>{@link TLUpdateMessagePoll}: updateMessagePoll#0</li>
+ * <li>{@link TLUpdateMessagePollVote}: updateMessagePollVote#0</li>
  * <li>{@link TLUpdateNewChannelMessage}: updateNewChannelMessage#0</li>
  * <li>{@link TLUpdateNewEncryptedMessage}: updateNewEncryptedMessage#0</li>
  * <li>{@link TLUpdateNewMessage}: updateNewMessage#0</li>

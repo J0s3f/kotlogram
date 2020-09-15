@@ -4,6 +4,7 @@ import static com.github.badoualy.telegram.tl.StreamUtils.*;
 import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.core.TLIntVector;
 import com.github.badoualy.telegram.tl.core.TLObject;
 import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
@@ -29,15 +30,24 @@ public class TLPollResults extends TLObject {
 
     protected Integer totalVoters;
 
+    protected TLIntVector recentVoters;
+
+    protected String solution;
+
+    protected TLVector<TLAbsMessageEntity> solutionEntities;
+
     private final String _constructor = "pollResults#0";
 
     public TLPollResults() {
     }
 
-    public TLPollResults(boolean min, TLVector<TLPollAnswerVoters> results, Integer totalVoters) {
+    public TLPollResults(boolean min, TLVector<TLPollAnswerVoters> results, Integer totalVoters, TLIntVector recentVoters, String solution, TLVector<TLAbsMessageEntity> solutionEntities) {
         this.min = min;
         this.results = results;
         this.totalVoters = totalVoters;
+        this.recentVoters = recentVoters;
+        this.solution = solution;
+        this.solutionEntities = solutionEntities;
     }
 
     private void computeFlags() {
@@ -45,6 +55,9 @@ public class TLPollResults extends TLObject {
         flags = min ? (flags | 1) : (flags & ~1);
         flags = results != null ? (flags | 2) : (flags & ~2);
         flags = totalVoters != null ? (flags | 4) : (flags & ~4);
+        flags = recentVoters != null ? (flags | 8) : (flags & ~8);
+        flags = solution != null ? (flags | 16) : (flags & ~16);
+        flags = solutionEntities != null ? (flags | 16) : (flags & ~16);
     }
 
     @Override
@@ -60,6 +73,18 @@ public class TLPollResults extends TLObject {
             if (totalVoters == null) throwNullFieldException("totalVoters", flags);
             writeInt(totalVoters, stream);
         }
+        if ((flags & 8) != 0) {
+            if (recentVoters == null) throwNullFieldException("recentVoters", flags);
+            writeTLVector(recentVoters, stream);
+        }
+        if ((flags & 16) != 0) {
+            if (solution == null) throwNullFieldException("solution", flags);
+            writeString(solution, stream);
+        }
+        if ((flags & 16) != 0) {
+            if (solutionEntities == null) throwNullFieldException("solutionEntities", flags);
+            writeTLVector(solutionEntities, stream);
+        }
     }
 
     @Override
@@ -69,6 +94,9 @@ public class TLPollResults extends TLObject {
         min = (flags & 1) != 0;
         results = (flags & 2) != 0 ? readTLVector(stream, context) : null;
         totalVoters = (flags & 4) != 0 ? readInt(stream) : null;
+        recentVoters = (flags & 8) != 0 ? readTLIntVector(stream, context) : null;
+        solution = (flags & 16) != 0 ? readTLString(stream) : null;
+        solutionEntities = (flags & 16) != 0 ? readTLVector(stream, context) : null;
     }
 
     @Override
@@ -84,6 +112,18 @@ public class TLPollResults extends TLObject {
         if ((flags & 4) != 0) {
             if (totalVoters == null) throwNullFieldException("totalVoters", flags);
             size += SIZE_INT32;
+        }
+        if ((flags & 8) != 0) {
+            if (recentVoters == null) throwNullFieldException("recentVoters", flags);
+            size += recentVoters.computeSerializedSize();
+        }
+        if ((flags & 16) != 0) {
+            if (solution == null) throwNullFieldException("solution", flags);
+            size += computeTLStringSerializedSize(solution);
+        }
+        if ((flags & 16) != 0) {
+            if (solutionEntities == null) throwNullFieldException("solutionEntities", flags);
+            size += solutionEntities.computeSerializedSize();
         }
         return size;
     }
@@ -120,5 +160,29 @@ public class TLPollResults extends TLObject {
 
     public void setTotalVoters(Integer totalVoters) {
         this.totalVoters = totalVoters;
+    }
+
+    public TLIntVector getRecentVoters() {
+        return recentVoters;
+    }
+
+    public void setRecentVoters(TLIntVector recentVoters) {
+        this.recentVoters = recentVoters;
+    }
+
+    public String getSolution() {
+        return solution;
+    }
+
+    public void setSolution(String solution) {
+        this.solution = solution;
+    }
+
+    public TLVector<TLAbsMessageEntity> getSolutionEntities() {
+        return solutionEntities;
+    }
+
+    public void setSolutionEntities(TLVector<TLAbsMessageEntity> solutionEntities) {
+        this.solutionEntities = solutionEntities;
     }
 }

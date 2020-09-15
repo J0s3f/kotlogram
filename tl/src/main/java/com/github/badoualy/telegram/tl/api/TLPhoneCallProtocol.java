@@ -5,6 +5,7 @@ import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
 import com.github.badoualy.telegram.tl.TLContext;
 import com.github.badoualy.telegram.tl.core.TLObject;
+import com.github.badoualy.telegram.tl.core.TLStringVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,16 +30,19 @@ public class TLPhoneCallProtocol extends TLObject {
 
     protected int maxLayer;
 
+    protected TLStringVector libraryVersions;
+
     private final String _constructor = "phoneCallProtocol#0";
 
     public TLPhoneCallProtocol() {
     }
 
-    public TLPhoneCallProtocol(boolean udpP2p, boolean udpReflector, int minLayer, int maxLayer) {
+    public TLPhoneCallProtocol(boolean udpP2p, boolean udpReflector, int minLayer, int maxLayer, TLStringVector libraryVersions) {
         this.udpP2p = udpP2p;
         this.udpReflector = udpReflector;
         this.minLayer = minLayer;
         this.maxLayer = maxLayer;
+        this.libraryVersions = libraryVersions;
     }
 
     private void computeFlags() {
@@ -54,6 +58,7 @@ public class TLPhoneCallProtocol extends TLObject {
         writeInt(flags, stream);
         writeInt(minLayer, stream);
         writeInt(maxLayer, stream);
+        writeTLVector(libraryVersions, stream);
     }
 
     @Override
@@ -64,6 +69,7 @@ public class TLPhoneCallProtocol extends TLObject {
         udpReflector = (flags & 2) != 0;
         minLayer = readInt(stream);
         maxLayer = readInt(stream);
+        libraryVersions = readTLStringVector(stream, context);
     }
 
     @Override
@@ -74,6 +80,7 @@ public class TLPhoneCallProtocol extends TLObject {
         size += SIZE_INT32;
         size += SIZE_INT32;
         size += SIZE_INT32;
+        size += libraryVersions.computeSerializedSize();
         return size;
     }
 
@@ -117,5 +124,13 @@ public class TLPhoneCallProtocol extends TLObject {
 
     public void setMaxLayer(int maxLayer) {
         this.maxLayer = maxLayer;
+    }
+
+    public TLStringVector getLibraryVersions() {
+        return libraryVersions;
+    }
+
+    public void setLibraryVersions(TLStringVector libraryVersions) {
+        this.libraryVersions = libraryVersions;
     }
 }

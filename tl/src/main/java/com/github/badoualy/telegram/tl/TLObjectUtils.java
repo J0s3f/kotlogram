@@ -4,6 +4,7 @@ import com.github.badoualy.telegram.tl.core.TLBytes;
 import com.github.badoualy.telegram.tl.core.TLObject;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public final class TLObjectUtils {
 
@@ -30,7 +31,7 @@ public final class TLObjectUtils {
     }
 
     public static int computeTLStringSerializedSize(String string) {
-        return computeTLBytesSerializedSize(string.getBytes(Charset.forName("UTF-8")).length);
+        return computeTLBytesSerializedSize(string.getBytes(StandardCharsets.UTF_8).length);
     }
 
     /**

@@ -32,6 +32,8 @@ public class TLUserFull extends TLObject {
 
     protected boolean hasScheduled;
 
+    protected boolean videoCallsAvailable;
+
     protected TLAbsUser user;
 
     protected String about;
@@ -55,12 +57,13 @@ public class TLUserFull extends TLObject {
     public TLUserFull() {
     }
 
-    public TLUserFull(boolean blocked, boolean phoneCallsAvailable, boolean phoneCallsPrivate, boolean canPinMessage, boolean hasScheduled, TLAbsUser user, String about, TLPeerSettings settings, TLAbsPhoto profilePhoto, TLPeerNotifySettings notifySettings, TLBotInfo botInfo, Integer pinnedMsgId, int commonChatsCount, Integer folderId) {
+    public TLUserFull(boolean blocked, boolean phoneCallsAvailable, boolean phoneCallsPrivate, boolean canPinMessage, boolean hasScheduled, boolean videoCallsAvailable, TLAbsUser user, String about, TLPeerSettings settings, TLAbsPhoto profilePhoto, TLPeerNotifySettings notifySettings, TLBotInfo botInfo, Integer pinnedMsgId, int commonChatsCount, Integer folderId) {
         this.blocked = blocked;
         this.phoneCallsAvailable = phoneCallsAvailable;
         this.phoneCallsPrivate = phoneCallsPrivate;
         this.canPinMessage = canPinMessage;
         this.hasScheduled = hasScheduled;
+        this.videoCallsAvailable = videoCallsAvailable;
         this.user = user;
         this.about = about;
         this.settings = settings;
@@ -79,6 +82,7 @@ public class TLUserFull extends TLObject {
         flags = phoneCallsPrivate ? (flags | 32) : (flags & ~32);
         flags = canPinMessage ? (flags | 128) : (flags & ~128);
         flags = hasScheduled ? (flags | 4096) : (flags & ~4096);
+        flags = videoCallsAvailable ? (flags | 8192) : (flags & ~8192);
         flags = about != null ? (flags | 2) : (flags & ~2);
         flags = profilePhoto != null ? (flags | 4) : (flags & ~4);
         flags = botInfo != null ? (flags | 8) : (flags & ~8);
@@ -126,6 +130,7 @@ public class TLUserFull extends TLObject {
         phoneCallsPrivate = (flags & 32) != 0;
         canPinMessage = (flags & 128) != 0;
         hasScheduled = (flags & 4096) != 0;
+        videoCallsAvailable = (flags & 8192) != 0;
         user = readTLObject(stream, context, TLAbsUser.class, -1);
         about = (flags & 2) != 0 ? readTLString(stream) : null;
         settings = readTLObject(stream, context, TLPeerSettings.class, TLPeerSettings.CONSTRUCTOR_ID);
@@ -218,6 +223,14 @@ public class TLUserFull extends TLObject {
 
     public void setHasScheduled(boolean hasScheduled) {
         this.hasScheduled = hasScheduled;
+    }
+
+    public boolean getVideoCallsAvailable() {
+        return videoCallsAvailable;
+    }
+
+    public void setVideoCallsAvailable(boolean videoCallsAvailable) {
+        this.videoCallsAvailable = videoCallsAvailable;
     }
 
     public TLAbsUser getUser() {

@@ -24,6 +24,8 @@ public class TLInputMediaUploadedDocument extends TLAbsInputMedia {
 
     protected boolean nosoundVideo;
 
+    protected boolean forceFile;
+
     protected TLAbsInputFile file;
 
     protected TLAbsInputFile thumb;
@@ -41,8 +43,9 @@ public class TLInputMediaUploadedDocument extends TLAbsInputMedia {
     public TLInputMediaUploadedDocument() {
     }
 
-    public TLInputMediaUploadedDocument(boolean nosoundVideo, TLAbsInputFile file, TLAbsInputFile thumb, String mimeType, TLVector<TLAbsDocumentAttribute> attributes, TLVector<TLAbsInputDocument> stickers, Integer ttlSeconds) {
+    public TLInputMediaUploadedDocument(boolean nosoundVideo, boolean forceFile, TLAbsInputFile file, TLAbsInputFile thumb, String mimeType, TLVector<TLAbsDocumentAttribute> attributes, TLVector<TLAbsInputDocument> stickers, Integer ttlSeconds) {
         this.nosoundVideo = nosoundVideo;
+        this.forceFile = forceFile;
         this.file = file;
         this.thumb = thumb;
         this.mimeType = mimeType;
@@ -54,6 +57,7 @@ public class TLInputMediaUploadedDocument extends TLAbsInputMedia {
     private void computeFlags() {
         flags = 0;
         flags = nosoundVideo ? (flags | 8) : (flags & ~8);
+        flags = forceFile ? (flags | 16) : (flags & ~16);
         flags = thumb != null ? (flags | 4) : (flags & ~4);
         flags = stickers != null ? (flags | 1) : (flags & ~1);
         flags = ttlSeconds != null ? (flags | 2) : (flags & ~2);
@@ -86,6 +90,7 @@ public class TLInputMediaUploadedDocument extends TLAbsInputMedia {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         nosoundVideo = (flags & 8) != 0;
+        forceFile = (flags & 16) != 0;
         file = readTLObject(stream, context, TLAbsInputFile.class, -1);
         thumb = (flags & 4) != 0 ? readTLObject(stream, context, TLAbsInputFile.class, -1) : null;
         mimeType = readTLString(stream);
@@ -134,6 +139,14 @@ public class TLInputMediaUploadedDocument extends TLAbsInputMedia {
 
     public void setNosoundVideo(boolean nosoundVideo) {
         this.nosoundVideo = nosoundVideo;
+    }
+
+    public boolean getForceFile() {
+        return forceFile;
+    }
+
+    public void setForceFile(boolean forceFile) {
+        this.forceFile = forceFile;
     }
 
     public TLAbsInputFile getFile() {

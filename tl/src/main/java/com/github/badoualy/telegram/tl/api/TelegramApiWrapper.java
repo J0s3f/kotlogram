@@ -33,7 +33,7 @@ import com.github.badoualy.telegram.tl.api.contacts.TLResolvedPeer;
 import com.github.badoualy.telegram.tl.api.help.TLAbsAppUpdate;
 import com.github.badoualy.telegram.tl.api.help.TLAbsDeepLinkInfo;
 import com.github.badoualy.telegram.tl.api.help.TLAbsPassportConfig;
-import com.github.badoualy.telegram.tl.api.help.TLAbsProxyData;
+import com.github.badoualy.telegram.tl.api.help.TLAbsPromoData;
 import com.github.badoualy.telegram.tl.api.help.TLAbsTermsOfServiceUpdate;
 import com.github.badoualy.telegram.tl.api.help.TLAbsUserInfo;
 import com.github.badoualy.telegram.tl.api.help.TLInviteText;
@@ -66,7 +66,9 @@ import com.github.badoualy.telegram.tl.api.messages.TLMessageEditData;
 import com.github.badoualy.telegram.tl.api.messages.TLPeerDialogs;
 import com.github.badoualy.telegram.tl.api.messages.TLSearchCounter;
 import com.github.badoualy.telegram.tl.api.messages.TLStickerSet;
+import com.github.badoualy.telegram.tl.api.messages.TLVotesList;
 import com.github.badoualy.telegram.tl.api.payments.TLAbsPaymentResult;
+import com.github.badoualy.telegram.tl.api.payments.TLBankCardData;
 import com.github.badoualy.telegram.tl.api.payments.TLPaymentForm;
 import com.github.badoualy.telegram.tl.api.payments.TLPaymentReceipt;
 import com.github.badoualy.telegram.tl.api.payments.TLSavedInfo;
@@ -159,6 +161,7 @@ import com.github.badoualy.telegram.tl.api.request.TLRequestAuthSignIn;
 import com.github.badoualy.telegram.tl.api.request.TLRequestAuthSignUp;
 import com.github.badoualy.telegram.tl.api.request.TLRequestBotsAnswerWebhookJSONQuery;
 import com.github.badoualy.telegram.tl.api.request.TLRequestBotsSendCustomRequest;
+import com.github.badoualy.telegram.tl.api.request.TLRequestBotsSetBotCommands;
 import com.github.badoualy.telegram.tl.api.request.TLRequestChannelsCheckUsername;
 import com.github.badoualy.telegram.tl.api.request.TLRequestChannelsCreateChannel;
 import com.github.badoualy.telegram.tl.api.request.TLRequestChannelsDeleteChannel;
@@ -226,12 +229,13 @@ import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetDeepLinkInfo;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetInviteText;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetNearestDc;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetPassportConfig;
-import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetProxyData;
+import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetPromoData;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetRecentMeUrls;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetSupport;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetSupportName;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetTermsOfServiceUpdate;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpGetUserInfo;
+import com.github.badoualy.telegram.tl.api.request.TLRequestHelpHidePromoData;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpSaveAppLog;
 import com.github.badoualy.telegram.tl.api.request.TLRequestHelpSetBotUpdatesStatus;
 import com.github.badoualy.telegram.tl.api.request.TLRequestInitConnection;
@@ -277,6 +281,7 @@ import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetBotCallba
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetChats;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetCommonChats;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetDhConfig;
+import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetDialogFilters;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetDialogUnreadMarks;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetDialogs;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetDocumentByHash;
@@ -295,11 +300,13 @@ import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetMaskStick
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetMessageEditData;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetMessages;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetMessagesViews;
+import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetOldFeaturedStickers;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetOnlines;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetPeerDialogs;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetPeerSettings;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetPinnedDialogs;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetPollResults;
+import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetPollVotes;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetRecentLocations;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetRecentStickers;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetSavedGifs;
@@ -310,6 +317,7 @@ import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetSplitRang
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetStatsURL;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetStickerSet;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetStickers;
+import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetSuggestedDialogFilters;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetUnreadMentions;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetWebPage;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesGetWebPagePreview;
@@ -359,11 +367,15 @@ import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesSetInlineGam
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesSetTyping;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesStartBot;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesToggleDialogPin;
+import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesToggleStickerSets;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesUninstallStickerSet;
+import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesUpdateDialogFilter;
+import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesUpdateDialogFiltersOrder;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesUpdatePinnedMessage;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesUploadEncryptedFile;
 import com.github.badoualy.telegram.tl.api.request.TLRequestMessagesUploadMedia;
 import com.github.badoualy.telegram.tl.api.request.TLRequestPaymentsClearSavedInfo;
+import com.github.badoualy.telegram.tl.api.request.TLRequestPaymentsGetBankCardData;
 import com.github.badoualy.telegram.tl.api.request.TLRequestPaymentsGetPaymentForm;
 import com.github.badoualy.telegram.tl.api.request.TLRequestPaymentsGetPaymentReceipt;
 import com.github.badoualy.telegram.tl.api.request.TLRequestPaymentsGetSavedInfo;
@@ -381,10 +393,13 @@ import com.github.badoualy.telegram.tl.api.request.TLRequestPhotosDeletePhotos;
 import com.github.badoualy.telegram.tl.api.request.TLRequestPhotosGetUserPhotos;
 import com.github.badoualy.telegram.tl.api.request.TLRequestPhotosUpdateProfilePhoto;
 import com.github.badoualy.telegram.tl.api.request.TLRequestPhotosUploadProfilePhoto;
+import com.github.badoualy.telegram.tl.api.request.TLRequestStatsGetBroadcastStats;
+import com.github.badoualy.telegram.tl.api.request.TLRequestStatsLoadAsyncGraph;
 import com.github.badoualy.telegram.tl.api.request.TLRequestStickersAddStickerToSet;
 import com.github.badoualy.telegram.tl.api.request.TLRequestStickersChangeStickerPosition;
 import com.github.badoualy.telegram.tl.api.request.TLRequestStickersCreateStickerSet;
 import com.github.badoualy.telegram.tl.api.request.TLRequestStickersRemoveStickerFromSet;
+import com.github.badoualy.telegram.tl.api.request.TLRequestStickersSetStickerSetThumb;
 import com.github.badoualy.telegram.tl.api.request.TLRequestUpdatesGetChannelDifference;
 import com.github.badoualy.telegram.tl.api.request.TLRequestUpdatesGetDifference;
 import com.github.badoualy.telegram.tl.api.request.TLRequestUpdatesGetState;
@@ -399,6 +414,7 @@ import com.github.badoualy.telegram.tl.api.request.TLRequestUploadSaveFilePart;
 import com.github.badoualy.telegram.tl.api.request.TLRequestUsersGetFullUser;
 import com.github.badoualy.telegram.tl.api.request.TLRequestUsersGetUsers;
 import com.github.badoualy.telegram.tl.api.request.TLRequestUsersSetSecureValueErrors;
+import com.github.badoualy.telegram.tl.api.stats.TLBroadcastStats;
 import com.github.badoualy.telegram.tl.api.updates.TLAbsChannelDifference;
 import com.github.badoualy.telegram.tl.api.updates.TLAbsDifference;
 import com.github.badoualy.telegram.tl.api.updates.TLState;
@@ -416,6 +432,7 @@ import com.github.badoualy.telegram.tl.core.TLVector;
 import com.github.badoualy.telegram.tl.exception.RpcErrorException;
 import java.io.IOException;
 import java.lang.Integer;
+import java.lang.Long;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
@@ -854,6 +871,11 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
+    public TLBool botsSetBotCommands(TLVector<TLBotCommand> commands) throws RpcErrorException, IOException {
+        return (TLBool) executeRpcQuery(new TLRequestBotsSetBotCommands(commands));
+    }
+
+    @Override
     public TLBool channelsCheckUsername(TLAbsInputChannel channel, String username) throws RpcErrorException, IOException {
         return (TLBool) executeRpcQuery(new TLRequestChannelsCheckUsername(channel, username));
     }
@@ -1069,8 +1091,8 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
-    public TLAbsUpdates contactsGetLocated(TLAbsInputGeoPoint geoPoint) throws RpcErrorException, IOException {
-        return (TLAbsUpdates) executeRpcQuery(new TLRequestContactsGetLocated(geoPoint));
+    public TLAbsUpdates contactsGetLocated(boolean background, TLAbsInputGeoPoint geoPoint, Integer selfExpires) throws RpcErrorException, IOException {
+        return (TLAbsUpdates) executeRpcQuery(new TLRequestContactsGetLocated(background, geoPoint, selfExpires));
     }
 
     @Override
@@ -1189,8 +1211,8 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
-    public TLAbsProxyData helpGetProxyData() throws RpcErrorException, IOException {
-        return (TLAbsProxyData) executeRpcQuery(new TLRequestHelpGetProxyData());
+    public TLAbsPromoData helpGetPromoData() throws RpcErrorException, IOException {
+        return (TLAbsPromoData) executeRpcQuery(new TLRequestHelpGetPromoData());
     }
 
     @Override
@@ -1219,6 +1241,11 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
+    public TLBool helpHidePromoData(TLAbsInputPeer peer) throws RpcErrorException, IOException {
+        return (TLBool) executeRpcQuery(new TLRequestHelpHidePromoData(peer));
+    }
+
+    @Override
     public TLBool helpSaveAppLog(TLVector<TLInputAppEvent> events) throws RpcErrorException, IOException {
         return (TLBool) executeRpcQuery(new TLRequestHelpSaveAppLog(events));
     }
@@ -1229,8 +1256,8 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
-    public <T extends TLObject> T initConnection(int apiId, String deviceModel, String systemVersion, String appVersion, String systemLangCode, String langPack, String langCode, TLInputClientProxy proxy, TLMethod<T> query) throws RpcErrorException, IOException {
-        return (T) executeRpcQuery(new TLRequestInitConnection(apiId, deviceModel, systemVersion, appVersion, systemLangCode, langPack, langCode, proxy, query));
+    public <T extends TLObject> T initConnection(int apiId, String deviceModel, String systemVersion, String appVersion, String systemLangCode, String langPack, String langCode, TLInputClientProxy proxy, TLAbsJSONValue params, TLMethod<T> query) throws RpcErrorException, IOException {
+        return (T) executeRpcQuery(new TLRequestInitConnection(apiId, deviceModel, systemVersion, appVersion, systemLangCode, langPack, langCode, proxy, params, query));
     }
 
     @Override
@@ -1394,8 +1421,8 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
-    public TLAbsUpdates messagesForwardMessages(boolean silent, boolean background, boolean withMyScore, boolean grouped, TLAbsInputPeer fromPeer, TLIntVector id, TLLongVector randomId, TLAbsInputPeer toPeer, Integer scheduleDate) throws RpcErrorException, IOException {
-        return (TLAbsUpdates) executeRpcQuery(new TLRequestMessagesForwardMessages(silent, background, withMyScore, grouped, fromPeer, id, randomId, toPeer, scheduleDate));
+    public TLAbsUpdates messagesForwardMessages(boolean silent, boolean background, boolean withMyScore, TLAbsInputPeer fromPeer, TLIntVector id, TLLongVector randomId, TLAbsInputPeer toPeer, Integer scheduleDate) throws RpcErrorException, IOException {
+        return (TLAbsUpdates) executeRpcQuery(new TLRequestMessagesForwardMessages(silent, background, withMyScore, fromPeer, id, randomId, toPeer, scheduleDate));
     }
 
     @Override
@@ -1441,6 +1468,11 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     @Override
     public TLAbsDhConfig messagesGetDhConfig(int version, int randomLength) throws RpcErrorException, IOException {
         return (TLAbsDhConfig) executeRpcQuery(new TLRequestMessagesGetDhConfig(version, randomLength));
+    }
+
+    @Override
+    public TLVector<TLDialogFilter> messagesGetDialogFilters() throws RpcErrorException, IOException {
+        return (TLVector<TLDialogFilter>) executeRpcQuery(new TLRequestMessagesGetDialogFilters());
     }
 
     @Override
@@ -1534,6 +1566,11 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
+    public TLAbsFeaturedStickers messagesGetOldFeaturedStickers(int offset, int limit, int hash) throws RpcErrorException, IOException {
+        return (TLAbsFeaturedStickers) executeRpcQuery(new TLRequestMessagesGetOldFeaturedStickers(offset, limit, hash));
+    }
+
+    @Override
     public TLChatOnlines messagesGetOnlines(TLAbsInputPeer peer) throws RpcErrorException, IOException {
         return (TLChatOnlines) executeRpcQuery(new TLRequestMessagesGetOnlines(peer));
     }
@@ -1556,6 +1593,11 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     @Override
     public TLAbsUpdates messagesGetPollResults(TLAbsInputPeer peer, int msgId) throws RpcErrorException, IOException {
         return (TLAbsUpdates) executeRpcQuery(new TLRequestMessagesGetPollResults(peer, msgId));
+    }
+
+    @Override
+    public TLVotesList messagesGetPollVotes(TLAbsInputPeer peer, int id, TLBytes option, String offset, int limit) throws RpcErrorException, IOException {
+        return (TLVotesList) executeRpcQuery(new TLRequestMessagesGetPollVotes(peer, id, option, offset, limit));
     }
 
     @Override
@@ -1606,6 +1648,11 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     @Override
     public TLAbsStickers messagesGetStickers(String emoticon, int hash) throws RpcErrorException, IOException {
         return (TLAbsStickers) executeRpcQuery(new TLRequestMessagesGetStickers(emoticon, hash));
+    }
+
+    @Override
+    public TLVector<TLDialogFilterSuggested> messagesGetSuggestedDialogFilters() throws RpcErrorException, IOException {
+        return (TLVector<TLDialogFilterSuggested>) executeRpcQuery(new TLRequestMessagesGetSuggestedDialogFilters());
     }
 
     @Override
@@ -1854,8 +1901,23 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
+    public TLBool messagesToggleStickerSets(boolean uninstall, boolean archive, boolean unarchive, TLVector<TLAbsInputStickerSet> stickersets) throws RpcErrorException, IOException {
+        return (TLBool) executeRpcQuery(new TLRequestMessagesToggleStickerSets(uninstall, archive, unarchive, stickersets));
+    }
+
+    @Override
     public TLBool messagesUninstallStickerSet(TLAbsInputStickerSet stickerset) throws RpcErrorException, IOException {
         return (TLBool) executeRpcQuery(new TLRequestMessagesUninstallStickerSet(stickerset));
+    }
+
+    @Override
+    public TLBool messagesUpdateDialogFilter(int id, TLDialogFilter filter) throws RpcErrorException, IOException {
+        return (TLBool) executeRpcQuery(new TLRequestMessagesUpdateDialogFilter(id, filter));
+    }
+
+    @Override
+    public TLBool messagesUpdateDialogFiltersOrder(TLIntVector order) throws RpcErrorException, IOException {
+        return (TLBool) executeRpcQuery(new TLRequestMessagesUpdateDialogFiltersOrder(order));
     }
 
     @Override
@@ -1876,6 +1938,11 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     @Override
     public TLBool paymentsClearSavedInfo(boolean credentials, boolean info) throws RpcErrorException, IOException {
         return (TLBool) executeRpcQuery(new TLRequestPaymentsClearSavedInfo(credentials, info));
+    }
+
+    @Override
+    public TLBankCardData paymentsGetBankCardData(String number) throws RpcErrorException, IOException {
+        return (TLBankCardData) executeRpcQuery(new TLRequestPaymentsGetBankCardData(number));
     }
 
     @Override
@@ -1964,6 +2031,16 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
+    public TLBroadcastStats statsGetBroadcastStats(boolean dark, TLAbsInputChannel channel) throws RpcErrorException, IOException {
+        return (TLBroadcastStats) executeRpcQuery(new TLRequestStatsGetBroadcastStats(dark, channel));
+    }
+
+    @Override
+    public TLAbsStatsGraph statsLoadAsyncGraph(String token, Long x) throws RpcErrorException, IOException {
+        return (TLAbsStatsGraph) executeRpcQuery(new TLRequestStatsLoadAsyncGraph(token, x));
+    }
+
+    @Override
     public TLStickerSet stickersAddStickerToSet(TLAbsInputStickerSet stickerset, TLInputStickerSetItem sticker) throws RpcErrorException, IOException {
         return (TLStickerSet) executeRpcQuery(new TLRequestStickersAddStickerToSet(stickerset, sticker));
     }
@@ -1974,13 +2051,18 @@ public abstract class TelegramApiWrapper implements TelegramApi {
     }
 
     @Override
-    public TLStickerSet stickersCreateStickerSet(boolean masks, TLAbsInputUser userId, String title, String shortName, TLVector<TLInputStickerSetItem> stickers) throws RpcErrorException, IOException {
-        return (TLStickerSet) executeRpcQuery(new TLRequestStickersCreateStickerSet(masks, userId, title, shortName, stickers));
+    public TLStickerSet stickersCreateStickerSet(boolean masks, boolean animated, TLAbsInputUser userId, String title, String shortName, TLAbsInputDocument thumb, TLVector<TLInputStickerSetItem> stickers) throws RpcErrorException, IOException {
+        return (TLStickerSet) executeRpcQuery(new TLRequestStickersCreateStickerSet(masks, animated, userId, title, shortName, thumb, stickers));
     }
 
     @Override
     public TLStickerSet stickersRemoveStickerFromSet(TLAbsInputDocument sticker) throws RpcErrorException, IOException {
         return (TLStickerSet) executeRpcQuery(new TLRequestStickersRemoveStickerFromSet(sticker));
+    }
+
+    @Override
+    public TLStickerSet stickersSetStickerSetThumb(TLAbsInputStickerSet stickerset, TLAbsInputDocument thumb) throws RpcErrorException, IOException {
+        return (TLStickerSet) executeRpcQuery(new TLRequestStickersSetStickerSetThumb(stickerset, thumb));
     }
 
     @Override

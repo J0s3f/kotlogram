@@ -24,6 +24,8 @@ public class TLPhoneCall extends TLAbsPhoneCall {
 
     protected boolean p2pAllowed;
 
+    protected boolean video;
+
     protected long accessHash;
 
     protected int date;
@@ -47,8 +49,9 @@ public class TLPhoneCall extends TLAbsPhoneCall {
     public TLPhoneCall() {
     }
 
-    public TLPhoneCall(boolean p2pAllowed, long id, long accessHash, int date, int adminId, int participantId, TLBytes gAOrB, long keyFingerprint, TLPhoneCallProtocol protocol, TLVector<TLPhoneConnection> connections, int startDate) {
+    public TLPhoneCall(boolean p2pAllowed, boolean video, long id, long accessHash, int date, int adminId, int participantId, TLBytes gAOrB, long keyFingerprint, TLPhoneCallProtocol protocol, TLVector<TLPhoneConnection> connections, int startDate) {
         this.p2pAllowed = p2pAllowed;
+        this.video = video;
         this.id = id;
         this.accessHash = accessHash;
         this.date = date;
@@ -64,6 +67,7 @@ public class TLPhoneCall extends TLAbsPhoneCall {
     private void computeFlags() {
         flags = 0;
         flags = p2pAllowed ? (flags | 32) : (flags & ~32);
+        flags = video ? (flags | 64) : (flags & ~64);
     }
 
     @Override
@@ -88,6 +92,7 @@ public class TLPhoneCall extends TLAbsPhoneCall {
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
         p2pAllowed = (flags & 32) != 0;
+        video = (flags & 64) != 0;
         id = readLong(stream);
         accessHash = readLong(stream);
         date = readInt(stream);
@@ -135,6 +140,14 @@ public class TLPhoneCall extends TLAbsPhoneCall {
 
     public void setP2pAllowed(boolean p2pAllowed) {
         this.p2pAllowed = p2pAllowed;
+    }
+
+    public boolean getVideo() {
+        return video;
+    }
+
+    public void setVideo(boolean video) {
+        this.video = video;
     }
 
     public long getId() {

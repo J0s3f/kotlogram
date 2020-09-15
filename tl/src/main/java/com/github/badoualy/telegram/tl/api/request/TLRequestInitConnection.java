@@ -4,6 +4,7 @@ import static com.github.badoualy.telegram.tl.StreamUtils.*;
 import static com.github.badoualy.telegram.tl.TLObjectUtils.*;
 
 import com.github.badoualy.telegram.tl.TLContext;
+import com.github.badoualy.telegram.tl.api.TLAbsJSONValue;
 import com.github.badoualy.telegram.tl.api.TLInputClientProxy;
 import com.github.badoualy.telegram.tl.core.TLMethod;
 import com.github.badoualy.telegram.tl.core.TLObject;
@@ -39,6 +40,8 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
 
     protected TLInputClientProxy proxy;
 
+    protected TLAbsJSONValue params;
+
     protected TLMethod<T> query;
 
     private final String _constructor = "initConnection#0";
@@ -46,7 +49,7 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
     public TLRequestInitConnection() {
     }
 
-    public TLRequestInitConnection(int apiId, String deviceModel, String systemVersion, String appVersion, String systemLangCode, String langPack, String langCode, TLInputClientProxy proxy, TLMethod<T> query) {
+    public TLRequestInitConnection(int apiId, String deviceModel, String systemVersion, String appVersion, String systemLangCode, String langPack, String langCode, TLInputClientProxy proxy, TLAbsJSONValue params, TLMethod<T> query) {
         this.apiId = apiId;
         this.deviceModel = deviceModel;
         this.systemVersion = systemVersion;
@@ -55,6 +58,7 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
         this.langPack = langPack;
         this.langCode = langCode;
         this.proxy = proxy;
+        this.params = params;
         this.query = query;
     }
 
@@ -67,6 +71,7 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
     private void computeFlags() {
         flags = 0;
         flags = proxy != null ? (flags | 1) : (flags & ~1);
+        flags = params != null ? (flags | 2) : (flags & ~2);
     }
 
     @Override
@@ -85,6 +90,10 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
             if (proxy == null) throwNullFieldException("proxy", flags);
             writeTLObject(proxy, stream);
         }
+        if ((flags & 2) != 0) {
+            if (params == null) throwNullFieldException("params", flags);
+            writeTLObject(params, stream);
+        }
         writeTLMethod(query, stream);
     }
 
@@ -100,6 +109,7 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
         langPack = readTLString(stream);
         langCode = readTLString(stream);
         proxy = (flags & 1) != 0 ? readTLObject(stream, context, TLInputClientProxy.class, TLInputClientProxy.CONSTRUCTOR_ID) : null;
+        params = (flags & 2) != 0 ? readTLObject(stream, context, TLAbsJSONValue.class, -1) : null;
         query = readTLMethod(stream, context);
     }
 
@@ -119,6 +129,10 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
         if ((flags & 1) != 0) {
             if (proxy == null) throwNullFieldException("proxy", flags);
             size += proxy.computeSerializedSize();
+        }
+        if ((flags & 2) != 0) {
+            if (params == null) throwNullFieldException("params", flags);
+            size += params.computeSerializedSize();
         }
         size += query.computeSerializedSize();
         return size;
@@ -196,6 +210,14 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
 
     public void setProxy(TLInputClientProxy proxy) {
         this.proxy = proxy;
+    }
+
+    public TLAbsJSONValue getParams() {
+        return params;
+    }
+
+    public void setParams(TLAbsJSONValue params) {
+        this.params = params;
     }
 
     public TLMethod<T> getQuery() {

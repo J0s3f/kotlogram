@@ -32,8 +32,9 @@ public class TLFeaturedStickers extends TLAbsFeaturedStickers {
     public TLFeaturedStickers() {
     }
 
-    public TLFeaturedStickers(int hash, TLVector<TLAbsStickerSetCovered> sets, TLLongVector unread) {
+    public TLFeaturedStickers(int hash, int count, TLVector<TLAbsStickerSetCovered> sets, TLLongVector unread) {
         this.hash = hash;
+        this.count = count;
         this.sets = sets;
         this.unread = unread;
     }
@@ -41,6 +42,7 @@ public class TLFeaturedStickers extends TLAbsFeaturedStickers {
     @Override
     public void serializeBody(OutputStream stream) throws IOException {
         writeInt(hash, stream);
+        writeInt(count, stream);
         writeTLVector(sets, stream);
         writeTLVector(unread, stream);
     }
@@ -49,6 +51,7 @@ public class TLFeaturedStickers extends TLAbsFeaturedStickers {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         hash = readInt(stream);
+        count = readInt(stream);
         sets = readTLVector(stream, context);
         unread = readTLLongVector(stream, context);
     }
@@ -56,6 +59,7 @@ public class TLFeaturedStickers extends TLAbsFeaturedStickers {
     @Override
     public int computeSerializedSize() {
         int size = SIZE_CONSTRUCTOR_ID;
+        size += SIZE_INT32;
         size += SIZE_INT32;
         size += sets.computeSerializedSize();
         size += unread.computeSerializedSize();
@@ -78,6 +82,14 @@ public class TLFeaturedStickers extends TLAbsFeaturedStickers {
 
     public void setHash(int hash) {
         this.hash = hash;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public TLVector<TLAbsStickerSetCovered> getSets() {

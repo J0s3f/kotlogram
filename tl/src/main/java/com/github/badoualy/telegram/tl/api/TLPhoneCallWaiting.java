@@ -53,7 +53,7 @@ public class TLPhoneCallWaiting extends TLAbsPhoneCall {
 
     private void computeFlags() {
         flags = 0;
-        flags = video ? (flags | 32) : (flags & ~32);
+        flags = video ? (flags | 64) : (flags & ~64);
         flags = receiveDate != null ? (flags | 1) : (flags & ~1);
     }
 
@@ -78,7 +78,7 @@ public class TLPhoneCallWaiting extends TLAbsPhoneCall {
     @SuppressWarnings({"unchecked", "SimplifiableConditionalExpression"})
     public void deserializeBody(InputStream stream, TLContext context) throws IOException {
         flags = readInt(stream);
-        video = (flags & 32) != 0;
+        video = (flags & 64) != 0;
         id = readLong(stream);
         accessHash = readLong(stream);
         date = readInt(stream);

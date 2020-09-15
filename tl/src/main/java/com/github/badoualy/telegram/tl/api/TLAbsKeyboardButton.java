@@ -16,6 +16,7 @@ import java.lang.String;
  * <li>{@link TLKeyboardButtonGame}: keyboardButtonGame#0</li>
  * <li>{@link TLKeyboardButtonRequestGeoLocation}: keyboardButtonRequestGeoLocation#0</li>
  * <li>{@link TLKeyboardButtonRequestPhone}: keyboardButtonRequestPhone#0</li>
+ * <li>{@link TLKeyboardButtonRequestPoll}: keyboardButtonRequestPoll#0</li>
  * <li>{@link TLKeyboardButtonSwitchInline}: keyboardButtonSwitchInline#0</li>
  * <li>{@link TLKeyboardButtonUrl}: keyboardButtonUrl#0</li>
  * <li>{@link TLKeyboardButtonUrlAuth}: keyboardButtonUrlAuth#0</li>

@@ -9,6 +9,7 @@ import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
@@ -36,12 +37,14 @@ public class TLPage extends TLObject {
 
     protected TLVector<TLAbsDocument> documents;
 
+    protected Integer views;
+
     private final String _constructor = "page#0";
 
     public TLPage() {
     }
 
-    public TLPage(boolean part, boolean rtl, boolean v2, String url, TLVector<TLAbsPageBlock> blocks, TLVector<TLAbsPhoto> photos, TLVector<TLAbsDocument> documents) {
+    public TLPage(boolean part, boolean rtl, boolean v2, String url, TLVector<TLAbsPageBlock> blocks, TLVector<TLAbsPhoto> photos, TLVector<TLAbsDocument> documents, Integer views) {
         this.part = part;
         this.rtl = rtl;
         this.v2 = v2;
@@ -49,6 +52,7 @@ public class TLPage extends TLObject {
         this.blocks = blocks;
         this.photos = photos;
         this.documents = documents;
+        this.views = views;
     }
 
     private void computeFlags() {
@@ -56,6 +60,7 @@ public class TLPage extends TLObject {
         flags = part ? (flags | 1) : (flags & ~1);
         flags = rtl ? (flags | 2) : (flags & ~2);
         flags = v2 ? (flags | 4) : (flags & ~4);
+        flags = views != null ? (flags | 8) : (flags & ~8);
     }
 
     @Override
@@ -67,6 +72,10 @@ public class TLPage extends TLObject {
         writeTLVector(blocks, stream);
         writeTLVector(photos, stream);
         writeTLVector(documents, stream);
+        if ((flags & 8) != 0) {
+            if (views == null) throwNullFieldException("views", flags);
+            writeInt(views, stream);
+        }
     }
 
     @Override
@@ -80,6 +89,7 @@ public class TLPage extends TLObject {
         blocks = readTLVector(stream, context);
         photos = readTLVector(stream, context);
         documents = readTLVector(stream, context);
+        views = (flags & 8) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -92,6 +102,10 @@ public class TLPage extends TLObject {
         size += blocks.computeSerializedSize();
         size += photos.computeSerializedSize();
         size += documents.computeSerializedSize();
+        if ((flags & 8) != 0) {
+            if (views == null) throwNullFieldException("views", flags);
+            size += SIZE_INT32;
+        }
         return size;
     }
 
@@ -159,5 +173,13 @@ public class TLPage extends TLObject {
 
     public void setDocuments(TLVector<TLAbsDocument> documents) {
         this.documents = documents;
+    }
+
+    public Integer getViews() {
+        return views;
+    }
+
+    public void setViews(Integer views) {
+        this.views = views;
     }
 }

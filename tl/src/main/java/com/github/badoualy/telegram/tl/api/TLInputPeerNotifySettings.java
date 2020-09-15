@@ -44,8 +44,8 @@ public class TLInputPeerNotifySettings extends TLObject {
 
     private void computeFlags() {
         flags = 0;
-        flags = showPreviews != null ? (flags | 1) : (flags & ~1);
-        flags = silent != null ? (flags | 2) : (flags & ~2);
+        flags = showPreviews ? (flags | 1) : (flags & ~1);
+        flags = silent ? (flags | 2) : (flags & ~2);
         flags = muteUntil != null ? (flags | 4) : (flags & ~4);
         flags = sound != null ? (flags | 8) : (flags & ~8);
     }

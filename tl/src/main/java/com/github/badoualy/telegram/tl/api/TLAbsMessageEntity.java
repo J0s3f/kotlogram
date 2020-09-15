@@ -9,6 +9,7 @@ import com.github.badoualy.telegram.tl.core.TLObject;
  * Abstraction level for the following constructors:
  * <ul>
  * <li>{@link TLInputMessageEntityMentionName}: inputMessageEntityMentionName#0</li>
+ * <li>{@link TLMessageEntityBankCard}: messageEntityBankCard#0</li>
  * <li>{@link TLMessageEntityBlockquote}: messageEntityBlockquote#0</li>
  * <li>{@link TLMessageEntityBold}: messageEntityBold#0</li>
  * <li>{@link TLMessageEntityBotCommand}: messageEntityBotCommand#0</li>

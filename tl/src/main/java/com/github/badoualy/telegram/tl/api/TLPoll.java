@@ -9,6 +9,7 @@ import com.github.badoualy.telegram.tl.core.TLVector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.Integer;
 import java.lang.Override;
 import java.lang.String;
 import java.lang.SuppressWarnings;
@@ -36,12 +37,16 @@ public class TLPoll extends TLObject {
 
     protected TLVector<TLPollAnswer> answers;
 
+    protected Integer closePeriod;
+
+    protected Integer closeDate;
+
     private final String _constructor = "poll#0";
 
     public TLPoll() {
     }
 
-    public TLPoll(long id, boolean closed, boolean publicVoters, boolean multipleChoice, boolean quiz, String question, TLVector<TLPollAnswer> answers) {
+    public TLPoll(long id, boolean closed, boolean publicVoters, boolean multipleChoice, boolean quiz, String question, TLVector<TLPollAnswer> answers, Integer closePeriod, Integer closeDate) {
         this.id = id;
         this.closed = closed;
         this.publicVoters = publicVoters;
@@ -49,6 +54,8 @@ public class TLPoll extends TLObject {
         this.quiz = quiz;
         this.question = question;
         this.answers = answers;
+        this.closePeriod = closePeriod;
+        this.closeDate = closeDate;
     }
 
     private void computeFlags() {
@@ -57,6 +64,8 @@ public class TLPoll extends TLObject {
         flags = publicVoters ? (flags | 2) : (flags & ~2);
         flags = multipleChoice ? (flags | 4) : (flags & ~4);
         flags = quiz ? (flags | 8) : (flags & ~8);
+        flags = closePeriod != null ? (flags | 16) : (flags & ~16);
+        flags = closeDate != null ? (flags | 32) : (flags & ~32);
     }
 
     @Override
@@ -67,6 +76,14 @@ public class TLPoll extends TLObject {
         writeInt(flags, stream);
         writeString(question, stream);
         writeTLVector(answers, stream);
+        if ((flags & 16) != 0) {
+            if (closePeriod == null) throwNullFieldException("closePeriod", flags);
+            writeInt(closePeriod, stream);
+        }
+        if ((flags & 32) != 0) {
+            if (closeDate == null) throwNullFieldException("closeDate", flags);
+            writeInt(closeDate, stream);
+        }
     }
 
     @Override
@@ -80,6 +97,8 @@ public class TLPoll extends TLObject {
         quiz = (flags & 8) != 0;
         question = readTLString(stream);
         answers = readTLVector(stream, context);
+        closePeriod = (flags & 16) != 0 ? readInt(stream) : null;
+        closeDate = (flags & 32) != 0 ? readInt(stream) : null;
     }
 
     @Override
@@ -91,6 +110,14 @@ public class TLPoll extends TLObject {
         size += SIZE_INT32;
         size += computeTLStringSerializedSize(question);
         size += answers.computeSerializedSize();
+        if ((flags & 16) != 0) {
+            if (closePeriod == null) throwNullFieldException("closePeriod", flags);
+            size += SIZE_INT32;
+        }
+        if ((flags & 32) != 0) {
+            if (closeDate == null) throwNullFieldException("closeDate", flags);
+            size += SIZE_INT32;
+        }
         return size;
     }
 
@@ -158,5 +185,21 @@ public class TLPoll extends TLObject {
 
     public void setAnswers(TLVector<TLPollAnswer> answers) {
         this.answers = answers;
+    }
+
+    public Integer getClosePeriod() {
+        return closePeriod;
+    }
+
+    public void setClosePeriod(Integer closePeriod) {
+        this.closePeriod = closePeriod;
+    }
+
+    public Integer getCloseDate() {
+        return closeDate;
+    }
+
+    public void setCloseDate(Integer closeDate) {
+        this.closeDate = closeDate;
     }
 }

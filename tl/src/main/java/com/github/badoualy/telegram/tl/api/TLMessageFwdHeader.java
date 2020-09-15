@@ -38,12 +38,14 @@ public class TLMessageFwdHeader extends TLObject {
 
     protected Integer savedFromMsgId;
 
+    protected String psaType;
+
     private final String _constructor = "messageFwdHeader#0";
 
     public TLMessageFwdHeader() {
     }
 
-    public TLMessageFwdHeader(Integer fromId, String fromName, int date, Integer channelId, Integer channelPost, String postAuthor, TLAbsPeer savedFromPeer, Integer savedFromMsgId) {
+    public TLMessageFwdHeader(Integer fromId, String fromName, int date, Integer channelId, Integer channelPost, String postAuthor, TLAbsPeer savedFromPeer, Integer savedFromMsgId, String psaType) {
         this.fromId = fromId;
         this.fromName = fromName;
         this.date = date;
@@ -52,6 +54,7 @@ public class TLMessageFwdHeader extends TLObject {
         this.postAuthor = postAuthor;
         this.savedFromPeer = savedFromPeer;
         this.savedFromMsgId = savedFromMsgId;
+        this.psaType = psaType;
     }
 
     private void computeFlags() {
@@ -63,6 +66,7 @@ public class TLMessageFwdHeader extends TLObject {
         flags = postAuthor != null ? (flags | 8) : (flags & ~8);
         flags = savedFromPeer != null ? (flags | 16) : (flags & ~16);
         flags = savedFromMsgId != null ? (flags | 16) : (flags & ~16);
+        flags = psaType != null ? (flags | 64) : (flags & ~64);
     }
 
     @Override
@@ -99,6 +103,10 @@ public class TLMessageFwdHeader extends TLObject {
             if (savedFromMsgId == null) throwNullFieldException("savedFromMsgId", flags);
             writeInt(savedFromMsgId, stream);
         }
+        if ((flags & 64) != 0) {
+            if (psaType == null) throwNullFieldException("psaType", flags);
+            writeString(psaType, stream);
+        }
     }
 
     @Override
@@ -113,6 +121,7 @@ public class TLMessageFwdHeader extends TLObject {
         postAuthor = (flags & 8) != 0 ? readTLString(stream) : null;
         savedFromPeer = (flags & 16) != 0 ? readTLObject(stream, context, TLAbsPeer.class, -1) : null;
         savedFromMsgId = (flags & 16) != 0 ? readInt(stream) : null;
+        psaType = (flags & 64) != 0 ? readTLString(stream) : null;
     }
 
     @Override
@@ -149,6 +158,10 @@ public class TLMessageFwdHeader extends TLObject {
         if ((flags & 16) != 0) {
             if (savedFromMsgId == null) throwNullFieldException("savedFromMsgId", flags);
             size += SIZE_INT32;
+        }
+        if ((flags & 64) != 0) {
+            if (psaType == null) throwNullFieldException("psaType", flags);
+            size += computeTLStringSerializedSize(psaType);
         }
         return size;
     }
@@ -225,5 +238,13 @@ public class TLMessageFwdHeader extends TLObject {
 
     public void setSavedFromMsgId(Integer savedFromMsgId) {
         this.savedFromMsgId = savedFromMsgId;
+    }
+
+    public String getPsaType() {
+        return psaType;
+    }
+
+    public void setPsaType(String psaType) {
+        this.psaType = psaType;
     }
 }

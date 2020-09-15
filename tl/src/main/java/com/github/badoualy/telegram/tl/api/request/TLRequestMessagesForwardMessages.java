@@ -33,8 +33,6 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
 
     protected boolean withMyScore;
 
-    protected boolean grouped;
-
     protected TLAbsInputPeer fromPeer;
 
     protected TLIntVector id;
@@ -50,11 +48,10 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
     public TLRequestMessagesForwardMessages() {
     }
 
-    public TLRequestMessagesForwardMessages(boolean silent, boolean background, boolean withMyScore, boolean grouped, TLAbsInputPeer fromPeer, TLIntVector id, TLLongVector randomId, TLAbsInputPeer toPeer, Integer scheduleDate) {
+    public TLRequestMessagesForwardMessages(boolean silent, boolean background, boolean withMyScore, TLAbsInputPeer fromPeer, TLIntVector id, TLLongVector randomId, TLAbsInputPeer toPeer, Integer scheduleDate) {
         this.silent = silent;
         this.background = background;
         this.withMyScore = withMyScore;
-        this.grouped = grouped;
         this.fromPeer = fromPeer;
         this.id = id;
         this.randomId = randomId;
@@ -80,7 +77,6 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
         flags = silent ? (flags | 32) : (flags & ~32);
         flags = background ? (flags | 64) : (flags & ~64);
         flags = withMyScore ? (flags | 256) : (flags & ~256);
-        flags = grouped ? (flags | 512) : (flags & ~512);
         flags = scheduleDate != null ? (flags | 1024) : (flags & ~1024);
     }
 
@@ -106,7 +102,6 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
         silent = (flags & 32) != 0;
         background = (flags & 64) != 0;
         withMyScore = (flags & 256) != 0;
-        grouped = (flags & 512) != 0;
         fromPeer = readTLObject(stream, context, TLAbsInputPeer.class, -1);
         id = readTLIntVector(stream, context);
         randomId = readTLLongVector(stream, context);
@@ -163,14 +158,6 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
 
     public void setWithMyScore(boolean withMyScore) {
         this.withMyScore = withMyScore;
-    }
-
-    public boolean getGrouped() {
-        return grouped;
-    }
-
-    public void setGrouped(boolean grouped) {
-        this.grouped = grouped;
     }
 
     public TLAbsInputPeer getFromPeer() {

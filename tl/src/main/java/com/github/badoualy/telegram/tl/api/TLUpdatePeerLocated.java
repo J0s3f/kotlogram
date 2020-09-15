@@ -19,14 +19,14 @@ import java.lang.SuppressWarnings;
 public class TLUpdatePeerLocated extends TLAbsUpdate {
     public static final int CONSTRUCTOR_ID = 0x0;
 
-    protected TLVector<TLPeerLocated> peers;
+    protected TLVector<TLAbsPeerLocated> peers;
 
     private final String _constructor = "updatePeerLocated#0";
 
     public TLUpdatePeerLocated() {
     }
 
-    public TLUpdatePeerLocated(TLVector<TLPeerLocated> peers) {
+    public TLUpdatePeerLocated(TLVector<TLAbsPeerLocated> peers) {
         this.peers = peers;
     }
 
@@ -58,11 +58,11 @@ public class TLUpdatePeerLocated extends TLAbsUpdate {
         return CONSTRUCTOR_ID;
     }
 
-    public TLVector<TLPeerLocated> getPeers() {
+    public TLVector<TLAbsPeerLocated> getPeers() {
         return peers;
     }
 
-    public void setPeers(TLVector<TLPeerLocated> peers) {
+    public void setPeers(TLVector<TLAbsPeerLocated> peers) {
         this.peers = peers;
     }
 }

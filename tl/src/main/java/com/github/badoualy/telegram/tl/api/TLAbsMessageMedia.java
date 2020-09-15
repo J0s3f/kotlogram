@@ -9,6 +9,7 @@ import com.github.badoualy.telegram.tl.core.TLObject;
  * Abstraction level for the following constructors:
  * <ul>
  * <li>{@link TLMessageMediaContact}: messageMediaContact#0</li>
+ * <li>{@link TLMessageMediaDice}: messageMediaDice#0</li>
  * <li>{@link TLMessageMediaDocument}: messageMediaDocument#0</li>
  * <li>{@link TLMessageMediaEmpty}: messageMediaEmpty#0</li>
  * <li>{@link TLMessageMediaGame}: messageMediaGame#0</li>

@@ -3,9 +3,7 @@ package com.github.badoualy.telegram.tl.builder.poet
 import com.github.badoualy.telegram.tl.builder.*
 import com.github.badoualy.telegram.tl.builder.parser.*
 import com.squareup.javapoet.*
-import java.io.IOException
-import java.io.InputStream
-import java.io.OutputStream
+import java.io.*
 import java.util.*
 import javax.lang.model.element.Modifier
 
@@ -121,12 +119,12 @@ object JavaPoet {
         println("${methods.size} methods related classes")
 
         apiWrappedClazz.addMethod(MethodSpec.methodBuilder("executeRpcQuery")
-                                          .addException(TYPE_RPC_EXCEPTION).addException(IOException::class.java)
-                                          .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                                          .addTypeVariable(TypeVariableName.get("T", TYPE_TL_OBJECT))
-                                          .returns(TypeVariableName.get("T"))
-                                          .addParameter(ParameterizedTypeName.get(TYPE_TL_METHOD, TypeVariableName.get("T")), "method")
-                                          .build())
+                .addException(TYPE_RPC_EXCEPTION).addException(IOException::class.java)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .addTypeVariable(TypeVariableName.get("T", TYPE_TL_OBJECT))
+                .returns(TypeVariableName.get("T"))
+                .addParameter(ParameterizedTypeName.get(TYPE_TL_METHOD, TypeVariableName.get("T")), "method")
+                .build())
 
         methods.forEach { method -> writeClassToFile(PACKAGE_TL_API_REQUEST, generateMethodClass(method)) }
 
@@ -148,13 +146,13 @@ object JavaPoet {
         contextClazz.addField(TYPE_TL_API_CONTEXT, "instance", Modifier.PRIVATE, Modifier.STATIC)
 
         contextClazz.addMethod(MethodSpec.methodBuilder("getInstance")
-                                       .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                                       .returns(TYPE_TL_API_CONTEXT)
-                                       .beginControlFlow("if (instance == null)")
-                                       .addStatement("instance = new \$T()", TYPE_TL_API_CONTEXT)
-                                       .endControlFlow()
-                                       .addStatement("return instance")
-                                       .build())
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(TYPE_TL_API_CONTEXT)
+                .beginControlFlow("if (instance == null)")
+                .addStatement("instance = new \$T()", TYPE_TL_API_CONTEXT)
+                .endControlFlow()
+                .addStatement("return instance")
+                .build())
 
         val methodBuilder = MethodSpec.methodBuilder("init").addModifiers(Modifier.PUBLIC).addAnnotation(Override::class.java)
         for (constructor in contextConstructors.sorted()) {
@@ -181,13 +179,13 @@ object JavaPoet {
         contextClazz.addField(TYPE_TL_API_TEST_CONTEXT, "instance", Modifier.PRIVATE, Modifier.STATIC)
 
         contextClazz.addMethod(MethodSpec.methodBuilder("getInstance")
-                                       .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                                       .returns(TYPE_TL_API_TEST_CONTEXT)
-                                       .beginControlFlow("if (instance == null)")
-                                       .addStatement("instance = new \$T()", TYPE_TL_API_TEST_CONTEXT)
-                                       .endControlFlow()
-                                       .addStatement("return instance")
-                                       .build())
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .returns(TYPE_TL_API_TEST_CONTEXT)
+                .beginControlFlow("if (instance == null)")
+                .addStatement("instance = new \$T()", TYPE_TL_API_TEST_CONTEXT)
+                .endControlFlow()
+                .addStatement("return instance")
+                .build())
 
         val methodBuilder = MethodSpec.methodBuilder("init").addModifiers(Modifier.PUBLIC).addAnnotation(Override::class.java)
         for (clazzType in testContext.sortedBy { it.simpleName() }) {
@@ -218,33 +216,33 @@ object JavaPoet {
             val emptyConstructor = constructors.find { c -> c.name.endsWith("empty", true) }!!
 
             clazz.addMethod(MethodSpec.methodBuilder("isEmpty")
-                                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                                    .returns(TypeName.BOOLEAN)
-                                    .build())
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                    .returns(TypeName.BOOLEAN)
+                    .build())
 
             clazz.addMethod(MethodSpec.methodBuilder("isNotEmpty")
-                                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                                    .returns(TypeName.BOOLEAN)
-                                    .build())
+                    .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                    .returns(TypeName.BOOLEAN)
+                    .build())
 
             clazz.addMethod(MethodSpec.methodBuilder("getAs" + nonEmptyConstructor.name.split(".").last().uCamelCase())
-                                    .addModifiers(Modifier.PUBLIC)
-                                    .returns(constructorClassNameMap[nonEmptyConstructor])
-                                    .addStatement("return null")
-                                    .build())
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(constructorClassNameMap[nonEmptyConstructor])
+                    .addStatement("return null")
+                    .build())
 
             if (constructor.name.startsWith("input", true)) {
                 clazz.addMethod(MethodSpec.methodBuilder("newEmpty")
-                                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                                        .returns(constructorClassNameMap[emptyConstructor])
-                                        .addStatement("return new \$T()", constructorClassNameMap[emptyConstructor])
-                                        .build())
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .returns(constructorClassNameMap[emptyConstructor])
+                        .addStatement("return new \$T()", constructorClassNameMap[emptyConstructor])
+                        .build())
 
                 clazz.addMethod(MethodSpec.methodBuilder("newNotEmpty")
-                                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                                        .returns(constructorClassNameMap[nonEmptyConstructor])
-                                        .addStatement("return new \$T()", constructorClassNameMap[nonEmptyConstructor])
-                                        .build())
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                        .returns(constructorClassNameMap[nonEmptyConstructor])
+                        .addStatement("return new \$T()", constructorClassNameMap[nonEmptyConstructor])
+                        .build())
             }
         }
 
@@ -258,32 +256,33 @@ object JavaPoet {
         val clazz = TypeSpec.classBuilder(className(constructor.name))
                 .addModifiers(Modifier.PUBLIC)
                 .superclass(superclass)
+
         val clazzTypeName = constructorClassNameMap[constructor]!!
 
         generateClassCommon(clazz, clazzTypeName, constructor.name, constructor.id, constructor.parameters)
 
         if (emptyConstructorAbstractedMap.getOrDefault(constructor, false)) {
             clazz.addMethod(MethodSpec.methodBuilder("isEmpty")
-                                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                                    .addAnnotation(Override::class.java)
-                                    .returns(TypeName.BOOLEAN)
-                                    .addStatement("return \$L", constructor.name.endsWith("empty", true))
-                                    .build())
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addAnnotation(Override::class.java)
+                    .returns(TypeName.BOOLEAN)
+                    .addStatement("return \$L", constructor.name.endsWith("empty", true))
+                    .build())
 
             clazz.addMethod(MethodSpec.methodBuilder("isNotEmpty")
-                                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                                    .addAnnotation(Override::class.java)
-                                    .returns(TypeName.BOOLEAN)
-                                    .addStatement("return \$L", !constructor.name.endsWith("empty", true))
-                                    .build())
+                    .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                    .addAnnotation(Override::class.java)
+                    .returns(TypeName.BOOLEAN)
+                    .addStatement("return \$L", !constructor.name.endsWith("empty", true))
+                    .build())
 
             if (!constructor.name.endsWith("empty", true)) {
                 clazz.addMethod(MethodSpec.methodBuilder("getAs" + constructor.name.split(".").last().uCamelCase())
-                                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                                        .addAnnotation(Override::class.java)
-                                        .returns(clazzTypeName)
-                                        .addStatement("return this")
-                                        .build())
+                        .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                        .addAnnotation(Override::class.java)
+                        .returns(clazzTypeName)
+                        .addStatement("return this")
+                        .build())
             }
         }
 
@@ -346,11 +345,11 @@ object JavaPoet {
                 .addException(TYPE_RPC_EXCEPTION).addException(IOException::class.java)
                 .returns(responseType)
                 .addStatement("return (\$T) executeRpcQuery(new \$T(\$L))",
-                              responseType,
-                              clazzTypeName,
-                              if (method.parameters.isNotEmpty())
-                                  method.parameters.filterNot { it.tlType is TLTypeFlag }.map { it.name.lCamelCase().javaEscape() }.joinToString(", ")
-                              else "")
+                        responseType,
+                        clazzTypeName,
+                        if (method.parameters.isNotEmpty())
+                            method.parameters.filterNot { it.tlType is TLTypeFlag }.map { it.name.lCamelCase().javaEscape() }.joinToString(", ")
+                        else "")
         generateClassCommon(clazz, clazzTypeName, method.name, method.id, method.parameters)
         apiClazz.addMethod(apiMethod?.build())
         apiWrappedClazz.addMethod(apiWrappedMethod?.build())
@@ -364,7 +363,7 @@ object JavaPoet {
         if (id != null) {
             // CONSTRUCTOR_ID field
             clazz.addField(FieldSpec.builder(TypeName.INT, "CONSTRUCTOR_ID", Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                                   .initializer("0x${hex(id)}").build())
+                    .initializer("0x${hex(id)}").build())
 
             if (clazzTypeName != null)
                 testContext.add(clazzTypeName)
@@ -424,21 +423,19 @@ object JavaPoet {
                 val realType = tlType.realType
                 val fieldName = parameter.name.lCamelCase().javaEscape()
 
-                if (realType is TLTypeRaw && arrayOf("true", "false").contains(realType.name)) {
+                if (realType is TLTypeRaw && arrayOf("true", "false", "Bool").contains(realType.name)) {
                     computeFlagsMethod.addStatement("flags = $fieldName ? (flags | ${tlType.pow2Value()}) : (flags & ~${tlType.pow2Value()})")
                     if (condParameters.any {
-                        (it != parameter
-                                && !((it.tlType as TLTypeConditional).realType is TLTypeRaw && (it.tlType.realType as TLTypeRaw).name == "Bool")
-                                && (it.tlType as TLTypeConditional).value == tlType.value)
-                    })
+                                (it != parameter
+                                        && !((it.tlType as TLTypeConditional).realType is TLTypeRaw && (it.tlType.realType as TLTypeRaw).name == "Bool")
+                                        && (it.tlType as TLTypeConditional).value == tlType.value)
+                            })
                         condBoolean.add(parameter)
+                } else if (realType is TLTypeRaw && realType.name == "Bool" && condParameters.any { it != parameter && (it.tlType as TLTypeConditional).value == tlType.value }) {
+                    computeFlagsMethod.addCode("// If field is not serialized force it to false\n")
+                    computeFlagsMethod.addStatement("if ($fieldName && (flags & ${tlType.pow2Value()}) == 0) $fieldName = false")
                 } else {
-                    if (realType is TLTypeRaw && realType.name == "Bool" && condParameters.any { it != parameter && (it.tlType as TLTypeConditional).value == tlType.value }) {
-                        computeFlagsMethod.addCode("// If field is not serialized force it to false\n")
-                        computeFlagsMethod.addStatement("if ($fieldName && (flags & ${tlType.pow2Value()}) == 0) $fieldName = false")
-                    } else {
-                        computeFlagsMethod.addStatement("flags = $fieldName != null ? (flags | ${tlType.pow2Value()}) : (flags & ~${tlType.pow2Value()})")
-                    }
+                    computeFlagsMethod.addStatement("flags = $fieldName != null ? (flags | ${tlType.pow2Value()}) : (flags & ~${tlType.pow2Value()})")
                 }
             }
 
@@ -467,7 +464,7 @@ object JavaPoet {
             var fieldType = getType(fieldTlType)
             if (fieldType is ParameterizedTypeName
                     && (fieldTlType is TLTypeGeneric
-                    || (fieldTlType is TLTypeConditional && fieldTlType.realType is TLTypeGeneric))) {
+                            || (fieldTlType is TLTypeConditional && fieldTlType.realType is TLTypeGeneric))) {
                 //val typeArg = WildcardTypeName.subtypeOf(fieldType.typeArguments.first()) TODO FIX
                 val typeArg = fieldType.typeArguments.first()
                 fieldType = ParameterizedTypeName.get(fieldType.rawType, typeArg)
@@ -530,25 +527,25 @@ object JavaPoet {
 
             // _constructor
             clazz.addField(FieldSpec.builder(String::class.java, "_constructor")
-                                   .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
-                                   .initializer("\$S", "$name#${hex(id)}")
-                                   .build())
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                    .initializer("\$S", "$name#${hex(id)}")
+                    .build())
 
             // toString()
             clazz.addMethod(MethodSpec.methodBuilder("toString")
-                                    .addAnnotation(Override::class.java)
-                                    .addModifiers(Modifier.PUBLIC)
-                                    .returns(String::class.java)
-                                    .addStatement("return _constructor")
-                                    .build())
+                    .addAnnotation(Override::class.java)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(String::class.java)
+                    .addStatement("return _constructor")
+                    .build())
 
             // getConstructorId
             clazz.addMethod(MethodSpec.methodBuilder("getConstructorId")
-                                    .addAnnotation(Override::class.java)
-                                    .addModifiers(Modifier.PUBLIC)
-                                    .returns(TypeName.INT)
-                                    .addStatement("return CONSTRUCTOR_ID")
-                                    .build())
+                    .addAnnotation(Override::class.java)
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(TypeName.INT)
+                    .addStatement("return CONSTRUCTOR_ID")
+                    .build())
 
             if (equalsStatements.isEmpty()) equalsMethod.addStatement("return true")
             else equalsMethod.addStatement(equalsStatements.joinToString("\n&& ", prefix = "return "))
