@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputPaymentCredentialsAndroidPay extends TLAbsInputPaymentCredentials {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xca05d50e;
 
     protected TLDataJSON paymentToken;
 
     protected String googleTransactionId;
 
-    private final String _constructor = "inputPaymentCredentialsAndroidPay#0";
+    private final String _constructor = "inputPaymentCredentialsAndroidPay#ca05d50e";
 
     public TLInputPaymentCredentialsAndroidPay() {
     }

@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesSetBotShippingResults extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe5f672fa;
 
     protected int flags;
 
@@ -31,7 +31,7 @@ public class TLRequestMessagesSetBotShippingResults extends TLMethod<TLBool> {
 
     protected TLVector<TLShippingOption> shippingOptions;
 
-    private final String _constructor = "messages.setBotShippingResults#0";
+    private final String _constructor = "messages.setBotShippingResults#e5f672fa";
 
     public TLRequestMessagesSetBotShippingResults() {
     }

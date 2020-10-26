@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLStickerSet extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb60a24a6;
 
     protected com.github.badoualy.telegram.tl.api.TLStickerSet set;
 
@@ -28,7 +28,7 @@ public class TLStickerSet extends TLObject {
 
     protected TLVector<TLAbsDocument> documents;
 
-    private final String _constructor = "messages.stickerSet#0";
+    private final String _constructor = "messages.stickerSet#b60a24a6";
 
     public TLStickerSet() {
     }

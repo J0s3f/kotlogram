@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDocumentAttributeFilename extends TLAbsDocumentAttribute {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x15590068;
 
     protected String fileName;
 
-    private final String _constructor = "documentAttributeFilename#0";
+    private final String _constructor = "documentAttributeFilename#15590068";
 
     public TLDocumentAttributeFilename() {
     }

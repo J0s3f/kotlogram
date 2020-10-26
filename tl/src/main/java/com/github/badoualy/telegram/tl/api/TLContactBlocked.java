@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLContactBlocked extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x561bc879;
 
     protected int userId;
 
     protected int date;
 
-    private final String _constructor = "contactBlocked#0";
+    private final String _constructor = "contactBlocked#561bc879";
 
     public TLContactBlocked() {
     }

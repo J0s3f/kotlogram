@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLSecureRequiredType}: secureRequiredType#0</li>
- * <li>{@link TLSecureRequiredTypeOneOf}: secureRequiredTypeOneOf#0</li>
+ * <li>{@link TLSecureRequiredType}: secureRequiredType#829d99da</li>
+ * <li>{@link TLSecureRequiredTypeOneOf}: secureRequiredTypeOneOf#27477b4</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdatePeerLocated extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb4afcfb0;
 
     protected TLVector<TLAbsPeerLocated> peers;
 
-    private final String _constructor = "updatePeerLocated#0";
+    private final String _constructor = "updatePeerLocated#b4afcfb0";
 
     public TLUpdatePeerLocated() {
     }

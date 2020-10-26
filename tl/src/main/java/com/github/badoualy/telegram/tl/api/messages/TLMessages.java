@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessages extends TLAbsMessages {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8c718e87;
 
     protected TLVector<TLAbsMessage> messages;
 
@@ -28,7 +28,7 @@ public class TLMessages extends TLAbsMessages {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "messages.messages#0";
+    private final String _constructor = "messages.messages#8c718e87";
 
     public TLMessages() {
     }

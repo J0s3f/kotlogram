@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputBotInlineMessageMediaGeo extends TLAbsInputBotInlineMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc1b15d65;
 
     protected TLAbsInputGeoPoint geoPoint;
 
     protected int period;
 
-    private final String _constructor = "inputBotInlineMessageMediaGeo#0";
+    private final String _constructor = "inputBotInlineMessageMediaGeo#c1b15d65";
 
     public TLInputBotInlineMessageMediaGeo() {
     }

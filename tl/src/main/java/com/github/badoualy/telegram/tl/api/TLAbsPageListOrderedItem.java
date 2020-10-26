@@ -9,8 +9,8 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLPageListOrderedItemBlocks}: pageListOrderedItemBlocks#0</li>
- * <li>{@link TLPageListOrderedItemText}: pageListOrderedItemText#0</li>
+ * <li>{@link TLPageListOrderedItemBlocks}: pageListOrderedItemBlocks#98dd8936</li>
+ * <li>{@link TLPageListOrderedItemText}: pageListOrderedItemText#5e068047</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

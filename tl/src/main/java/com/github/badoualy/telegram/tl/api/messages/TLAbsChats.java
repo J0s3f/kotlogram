@@ -10,8 +10,8 @@ import com.github.badoualy.telegram.tl.core.TLVector;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLChats}: messages.chats#0</li>
- * <li>{@link TLChatsSlice}: messages.chatsSlice#0</li>
+ * <li>{@link TLChats}: messages.chats#64ff9fd5</li>
+ * <li>{@link TLChatsSlice}: messages.chatsSlice#9cd81144</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

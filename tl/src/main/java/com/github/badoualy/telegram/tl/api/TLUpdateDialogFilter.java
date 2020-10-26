@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateDialogFilter extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x26ffde7d;
 
     protected int flags;
 
@@ -24,7 +24,7 @@ public class TLUpdateDialogFilter extends TLAbsUpdate {
 
     protected TLDialogFilter filter;
 
-    private final String _constructor = "updateDialogFilter#0";
+    private final String _constructor = "updateDialogFilter#26ffde7d";
 
     public TLUpdateDialogFilter() {
     }

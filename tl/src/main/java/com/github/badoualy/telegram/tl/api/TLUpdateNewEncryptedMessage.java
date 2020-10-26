@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateNewEncryptedMessage extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x12bcbd9a;
 
     protected TLAbsEncryptedMessage message;
 
     protected int qts;
 
-    private final String _constructor = "updateNewEncryptedMessage#0";
+    private final String _constructor = "updateNewEncryptedMessage#12bcbd9a";
 
     public TLUpdateNewEncryptedMessage() {
     }

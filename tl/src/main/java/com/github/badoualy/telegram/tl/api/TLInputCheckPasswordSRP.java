@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputCheckPasswordSRP extends TLAbsInputCheckPasswordSRP {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd27ff082;
 
     protected long srpId;
 
@@ -25,7 +25,7 @@ public class TLInputCheckPasswordSRP extends TLAbsInputCheckPasswordSRP {
 
     protected TLBytes m1;
 
-    private final String _constructor = "inputCheckPasswordSRP#0";
+    private final String _constructor = "inputCheckPasswordSRP#d27ff082";
 
     public TLInputCheckPasswordSRP() {
     }

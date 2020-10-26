@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputAppEvent extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1d1b1245;
 
     protected double time;
 
@@ -27,7 +27,7 @@ public class TLInputAppEvent extends TLObject {
 
     protected TLAbsJSONValue data;
 
-    private final String _constructor = "inputAppEvent#0";
+    private final String _constructor = "inputAppEvent#1d1b1245";
 
     public TLInputAppEvent() {
     }

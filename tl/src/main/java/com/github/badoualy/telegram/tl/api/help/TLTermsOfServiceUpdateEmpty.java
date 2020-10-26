@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTermsOfServiceUpdateEmpty extends TLAbsTermsOfServiceUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe3309f7f;
 
-    private final String _constructor = "help.termsOfServiceUpdateEmpty#0";
+    private final String _constructor = "help.termsOfServiceUpdateEmpty#e3309f7f";
 
     public TLTermsOfServiceUpdateEmpty() {
     }

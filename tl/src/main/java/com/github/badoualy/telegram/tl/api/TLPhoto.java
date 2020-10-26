@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoto extends TLAbsPhoto {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd07504a5;
 
     protected int flags;
 
@@ -34,7 +34,7 @@ public class TLPhoto extends TLAbsPhoto {
 
     protected int dcId;
 
-    private final String _constructor = "photo#0";
+    private final String _constructor = "photo#d07504a5";
 
     public TLPhoto() {
     }

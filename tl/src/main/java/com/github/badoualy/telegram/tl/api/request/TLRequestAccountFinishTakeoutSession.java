@@ -19,13 +19,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountFinishTakeoutSession extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1d2652ee;
 
     protected int flags;
 
     protected boolean success;
 
-    private final String _constructor = "account.finishTakeoutSession#0";
+    private final String _constructor = "account.finishTakeoutSession#1d2652ee";
 
     public TLRequestAccountFinishTakeoutSession() {
     }

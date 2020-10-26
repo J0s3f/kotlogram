@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessage extends TLAbsMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x452c0e65;
 
     protected int flags;
 
@@ -69,7 +69,7 @@ public class TLMessage extends TLAbsMessage {
 
     protected TLVector<TLRestrictionReason> restrictionReason;
 
-    private final String _constructor = "message#0";
+    private final String _constructor = "message#452c0e65";
 
     public TLMessage() {
     }

@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetUnreadMentions extends TLMethod<TLAbsMessages> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x46578472;
 
     protected TLAbsInputPeer peer;
 
@@ -34,7 +34,7 @@ public class TLRequestMessagesGetUnreadMentions extends TLMethod<TLAbsMessages> 
 
     protected int minId;
 
-    private final String _constructor = "messages.getUnreadMentions#0";
+    private final String _constructor = "messages.getUnreadMentions#46578472";
 
     public TLRequestMessagesGetUnreadMentions() {
     }

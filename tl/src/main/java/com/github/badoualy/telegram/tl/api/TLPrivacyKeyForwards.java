@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPrivacyKeyForwards extends TLAbsPrivacyKey {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x69ec56a3;
 
-    private final String _constructor = "privacyKeyForwards#0";
+    private final String _constructor = "privacyKeyForwards#69ec56a3";
 
     public TLPrivacyKeyForwards() {
     }

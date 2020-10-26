@@ -22,7 +22,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPhoneAcceptCall extends TLMethod<TLPhoneCall> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3bd2b4a0;
 
     protected TLInputPhoneCall peer;
 
@@ -30,7 +30,7 @@ public class TLRequestPhoneAcceptCall extends TLMethod<TLPhoneCall> {
 
     protected TLPhoneCallProtocol protocol;
 
-    private final String _constructor = "phone.acceptCall#0";
+    private final String _constructor = "phone.acceptCall#3bd2b4a0";
 
     public TLRequestPhoneAcceptCall() {
     }

@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAuthExportLoginToken extends TLMethod<TLAbsLoginToken> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb1b41517;
 
     protected int apiId;
 
@@ -28,7 +28,7 @@ public class TLRequestAuthExportLoginToken extends TLMethod<TLAbsLoginToken> {
 
     protected TLIntVector exceptIds;
 
-    private final String _constructor = "auth.exportLoginToken#0";
+    private final String _constructor = "auth.exportLoginToken#b1b41517";
 
     public TLRequestAuthExportLoginToken() {
     }

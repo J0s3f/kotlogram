@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageMediaVenue extends TLAbsMessageMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2ec0533f;
 
     protected TLAbsGeoPoint geo;
 
@@ -30,7 +30,7 @@ public class TLMessageMediaVenue extends TLAbsMessageMedia {
 
     protected String venueType;
 
-    private final String _constructor = "messageMediaVenue#0";
+    private final String _constructor = "messageMediaVenue#2ec0533f";
 
     public TLMessageMediaVenue() {
     }

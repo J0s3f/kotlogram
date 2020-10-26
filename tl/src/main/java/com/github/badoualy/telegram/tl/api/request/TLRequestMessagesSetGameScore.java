@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesSetGameScore extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8ef8ecc0;
 
     protected int flags;
 
@@ -37,7 +37,7 @@ public class TLRequestMessagesSetGameScore extends TLMethod<TLAbsUpdates> {
 
     protected int score;
 
-    private final String _constructor = "messages.setGameScore#0";
+    private final String _constructor = "messages.setGameScore#8ef8ecc0";
 
     public TLRequestMessagesSetGameScore() {
     }

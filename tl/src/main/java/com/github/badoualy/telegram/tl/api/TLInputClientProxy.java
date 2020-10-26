@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputClientProxy extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x75588b3f;
 
     protected String address;
 
     protected int port;
 
-    private final String _constructor = "inputClientProxy#0";
+    private final String _constructor = "inputClientProxy#75588b3f";
 
     public TLInputClientProxy() {
     }

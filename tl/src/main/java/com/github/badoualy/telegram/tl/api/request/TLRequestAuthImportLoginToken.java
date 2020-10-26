@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAuthImportLoginToken extends TLMethod<TLAbsLoginToken> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x95ac5ce4;
 
     protected TLBytes token;
 
-    private final String _constructor = "auth.importLoginToken#0";
+    private final String _constructor = "auth.importLoginToken#95ac5ce4";
 
     public TLRequestAuthImportLoginToken() {
     }

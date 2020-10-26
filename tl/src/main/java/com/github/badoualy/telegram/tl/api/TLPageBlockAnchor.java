@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockAnchor extends TLAbsPageBlock {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xce0d37b0;
 
     protected String name;
 
-    private final String _constructor = "pageBlockAnchor#0";
+    private final String _constructor = "pageBlockAnchor#ce0d37b0";
 
     public TLPageBlockAnchor() {
     }

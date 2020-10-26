@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestStickersRemoveStickerFromSet extends TLMethod<TLStickerSet> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf7760f51;
 
     protected TLAbsInputDocument sticker;
 
-    private final String _constructor = "stickers.removeStickerFromSet#0";
+    private final String _constructor = "stickers.removeStickerFromSet#f7760f51";
 
     public TLRequestStickersRemoveStickerFromSet() {
     }

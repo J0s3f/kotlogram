@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountVerifyPhone extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4dd3a7f6;
 
     protected String phoneNumber;
 
@@ -27,7 +27,7 @@ public class TLRequestAccountVerifyPhone extends TLMethod<TLBool> {
 
     protected String phoneCode;
 
-    private final String _constructor = "account.verifyPhone#0";
+    private final String _constructor = "account.verifyPhone#4dd3a7f6";
 
     public TLRequestAccountVerifyPhone() {
     }

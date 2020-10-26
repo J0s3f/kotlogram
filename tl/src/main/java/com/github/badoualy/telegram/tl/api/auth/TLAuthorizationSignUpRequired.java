@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLAuthorizationSignUpRequired extends TLAbsAuthorization {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x44747e9a;
 
     protected TLTermsOfService termsOfService;
 
-    private final String _constructor = "auth.authorizationSignUpRequired#0";
+    private final String _constructor = "auth.authorizationSignUpRequired#44747e9a";
 
     public TLAuthorizationSignUpRequired() {
     }

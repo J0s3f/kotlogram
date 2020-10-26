@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLWebPagePending extends TLAbsWebPage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc586da1c;
 
     protected long id;
 
     protected int date;
 
-    private final String _constructor = "webPagePending#0";
+    private final String _constructor = "webPagePending#c586da1c";
 
     public TLWebPagePending() {
     }

@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDocumentAttributeVideo extends TLAbsDocumentAttribute {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xef02ce6;
 
     protected int flags;
 
@@ -30,7 +30,7 @@ public class TLDocumentAttributeVideo extends TLAbsDocumentAttribute {
 
     protected int h;
 
-    private final String _constructor = "documentAttributeVideo#0";
+    private final String _constructor = "documentAttributeVideo#ef02ce6";
 
     public TLDocumentAttributeVideo() {
     }

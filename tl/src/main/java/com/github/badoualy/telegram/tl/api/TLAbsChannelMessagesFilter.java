@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLChannelMessagesFilter}: channelMessagesFilter#0</li>
- * <li>{@link TLChannelMessagesFilterEmpty}: channelMessagesFilterEmpty#0</li>
+ * <li>{@link TLChannelMessagesFilter}: channelMessagesFilter#cd77d957</li>
+ * <li>{@link TLChannelMessagesFilterEmpty}: channelMessagesFilterEmpty#94d42ee7</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

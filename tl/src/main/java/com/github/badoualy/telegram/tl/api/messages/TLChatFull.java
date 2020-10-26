@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChatFull extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe5d7d19c;
 
     protected TLAbsChatFull fullChat;
 
@@ -29,7 +29,7 @@ public class TLChatFull extends TLObject {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "messages.chatFull#0";
+    private final String _constructor = "messages.chatFull#e5d7d19c";
 
     public TLChatFull() {
     }

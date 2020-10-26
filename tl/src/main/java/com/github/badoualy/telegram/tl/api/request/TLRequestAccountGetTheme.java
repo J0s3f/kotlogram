@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountGetTheme extends TLMethod<TLTheme> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8d9d742b;
 
     protected String format;
 
@@ -28,7 +28,7 @@ public class TLRequestAccountGetTheme extends TLMethod<TLTheme> {
 
     protected long documentId;
 
-    private final String _constructor = "account.getTheme#0";
+    private final String _constructor = "account.getTheme#8d9d742b";
 
     public TLRequestAccountGetTheme() {
     }

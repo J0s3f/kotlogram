@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPasswordKdfAlgoUnknown extends TLAbsPasswordKdfAlgo {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd45ab096;
 
-    private final String _constructor = "passwordKdfAlgoUnknown#0";
+    private final String _constructor = "passwordKdfAlgoUnknown#d45ab096";
 
     public TLPasswordKdfAlgoUnknown() {
     }

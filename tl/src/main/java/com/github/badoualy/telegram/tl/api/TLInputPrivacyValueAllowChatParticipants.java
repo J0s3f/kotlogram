@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputPrivacyValueAllowChatParticipants extends TLAbsInputPrivacyRule {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4c81c1ba;
 
     protected TLIntVector chats;
 
-    private final String _constructor = "inputPrivacyValueAllowChatParticipants#0";
+    private final String _constructor = "inputPrivacyValueAllowChatParticipants#4c81c1ba";
 
     public TLInputPrivacyValueAllowChatParticipants() {
     }

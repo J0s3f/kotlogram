@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x50ca4de1;
 
     protected int flags;
 
@@ -31,7 +31,7 @@ public class TLPhoneCallDiscarded extends TLAbsPhoneCall {
 
     protected Integer duration;
 
-    private final String _constructor = "phoneCallDiscarded#0";
+    private final String _constructor = "phoneCallDiscarded#50ca4de1";
 
     public TLPhoneCallDiscarded() {
     }

@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetRecentMeUrls extends TLMethod<TLRecentMeUrls> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3dc0f114;
 
     protected String referer;
 
-    private final String _constructor = "help.getRecentMeUrls#0";
+    private final String _constructor = "help.getRecentMeUrls#3dc0f114";
 
     public TLRequestHelpGetRecentMeUrls() {
     }

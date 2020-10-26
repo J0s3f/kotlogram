@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageEntityHashtag extends TLAbsMessageEntity {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6f635b0d;
 
-    private final String _constructor = "messageEntityHashtag#0";
+    private final String _constructor = "messageEntityHashtag#6f635b0d";
 
     public TLMessageEntityHashtag() {
     }

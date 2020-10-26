@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetEmojiURL extends TLMethod<TLEmojiURL> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd5b10c26;
 
     protected String langCode;
 
-    private final String _constructor = "messages.getEmojiURL#0";
+    private final String _constructor = "messages.getEmojiURL#d5b10c26";
 
     public TLRequestMessagesGetEmojiURL() {
     }

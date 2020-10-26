@@ -9,8 +9,8 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLFoundGif}: foundGif#0</li>
- * <li>{@link TLFoundGifCached}: foundGifCached#0</li>
+ * <li>{@link TLFoundGif}: foundGif#162ecc1f</li>
+ * <li>{@link TLFoundGifCached}: foundGifCached#9c750409</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

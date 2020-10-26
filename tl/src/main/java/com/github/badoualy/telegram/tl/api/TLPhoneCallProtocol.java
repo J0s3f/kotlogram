@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCallProtocol extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfc878fc8;
 
     protected int flags;
 
@@ -32,7 +32,7 @@ public class TLPhoneCallProtocol extends TLObject {
 
     protected TLStringVector libraryVersions;
 
-    private final String _constructor = "phoneCallProtocol#0";
+    private final String _constructor = "phoneCallProtocol#fc878fc8";
 
     public TLPhoneCallProtocol() {
     }

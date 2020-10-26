@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSecureValueTypeEmail extends TLAbsSecureValueType {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8e3ca7ee;
 
-    private final String _constructor = "secureValueTypeEmail#0";
+    private final String _constructor = "secureValueTypeEmail#8e3ca7ee";
 
     public TLSecureValueTypeEmail() {
     }

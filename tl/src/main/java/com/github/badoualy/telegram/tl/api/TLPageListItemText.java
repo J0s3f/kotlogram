@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageListItemText extends TLAbsPageListItem {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb92fb6cd;
 
     protected TLAbsRichText text;
 
-    private final String _constructor = "pageListItemText#0";
+    private final String _constructor = "pageListItemText#b92fb6cd";
 
     public TLPageListItemText() {
     }

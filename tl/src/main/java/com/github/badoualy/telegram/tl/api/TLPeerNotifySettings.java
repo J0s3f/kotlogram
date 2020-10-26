@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPeerNotifySettings extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xaf509d20;
 
     protected int flags;
 
@@ -30,7 +30,7 @@ public class TLPeerNotifySettings extends TLObject {
 
     protected String sound;
 
-    private final String _constructor = "peerNotifySettings#0";
+    private final String _constructor = "peerNotifySettings#af509d20";
 
     public TLPeerNotifySettings() {
     }

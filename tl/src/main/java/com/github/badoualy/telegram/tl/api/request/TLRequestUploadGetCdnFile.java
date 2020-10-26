@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestUploadGetCdnFile extends TLMethod<TLAbsCdnFile> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2000bcc3;
 
     protected TLBytes fileToken;
 
@@ -28,7 +28,7 @@ public class TLRequestUploadGetCdnFile extends TLMethod<TLAbsCdnFile> {
 
     protected int limit;
 
-    private final String _constructor = "upload.getCdnFile#0";
+    private final String _constructor = "upload.getCdnFile#2000bcc3";
 
     public TLRequestUploadGetCdnFile() {
     }

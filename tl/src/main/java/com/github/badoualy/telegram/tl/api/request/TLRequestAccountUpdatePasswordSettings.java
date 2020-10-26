@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountUpdatePasswordSettings extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa59b102f;
 
     protected TLAbsInputCheckPasswordSRP password;
 
     protected TLPasswordInputSettings newSettings;
 
-    private final String _constructor = "account.updatePasswordSettings#0";
+    private final String _constructor = "account.updatePasswordSettings#a59b102f";
 
     public TLRequestAccountUpdatePasswordSettings() {
     }

@@ -18,11 +18,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLStickerSetInstallResultArchive extends TLAbsStickerSetInstallResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x35e410a8;
 
     protected TLVector<TLAbsStickerSetCovered> sets;
 
-    private final String _constructor = "messages.stickerSetInstallResultArchive#0";
+    private final String _constructor = "messages.stickerSetInstallResultArchive#35e410a8";
 
     public TLStickerSetInstallResultArchive() {
     }

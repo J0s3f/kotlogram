@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLThemes extends TLAbsThemes {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7f676421;
 
     protected int hash;
 
     protected TLVector<TLTheme> themes;
 
-    private final String _constructor = "account.themes#0";
+    private final String _constructor = "account.themes#7f676421";
 
     public TLThemes() {
     }

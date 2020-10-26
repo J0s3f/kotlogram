@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetTermsOfServiceUpdate extends TLMethod<TLAbsTermsOfServiceUpdate> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2ca51fd1;
 
-    private final String _constructor = "help.getTermsOfServiceUpdate#0";
+    private final String _constructor = "help.getTermsOfServiceUpdate#2ca51fd1";
 
     public TLRequestHelpGetTermsOfServiceUpdate() {
     }

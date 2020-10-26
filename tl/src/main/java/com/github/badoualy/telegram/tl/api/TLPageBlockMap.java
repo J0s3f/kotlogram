@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockMap extends TLAbsPageBlock {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa44f3ef6;
 
     protected TLAbsGeoPoint geo;
 
@@ -28,7 +28,7 @@ public class TLPageBlockMap extends TLAbsPageBlock {
 
     protected TLPageCaption caption;
 
-    private final String _constructor = "pageBlockMap#0";
+    private final String _constructor = "pageBlockMap#a44f3ef6";
 
     public TLPageBlockMap() {
     }

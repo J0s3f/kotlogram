@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateChannelTooLong extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xeb0467fb;
 
     protected int flags;
 
@@ -25,7 +25,7 @@ public class TLUpdateChannelTooLong extends TLAbsUpdate {
 
     protected Integer pts;
 
-    private final String _constructor = "updateChannelTooLong#0";
+    private final String _constructor = "updateChannelTooLong#eb0467fb";
 
     public TLUpdateChannelTooLong() {
     }

@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLGeoPoint extends TLAbsGeoPoint {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x296f104;
 
     protected double _long;
 
@@ -24,7 +24,7 @@ public class TLGeoPoint extends TLAbsGeoPoint {
 
     protected long accessHash;
 
-    private final String _constructor = "geoPoint#0";
+    private final String _constructor = "geoPoint#296f104";
 
     public TLGeoPoint() {
     }

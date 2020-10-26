@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLWebAuthorizations extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xed56c9fc;
 
     protected TLVector<TLWebAuthorization> authorizations;
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "account.webAuthorizations#0";
+    private final String _constructor = "account.webAuthorizations#ed56c9fc";
 
     public TLWebAuthorizations() {
     }

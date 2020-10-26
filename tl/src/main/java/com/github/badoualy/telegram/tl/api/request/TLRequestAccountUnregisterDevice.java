@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountUnregisterDevice extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3076c4bf;
 
     protected int tokenType;
 
@@ -28,7 +28,7 @@ public class TLRequestAccountUnregisterDevice extends TLMethod<TLBool> {
 
     protected TLIntVector otherUids;
 
-    private final String _constructor = "account.unregisterDevice#0";
+    private final String _constructor = "account.unregisterDevice#3076c4bf";
 
     public TLRequestAccountUnregisterDevice() {
     }

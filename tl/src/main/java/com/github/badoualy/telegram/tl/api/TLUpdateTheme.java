@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateTheme extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8216fba3;
 
     protected TLTheme theme;
 
-    private final String _constructor = "updateTheme#0";
+    private final String _constructor = "updateTheme#8216fba3";
 
     public TLUpdateTheme() {
     }

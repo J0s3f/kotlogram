@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLAuthorization extends TLAbsAuthorization {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xcd050916;
 
     protected Integer tmpSessions;
 
     protected TLAbsUser user;
 
-    private final String _constructor = "auth.authorization#0";
+    private final String _constructor = "auth.authorization#cd050916";
 
     public TLAuthorization() {
     }

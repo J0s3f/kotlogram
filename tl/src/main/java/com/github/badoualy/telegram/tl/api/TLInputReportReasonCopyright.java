@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputReportReasonCopyright extends TLAbsReportReason {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9b89f93a;
 
-    private final String _constructor = "inputReportReasonCopyright#0";
+    private final String _constructor = "inputReportReasonCopyright#9b89f93a";
 
     public TLInputReportReasonCopyright() {
     }

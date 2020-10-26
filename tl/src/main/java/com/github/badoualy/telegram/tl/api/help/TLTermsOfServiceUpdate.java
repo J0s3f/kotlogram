@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTermsOfServiceUpdate extends TLAbsTermsOfServiceUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x28ecf961;
 
     protected TLTermsOfService termsOfService;
 
-    private final String _constructor = "help.termsOfServiceUpdate#0";
+    private final String _constructor = "help.termsOfServiceUpdate#28ecf961";
 
     public TLTermsOfServiceUpdate() {
     }

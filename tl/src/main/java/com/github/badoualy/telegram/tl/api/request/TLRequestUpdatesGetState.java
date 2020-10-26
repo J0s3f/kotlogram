@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestUpdatesGetState extends TLMethod<TLState> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xedd4882a;
 
-    private final String _constructor = "updates.getState#0";
+    private final String _constructor = "updates.getState#edd4882a";
 
     public TLRequestUpdatesGetState() {
     }

@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsBlock extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x332b49fc;
 
     protected TLAbsInputUser id;
 
-    private final String _constructor = "contacts.block#0";
+    private final String _constructor = "contacts.block#332b49fc";
 
     public TLRequestContactsBlock() {
     }

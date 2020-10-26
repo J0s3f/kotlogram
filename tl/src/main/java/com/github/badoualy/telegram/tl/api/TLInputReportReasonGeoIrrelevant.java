@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputReportReasonGeoIrrelevant extends TLAbsReportReason {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xdbd4feed;
 
-    private final String _constructor = "inputReportReasonGeoIrrelevant#0";
+    private final String _constructor = "inputReportReasonGeoIrrelevant#dbd4feed";
 
     public TLInputReportReasonGeoIrrelevant() {
     }

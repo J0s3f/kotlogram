@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChatInvite extends TLAbsChatInvite {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xdfc2f58e;
 
     protected int flags;
 
@@ -37,7 +37,7 @@ public class TLChatInvite extends TLAbsChatInvite {
 
     protected TLVector<TLAbsUser> participants;
 
-    private final String _constructor = "chatInvite#0";
+    private final String _constructor = "chatInvite#dfc2f58e";
 
     public TLChatInvite() {
     }

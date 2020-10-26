@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelParticipantsBanned extends TLAbsChannelParticipantsFilter {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1427a5e1;
 
     protected String q;
 
-    private final String _constructor = "channelParticipantsBanned#0";
+    private final String _constructor = "channelParticipantsBanned#1427a5e1";
 
     public TLChannelParticipantsBanned() {
     }

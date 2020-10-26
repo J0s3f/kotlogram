@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateBotShippingQuery extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe0cdc940;
 
     protected long queryId;
 
@@ -27,7 +27,7 @@ public class TLUpdateBotShippingQuery extends TLAbsUpdate {
 
     protected TLPostAddress shippingAddress;
 
-    private final String _constructor = "updateBotShippingQuery#0";
+    private final String _constructor = "updateBotShippingQuery#e0cdc940";
 
     public TLUpdateBotShippingQuery() {
     }

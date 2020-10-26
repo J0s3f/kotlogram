@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputPhotoFileLocation extends TLAbsInputFileLocation {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x40181ffe;
 
     protected long id;
 
@@ -27,7 +27,7 @@ public class TLInputPhotoFileLocation extends TLAbsInputFileLocation {
 
     protected String thumbSize;
 
-    private final String _constructor = "inputPhotoFileLocation#0";
+    private final String _constructor = "inputPhotoFileLocation#40181ffe";
 
     public TLInputPhotoFileLocation() {
     }

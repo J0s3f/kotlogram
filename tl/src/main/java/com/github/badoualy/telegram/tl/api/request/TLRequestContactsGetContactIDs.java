@@ -18,11 +18,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsGetContactIDs extends TLMethod<TLIntVector> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2caa4a42;
 
     protected int hash;
 
-    private final String _constructor = "contacts.getContactIDs#0";
+    private final String _constructor = "contacts.getContactIDs#2caa4a42";
 
     public TLRequestContactsGetContactIDs() {
     }

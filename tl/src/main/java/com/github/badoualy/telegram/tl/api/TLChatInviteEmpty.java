@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChatInviteEmpty extends TLAbsExportedChatInvite {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x69df3769;
 
-    private final String _constructor = "chatInviteEmpty#0";
+    private final String _constructor = "chatInviteEmpty#69df3769";
 
     public TLChatInviteEmpty() {
     }

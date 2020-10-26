@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMediaPoll extends TLAbsInputMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf94e5f1;
 
     protected int flags;
 
@@ -30,7 +30,7 @@ public class TLInputMediaPoll extends TLAbsInputMedia {
 
     protected TLVector<TLAbsMessageEntity> solutionEntities;
 
-    private final String _constructor = "inputMediaPoll#0";
+    private final String _constructor = "inputMediaPoll#f94e5f1";
 
     public TLInputMediaPoll() {
     }

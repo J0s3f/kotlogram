@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLEncryptedChatDiscarded extends TLAbsEncryptedChat {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x13d6dd27;
 
-    private final String _constructor = "encryptedChatDiscarded#0";
+    private final String _constructor = "encryptedChatDiscarded#13d6dd27";
 
     public TLEncryptedChatDiscarded() {
     }

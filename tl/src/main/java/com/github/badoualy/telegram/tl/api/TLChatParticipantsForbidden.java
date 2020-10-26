@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChatParticipantsForbidden extends TLAbsChatParticipants {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfc900c2b;
 
     protected int flags;
 
     protected TLAbsChatParticipant selfParticipant;
 
-    private final String _constructor = "chatParticipantsForbidden#0";
+    private final String _constructor = "chatParticipantsForbidden#fc900c2b";
 
     public TLChatParticipantsForbidden() {
     }

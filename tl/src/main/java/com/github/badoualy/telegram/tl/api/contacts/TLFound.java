@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFound extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb3134d9d;
 
     protected TLVector<TLAbsPeer> myResults;
 
@@ -31,7 +31,7 @@ public class TLFound extends TLObject {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "contacts.found#0";
+    private final String _constructor = "contacts.found#b3134d9d";
 
     public TLFound() {
     }

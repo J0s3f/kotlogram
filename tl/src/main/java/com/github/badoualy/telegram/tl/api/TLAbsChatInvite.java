@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLChatInvite}: chatInvite#0</li>
- * <li>{@link TLChatInviteAlready}: chatInviteAlready#0</li>
+ * <li>{@link TLChatInvite}: chatInvite#dfc2f58e</li>
+ * <li>{@link TLChatInviteAlready}: chatInviteAlready#5a686d7c</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

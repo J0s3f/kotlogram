@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockUnsupported extends TLAbsPageBlock {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x13567e8a;
 
-    private final String _constructor = "pageBlockUnsupported#0";
+    private final String _constructor = "pageBlockUnsupported#13567e8a";
 
     public TLPageBlockUnsupported() {
     }

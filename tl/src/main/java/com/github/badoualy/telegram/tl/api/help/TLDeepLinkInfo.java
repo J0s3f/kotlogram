@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDeepLinkInfo extends TLAbsDeepLinkInfo {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6a4ee832;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLDeepLinkInfo extends TLAbsDeepLinkInfo {
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "help.deepLinkInfo#0";
+    private final String _constructor = "help.deepLinkInfo#6a4ee832";
 
     public TLDeepLinkInfo() {
     }

@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSavedInfo extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfb8fe43c;
 
     protected int flags;
 
@@ -26,7 +26,7 @@ public class TLSavedInfo extends TLObject {
 
     protected TLPaymentRequestedInfo savedInfo;
 
-    private final String _constructor = "payments.savedInfo#0";
+    private final String _constructor = "payments.savedInfo#fb8fe43c";
 
     public TLSavedInfo() {
     }

@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateBotInlineQuery extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x54826690;
 
     protected int flags;
 
@@ -30,7 +30,7 @@ public class TLUpdateBotInlineQuery extends TLAbsUpdate {
 
     protected String offset;
 
-    private final String _constructor = "updateBotInlineQuery#0";
+    private final String _constructor = "updateBotInlineQuery#54826690";
 
     public TLUpdateBotInlineQuery() {
     }

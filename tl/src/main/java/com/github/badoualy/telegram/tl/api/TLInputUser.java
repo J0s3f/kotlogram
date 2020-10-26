@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputUser extends TLAbsInputUser {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd8292816;
 
     protected int userId;
 
     protected long accessHash;
 
-    private final String _constructor = "inputUser#0";
+    private final String _constructor = "inputUser#d8292816";
 
     public TLInputUser() {
     }

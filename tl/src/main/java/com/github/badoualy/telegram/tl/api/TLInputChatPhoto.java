@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputChatPhoto extends TLAbsInputChatPhoto {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8953ad37;
 
     protected TLAbsInputPhoto id;
 
-    private final String _constructor = "inputChatPhoto#0";
+    private final String _constructor = "inputChatPhoto#8953ad37";
 
     public TLInputChatPhoto() {
     }

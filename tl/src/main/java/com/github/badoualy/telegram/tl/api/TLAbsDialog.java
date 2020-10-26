@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLDialog}: dialog#0</li>
- * <li>{@link TLDialogFolder}: dialogFolder#0</li>
+ * <li>{@link TLDialog}: dialog#2c171f72</li>
+ * <li>{@link TLDialogFolder}: dialogFolder#71bd134c</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

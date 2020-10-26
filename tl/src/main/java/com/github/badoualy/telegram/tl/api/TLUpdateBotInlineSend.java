@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateBotInlineSend extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe48f964;
 
     protected int flags;
 
@@ -30,7 +30,7 @@ public class TLUpdateBotInlineSend extends TLAbsUpdate {
 
     protected TLInputBotInlineMessageID msgId;
 
-    private final String _constructor = "updateBotInlineSend#0";
+    private final String _constructor = "updateBotInlineSend#e48f964";
 
     public TLUpdateBotInlineSend() {
     }

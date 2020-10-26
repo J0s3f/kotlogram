@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateDeleteChannelMessages extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc37521c9;
 
     protected int channelId;
 
@@ -27,7 +27,7 @@ public class TLUpdateDeleteChannelMessages extends TLAbsUpdate {
 
     protected int ptsCount;
 
-    private final String _constructor = "updateDeleteChannelMessages#0";
+    private final String _constructor = "updateDeleteChannelMessages#c37521c9";
 
     public TLUpdateDeleteChannelMessages() {
     }

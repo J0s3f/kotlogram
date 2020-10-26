@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSendMessageUploadRoundAction extends TLAbsSendMessageAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x243e1c66;
 
     protected int progress;
 
-    private final String _constructor = "sendMessageUploadRoundAction#0";
+    private final String _constructor = "sendMessageUploadRoundAction#243e1c66";
 
     public TLSendMessageUploadRoundAction() {
     }

@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBaseThemeTinted extends TLAbsBaseTheme {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6d5f77ee;
 
-    private final String _constructor = "baseThemeTinted#0";
+    private final String _constructor = "baseThemeTinted#6d5f77ee";
 
     public TLBaseThemeTinted() {
     }

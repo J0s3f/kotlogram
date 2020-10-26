@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelAdminLogEventActionDefaultBannedRights extends TLAbsChannelAdminLogEventAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2df5fc0a;
 
     protected TLChatBannedRights prevBannedRights;
 
     protected TLChatBannedRights newBannedRights;
 
-    private final String _constructor = "channelAdminLogEventActionDefaultBannedRights#0";
+    private final String _constructor = "channelAdminLogEventActionDefaultBannedRights#2df5fc0a";
 
     public TLChannelAdminLogEventActionDefaultBannedRights() {
     }

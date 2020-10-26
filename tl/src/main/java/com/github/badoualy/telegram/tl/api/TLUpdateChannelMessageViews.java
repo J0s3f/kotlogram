@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateChannelMessageViews extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x98a12b4b;
 
     protected int channelId;
 
@@ -24,7 +24,7 @@ public class TLUpdateChannelMessageViews extends TLAbsUpdate {
 
     protected int views;
 
-    private final String _constructor = "updateChannelMessageViews#0";
+    private final String _constructor = "updateChannelMessageViews#98a12b4b";
 
     public TLUpdateChannelMessageViews() {
     }

@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChatPhotoEmpty extends TLAbsChatPhoto {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x37c1011c;
 
-    private final String _constructor = "chatPhotoEmpty#0";
+    private final String _constructor = "chatPhotoEmpty#37c1011c";
 
     public TLChatPhotoEmpty() {
     }

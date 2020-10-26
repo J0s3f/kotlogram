@@ -21,11 +21,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetMessages extends TLMethod<TLAbsMessages> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x63c66506;
 
     protected TLVector<TLAbsInputMessage> id;
 
-    private final String _constructor = "messages.getMessages#0";
+    private final String _constructor = "messages.getMessages#63c66506";
 
     public TLRequestMessagesGetMessages() {
     }

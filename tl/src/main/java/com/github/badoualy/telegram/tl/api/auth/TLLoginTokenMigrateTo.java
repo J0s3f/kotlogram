@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLLoginTokenMigrateTo extends TLAbsLoginToken {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x68e9916;
 
     protected int dcId;
 
     protected TLBytes token;
 
-    private final String _constructor = "auth.loginTokenMigrateTo#0";
+    private final String _constructor = "auth.loginTokenMigrateTo#68e9916";
 
     public TLLoginTokenMigrateTo() {
     }

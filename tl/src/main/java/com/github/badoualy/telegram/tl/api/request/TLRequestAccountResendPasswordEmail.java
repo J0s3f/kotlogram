@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountResendPasswordEmail extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7a7f2a15;
 
-    private final String _constructor = "account.resendPasswordEmail#0";
+    private final String _constructor = "account.resendPasswordEmail#7a7f2a15";
 
     public TLRequestAccountResendPasswordEmail() {
     }

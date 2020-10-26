@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateBotPrecheckoutQuery extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5d2f3aa9;
 
     protected int flags;
 
@@ -35,7 +35,7 @@ public class TLUpdateBotPrecheckoutQuery extends TLAbsUpdate {
 
     protected long totalAmount;
 
-    private final String _constructor = "updateBotPrecheckoutQuery#0";
+    private final String _constructor = "updateBotPrecheckoutQuery#5d2f3aa9";
 
     public TLUpdateBotPrecheckoutQuery() {
     }

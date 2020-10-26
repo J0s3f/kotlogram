@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesUploadEncryptedFile extends TLMethod<TLAbsEncryptedFile> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5057c497;
 
     protected TLInputEncryptedChat peer;
 
     protected TLAbsInputEncryptedFile file;
 
-    private final String _constructor = "messages.uploadEncryptedFile#0";
+    private final String _constructor = "messages.uploadEncryptedFile#5057c497";
 
     public TLRequestMessagesUploadEncryptedFile() {
     }

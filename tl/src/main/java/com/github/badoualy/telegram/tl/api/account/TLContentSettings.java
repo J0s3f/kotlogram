@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLContentSettings extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x57e28221;
 
     protected int flags;
 
@@ -25,7 +25,7 @@ public class TLContentSettings extends TLObject {
 
     protected boolean sensitiveCanChange;
 
-    private final String _constructor = "account.contentSettings#0";
+    private final String _constructor = "account.contentSettings#57e28221";
 
     public TLContentSettings() {
     }

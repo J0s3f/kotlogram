@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPaymentCharge extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xea02c27e;
 
     protected String id;
 
     protected String providerChargeId;
 
-    private final String _constructor = "paymentCharge#0";
+    private final String _constructor = "paymentCharge#ea02c27e";
 
     public TLPaymentCharge() {
     }

@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputSecureFileUploaded extends TLAbsInputSecureFile {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3334b0f0;
 
     protected int parts;
 
@@ -27,7 +27,7 @@ public class TLInputSecureFileUploaded extends TLAbsInputSecureFile {
 
     protected TLBytes secret;
 
-    private final String _constructor = "inputSecureFileUploaded#0";
+    private final String _constructor = "inputSecureFileUploaded#3334b0f0";
 
     public TLInputSecureFileUploaded() {
     }

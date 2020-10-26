@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFolderPeer extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe9baa668;
 
     protected TLAbsPeer peer;
 
     protected int folderId;
 
-    private final String _constructor = "folderPeer#0";
+    private final String _constructor = "folderPeer#e9baa668";
 
     public TLFolderPeer() {
     }

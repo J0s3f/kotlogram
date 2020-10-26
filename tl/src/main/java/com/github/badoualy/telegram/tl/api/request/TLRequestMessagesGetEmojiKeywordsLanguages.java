@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetEmojiKeywordsLanguages extends TLMethod<TLVector<TLEmojiLanguage>> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4e9963b2;
 
     protected TLStringVector langCodes;
 
-    private final String _constructor = "messages.getEmojiKeywordsLanguages#0";
+    private final String _constructor = "messages.getEmojiKeywordsLanguages#4e9963b2";
 
     public TLRequestMessagesGetEmojiKeywordsLanguages() {
     }

@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetBotCallbackAnswer extends TLMethod<TLBotCallbackAnswer> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x810a9fec;
 
     protected int flags;
 
@@ -33,7 +33,7 @@ public class TLRequestMessagesGetBotCallbackAnswer extends TLMethod<TLBotCallbac
 
     protected TLBytes data;
 
-    private final String _constructor = "messages.getBotCallbackAnswer#0";
+    private final String _constructor = "messages.getBotCallbackAnswer#810a9fec";
 
     public TLRequestMessagesGetBotCallbackAnswer() {
     }

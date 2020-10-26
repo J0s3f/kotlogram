@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetPromoData extends TLMethod<TLAbsPromoData> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc0977421;
 
-    private final String _constructor = "help.getPromoData#0";
+    private final String _constructor = "help.getPromoData#c0977421";
 
     public TLRequestHelpGetPromoData() {
     }

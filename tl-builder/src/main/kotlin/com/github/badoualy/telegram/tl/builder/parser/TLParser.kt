@@ -28,11 +28,8 @@ fun buildFromJson(root: JsonNode): TLDefinition {
     println("Reading constructors...")
     for (constructor in constructorsNode) {
         val name = constructor["predicate"].textValue()
-        val id = try {
-            constructor["id"].intValue()
-        } catch (e: Exception) {
-            constructor["id"].textValue().toInt()
-        }
+        val id = constructor["id"].textValue().toInt()
+
         val type = constructor["type"].textValue()
         val tlType = types[type]!!
 
@@ -52,11 +49,8 @@ fun buildFromJson(root: JsonNode): TLDefinition {
     println("Reading methods...")
     for (method in methodsNode) {
         val name = method.get("method").textValue()
-        val id = try {
-            method["id"].intValue()
-        } catch (e: Exception) {
-            method["id"].textValue().toInt()
-        }
+        val id = method["id"].textValue().toInt()
+
         val type = method["type"].textValue()
         val tlType = createType(type, types, false)
 

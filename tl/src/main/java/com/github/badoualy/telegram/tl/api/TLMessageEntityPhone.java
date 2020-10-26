@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageEntityPhone extends TLAbsMessageEntity {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9b69e34b;
 
-    private final String _constructor = "messageEntityPhone#0";
+    private final String _constructor = "messageEntityPhone#9b69e34b";
 
     public TLMessageEntityPhone() {
     }

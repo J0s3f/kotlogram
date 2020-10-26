@@ -22,13 +22,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountSetPrivacy extends TLMethod<TLPrivacyRules> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc9f81ce8;
 
     protected TLAbsInputPrivacyKey key;
 
     protected TLVector<TLAbsInputPrivacyRule> rules;
 
-    private final String _constructor = "account.setPrivacy#0";
+    private final String _constructor = "account.setPrivacy#c9f81ce8";
 
     public TLRequestAccountSetPrivacy() {
     }

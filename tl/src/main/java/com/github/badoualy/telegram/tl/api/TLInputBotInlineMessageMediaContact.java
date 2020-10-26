@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputBotInlineMessageMediaContact extends TLAbsInputBotInlineMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa6edbffd;
 
     protected String phoneNumber;
 
@@ -26,7 +26,7 @@ public class TLInputBotInlineMessageMediaContact extends TLAbsInputBotInlineMess
 
     protected String vcard;
 
-    private final String _constructor = "inputBotInlineMessageMediaContact#0";
+    private final String _constructor = "inputBotInlineMessageMediaContact#a6edbffd";
 
     public TLInputBotInlineMessageMediaContact() {
     }

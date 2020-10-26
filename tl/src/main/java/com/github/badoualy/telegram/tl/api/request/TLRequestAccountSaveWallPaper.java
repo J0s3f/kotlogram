@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountSaveWallPaper extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6c5a5b37;
 
     protected TLAbsInputWallPaper wallpaper;
 
@@ -29,7 +29,7 @@ public class TLRequestAccountSaveWallPaper extends TLMethod<TLBool> {
 
     protected TLWallPaperSettings settings;
 
-    private final String _constructor = "account.saveWallPaper#0";
+    private final String _constructor = "account.saveWallPaper#6c5a5b37";
 
     public TLRequestAccountSaveWallPaper() {
     }

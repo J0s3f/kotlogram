@@ -8,9 +8,9 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLTopPeers}: contacts.topPeers#0</li>
- * <li>{@link TLTopPeersDisabled}: contacts.topPeersDisabled#0</li>
- * <li>{@link TLTopPeersNotModified}: contacts.topPeersNotModified#0</li>
+ * <li>{@link TLTopPeers}: contacts.topPeers#70b772a8</li>
+ * <li>{@link TLTopPeersDisabled}: contacts.topPeersDisabled#b52c939d</li>
+ * <li>{@link TLTopPeersNotModified}: contacts.topPeersNotModified#de266ef5</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

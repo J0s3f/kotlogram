@@ -22,7 +22,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPhoneRequestCall extends TLMethod<TLPhoneCall> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x42ff96ed;
 
     protected int flags;
 
@@ -36,7 +36,7 @@ public class TLRequestPhoneRequestCall extends TLMethod<TLPhoneCall> {
 
     protected TLPhoneCallProtocol protocol;
 
-    private final String _constructor = "phone.requestCall#0";
+    private final String _constructor = "phone.requestCall#42ff96ed";
 
     public TLRequestPhoneRequestCall() {
     }

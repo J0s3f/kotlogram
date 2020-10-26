@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsResetTopPeerRating extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1ae373ac;
 
     protected TLAbsTopPeerCategory category;
 
     protected TLAbsInputPeer peer;
 
-    private final String _constructor = "contacts.resetTopPeerRating#0";
+    private final String _constructor = "contacts.resetTopPeerRating#1ae373ac";
 
     public TLRequestContactsResetTopPeerRating() {
     }

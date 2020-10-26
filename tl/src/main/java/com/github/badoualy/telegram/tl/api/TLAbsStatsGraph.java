@@ -8,9 +8,9 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLStatsGraph}: statsGraph#0</li>
- * <li>{@link TLStatsGraphAsync}: statsGraphAsync#0</li>
- * <li>{@link TLStatsGraphError}: statsGraphError#0</li>
+ * <li>{@link TLStatsGraph}: statsGraph#8ea464b6</li>
+ * <li>{@link TLStatsGraphAsync}: statsGraphAsync#4a27eb2d</li>
+ * <li>{@link TLStatsGraphError}: statsGraphError#bedc9822</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

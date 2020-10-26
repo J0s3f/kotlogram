@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLCdnFile}: upload.cdnFile#0</li>
- * <li>{@link TLCdnFileReuploadNeeded}: upload.cdnFileReuploadNeeded#0</li>
+ * <li>{@link TLCdnFile}: upload.cdnFile#a99fca4f</li>
+ * <li>{@link TLCdnFileReuploadNeeded}: upload.cdnFileReuploadNeeded#eea8e46e</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

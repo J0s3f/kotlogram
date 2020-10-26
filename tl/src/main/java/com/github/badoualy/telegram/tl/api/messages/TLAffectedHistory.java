@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLAffectedHistory extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb45c69d1;
 
     protected int pts;
 
@@ -25,7 +25,7 @@ public class TLAffectedHistory extends TLObject {
 
     protected int offset;
 
-    private final String _constructor = "messages.affectedHistory#0";
+    private final String _constructor = "messages.affectedHistory#b45c69d1";
 
     public TLAffectedHistory() {
     }

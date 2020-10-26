@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesReorderPinnedDialogs extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3b1adf37;
 
     protected int flags;
 
@@ -31,7 +31,7 @@ public class TLRequestMessagesReorderPinnedDialogs extends TLMethod<TLBool> {
 
     protected TLVector<TLAbsInputDialogPeer> order;
 
-    private final String _constructor = "messages.reorderPinnedDialogs#0";
+    private final String _constructor = "messages.reorderPinnedDialogs#3b1adf37";
 
     public TLRequestMessagesReorderPinnedDialogs() {
     }

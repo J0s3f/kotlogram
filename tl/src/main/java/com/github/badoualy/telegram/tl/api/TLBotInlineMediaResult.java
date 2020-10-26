@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBotInlineMediaResult extends TLAbsBotInlineResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x17db940b;
 
     protected TLAbsPhoto photo;
 
@@ -26,7 +26,7 @@ public class TLBotInlineMediaResult extends TLAbsBotInlineResult {
 
     protected String description;
 
-    private final String _constructor = "botInlineMediaResult#0";
+    private final String _constructor = "botInlineMediaResult#17db940b";
 
     public TLBotInlineMediaResult() {
     }

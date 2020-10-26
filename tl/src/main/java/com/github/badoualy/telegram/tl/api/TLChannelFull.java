@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelFull extends TLAbsChatFull {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf0e6672a;
 
     protected boolean canViewParticipants;
 
@@ -76,7 +76,7 @@ public class TLChannelFull extends TLAbsChatFull {
 
     protected int pts;
 
-    private final String _constructor = "channelFull#0";
+    private final String _constructor = "channelFull#f0e6672a";
 
     public TLChannelFull() {
     }

@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestInvokeWithTakeout<T extends TLObject> extends TLMethod<T> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xaca9fd2e;
 
     protected long takeoutId;
 
     protected TLMethod<T> query;
 
-    private final String _constructor = "invokeWithTakeout#0";
+    private final String _constructor = "invokeWithTakeout#aca9fd2e";
 
     public TLRequestInvokeWithTakeout() {
     }

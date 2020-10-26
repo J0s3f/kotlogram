@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLAuthorization}: auth.authorization#0</li>
- * <li>{@link TLAuthorizationSignUpRequired}: auth.authorizationSignUpRequired#0</li>
+ * <li>{@link TLAuthorization}: auth.authorization#cd050916</li>
+ * <li>{@link TLAuthorizationSignUpRequired}: auth.authorizationSignUpRequired#44747e9a</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

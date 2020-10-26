@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesReorderStickerSets extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x78337739;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLRequestMessagesReorderStickerSets extends TLMethod<TLBool> {
 
     protected TLLongVector order;
 
-    private final String _constructor = "messages.reorderStickerSets#0";
+    private final String _constructor = "messages.reorderStickerSets#78337739";
 
     public TLRequestMessagesReorderStickerSets() {
     }

@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageTableCell extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x34566b6a;
 
     protected int flags;
 
@@ -38,7 +38,7 @@ public class TLPageTableCell extends TLObject {
 
     protected Integer rowspan;
 
-    private final String _constructor = "pageTableCell#0";
+    private final String _constructor = "pageTableCell#34566b6a";
 
     public TLPageTableCell() {
     }

@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDocumentAttributeSticker extends TLAbsDocumentAttribute {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6319d612;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLDocumentAttributeSticker extends TLAbsDocumentAttribute {
 
     protected TLMaskCoords maskCoords;
 
-    private final String _constructor = "documentAttributeSticker#0";
+    private final String _constructor = "documentAttributeSticker#6319d612";
 
     public TLDocumentAttributeSticker() {
     }

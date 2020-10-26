@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSecurePlainPhone extends TLAbsSecurePlainData {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7d6099dd;
 
     protected String phone;
 
-    private final String _constructor = "securePlainPhone#0";
+    private final String _constructor = "securePlainPhone#7d6099dd";
 
     public TLSecurePlainPhone() {
     }

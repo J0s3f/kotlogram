@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLLangPackDifference extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf385c1f6;
 
     protected String langCode;
 
@@ -28,7 +28,7 @@ public class TLLangPackDifference extends TLObject {
 
     protected TLVector<TLAbsLangPackString> strings;
 
-    private final String _constructor = "langPackDifference#0";
+    private final String _constructor = "langPackDifference#f385c1f6";
 
     public TLLangPackDifference() {
     }

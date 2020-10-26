@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLState extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa56c2a3e;
 
     protected int pts;
 
@@ -29,7 +29,7 @@ public class TLState extends TLObject {
 
     protected int unreadCount;
 
-    private final String _constructor = "updates.state#0";
+    private final String _constructor = "updates.state#a56c2a3e";
 
     public TLState() {
     }

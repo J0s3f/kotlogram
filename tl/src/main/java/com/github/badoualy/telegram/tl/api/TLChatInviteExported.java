@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChatInviteExported extends TLAbsExportedChatInvite {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfc2e05bc;
 
     protected String link;
 
-    private final String _constructor = "chatInviteExported#0";
+    private final String _constructor = "chatInviteExported#fc2e05bc";
 
     public TLChatInviteExported() {
     }

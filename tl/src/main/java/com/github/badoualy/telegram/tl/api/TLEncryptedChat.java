@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLEncryptedChat extends TLAbsEncryptedChat {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfa56ce36;
 
     protected long accessHash;
 
@@ -31,7 +31,7 @@ public class TLEncryptedChat extends TLAbsEncryptedChat {
 
     protected long keyFingerprint;
 
-    private final String _constructor = "encryptedChat#0";
+    private final String _constructor = "encryptedChat#fa56ce36";
 
     public TLEncryptedChat() {
     }

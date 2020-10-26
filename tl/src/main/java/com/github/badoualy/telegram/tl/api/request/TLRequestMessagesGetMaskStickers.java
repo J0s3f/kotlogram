@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetMaskStickers extends TLMethod<TLAbsAllStickers> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x65b8c79f;
 
     protected int hash;
 
-    private final String _constructor = "messages.getMaskStickers#0";
+    private final String _constructor = "messages.getMaskStickers#65b8c79f";
 
     public TLRequestMessagesGetMaskStickers() {
     }

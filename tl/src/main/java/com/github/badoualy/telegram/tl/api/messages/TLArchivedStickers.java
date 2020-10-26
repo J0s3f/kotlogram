@@ -19,13 +19,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLArchivedStickers extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4fcba9c8;
 
     protected int count;
 
     protected TLVector<TLAbsStickerSetCovered> sets;
 
-    private final String _constructor = "messages.archivedStickers#0";
+    private final String _constructor = "messages.archivedStickers#4fcba9c8";
 
     public TLArchivedStickers() {
     }

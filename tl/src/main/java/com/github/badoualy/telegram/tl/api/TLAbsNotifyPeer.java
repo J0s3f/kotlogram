@@ -8,10 +8,10 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLNotifyBroadcasts}: notifyBroadcasts#0</li>
- * <li>{@link TLNotifyChats}: notifyChats#0</li>
- * <li>{@link TLNotifyPeer}: notifyPeer#0</li>
- * <li>{@link TLNotifyUsers}: notifyUsers#0</li>
+ * <li>{@link TLNotifyBroadcasts}: notifyBroadcasts#d612e8ef</li>
+ * <li>{@link TLNotifyChats}: notifyChats#c007cec3</li>
+ * <li>{@link TLNotifyPeer}: notifyPeer#9fd40bd8</li>
+ * <li>{@link TLNotifyUsers}: notifyUsers#b4c83b4c</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

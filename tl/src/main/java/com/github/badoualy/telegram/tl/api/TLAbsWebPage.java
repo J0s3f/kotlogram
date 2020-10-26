@@ -8,10 +8,10 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLWebPage}: webPage#0</li>
- * <li>{@link TLWebPageEmpty}: webPageEmpty#0</li>
- * <li>{@link TLWebPageNotModified}: webPageNotModified#0</li>
- * <li>{@link TLWebPagePending}: webPagePending#0</li>
+ * <li>{@link TLWebPage}: webPage#e89c45b2</li>
+ * <li>{@link TLWebPageEmpty}: webPageEmpty#eb1477e8</li>
+ * <li>{@link TLWebPageNotModified}: webPageNotModified#7311ca11</li>
+ * <li>{@link TLWebPagePending}: webPagePending#c586da1c</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPromoDataEmpty extends TLAbsPromoData {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x98f6ac75;
 
-    private final String _constructor = "help.promoDataEmpty#0";
+    private final String _constructor = "help.promoDataEmpty#98f6ac75";
 
     public TLPromoDataEmpty() {
     }

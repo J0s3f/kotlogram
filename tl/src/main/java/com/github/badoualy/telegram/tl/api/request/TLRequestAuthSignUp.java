@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAuthSignUp extends TLMethod<TLAbsAuthorization> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x80eee427;
 
     protected String phoneNumber;
 
@@ -29,7 +29,7 @@ public class TLRequestAuthSignUp extends TLMethod<TLAbsAuthorization> {
 
     protected String lastName;
 
-    private final String _constructor = "auth.signUp#0";
+    private final String _constructor = "auth.signUp#80eee427";
 
     public TLRequestAuthSignUp() {
     }

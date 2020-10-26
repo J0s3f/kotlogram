@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSecureRequiredType extends TLAbsSecureRequiredType {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x829d99da;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLSecureRequiredType extends TLAbsSecureRequiredType {
 
     protected TLAbsSecureValueType type;
 
-    private final String _constructor = "secureRequiredType#0";
+    private final String _constructor = "secureRequiredType#829d99da";
 
     public TLSecureRequiredType() {
     }

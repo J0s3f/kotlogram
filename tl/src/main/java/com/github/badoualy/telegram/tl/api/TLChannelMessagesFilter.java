@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelMessagesFilter extends TLAbsChannelMessagesFilter {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xcd77d957;
 
     protected int flags;
 
@@ -25,7 +25,7 @@ public class TLChannelMessagesFilter extends TLAbsChannelMessagesFilter {
 
     protected TLVector<TLMessageRange> ranges;
 
-    private final String _constructor = "channelMessagesFilter#0";
+    private final String _constructor = "channelMessagesFilter#cd77d957";
 
     public TLChannelMessagesFilter() {
     }

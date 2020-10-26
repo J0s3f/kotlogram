@@ -18,11 +18,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageTableRow extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe0c0c5e5;
 
     protected TLVector<TLPageTableCell> cells;
 
-    private final String _constructor = "pageTableRow#0";
+    private final String _constructor = "pageTableRow#e0c0c5e5";
 
     public TLPageTableRow() {
     }

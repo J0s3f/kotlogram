@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChatPhoto extends TLAbsChatPhoto {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x475cdbd5;
 
     protected TLFileLocationToBeDeprecated photoSmall;
 
@@ -24,7 +24,7 @@ public class TLChatPhoto extends TLAbsChatPhoto {
 
     protected int dcId;
 
-    private final String _constructor = "chatPhoto#0";
+    private final String _constructor = "chatPhoto#475cdbd5";
 
     public TLChatPhoto() {
     }

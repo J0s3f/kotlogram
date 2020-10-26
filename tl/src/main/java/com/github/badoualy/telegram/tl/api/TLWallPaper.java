@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLWallPaper extends TLAbsWallPaper {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa437c3ed;
 
     protected long id;
 
@@ -30,7 +30,7 @@ public class TLWallPaper extends TLAbsWallPaper {
 
     protected TLAbsDocument document;
 
-    private final String _constructor = "wallPaper#0";
+    private final String _constructor = "wallPaper#a437c3ed";
 
     public TLWallPaper() {
     }

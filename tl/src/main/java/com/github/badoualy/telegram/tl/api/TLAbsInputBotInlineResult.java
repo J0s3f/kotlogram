@@ -9,10 +9,10 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLInputBotInlineResult}: inputBotInlineResult#0</li>
- * <li>{@link TLInputBotInlineResultDocument}: inputBotInlineResultDocument#0</li>
- * <li>{@link TLInputBotInlineResultGame}: inputBotInlineResultGame#0</li>
- * <li>{@link TLInputBotInlineResultPhoto}: inputBotInlineResultPhoto#0</li>
+ * <li>{@link TLInputBotInlineResult}: inputBotInlineResult#88bf9319</li>
+ * <li>{@link TLInputBotInlineResultDocument}: inputBotInlineResultDocument#fff8fdc4</li>
+ * <li>{@link TLInputBotInlineResultGame}: inputBotInlineResultGame#4fa417f2</li>
+ * <li>{@link TLInputBotInlineResultPhoto}: inputBotInlineResultPhoto#a8d864a7</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

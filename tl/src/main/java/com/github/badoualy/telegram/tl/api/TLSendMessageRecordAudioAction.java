@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSendMessageRecordAudioAction extends TLAbsSendMessageAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd52f73f7;
 
-    private final String _constructor = "sendMessageRecordAudioAction#0";
+    private final String _constructor = "sendMessageRecordAudioAction#d52f73f7";
 
     public TLSendMessageRecordAudioAction() {
     }

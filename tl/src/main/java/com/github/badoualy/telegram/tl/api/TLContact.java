@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLContact extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf911c994;
 
     protected int userId;
 
     protected boolean mutual;
 
-    private final String _constructor = "contact#0";
+    private final String _constructor = "contact#f911c994";
 
     public TLContact() {
     }

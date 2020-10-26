@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPassportConfigNotModified extends TLAbsPassportConfig {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbfb9f457;
 
-    private final String _constructor = "help.passportConfigNotModified#0";
+    private final String _constructor = "help.passportConfigNotModified#bfb9f457";
 
     public TLPassportConfigNotModified() {
     }

@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesReportEncryptedSpam extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4b0c8c0f;
 
     protected TLInputEncryptedChat peer;
 
-    private final String _constructor = "messages.reportEncryptedSpam#0";
+    private final String _constructor = "messages.reportEncryptedSpam#4b0c8c0f";
 
     public TLRequestMessagesReportEncryptedSpam() {
     }

@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLPassportConfig}: help.passportConfig#0</li>
- * <li>{@link TLPassportConfigNotModified}: help.passportConfigNotModified#0</li>
+ * <li>{@link TLPassportConfig}: help.passportConfig#a098d6af</li>
+ * <li>{@link TLPassportConfigNotModified}: help.passportConfigNotModified#bfb9f457</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

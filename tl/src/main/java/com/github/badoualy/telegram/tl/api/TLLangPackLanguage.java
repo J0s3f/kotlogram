@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLLangPackLanguage extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xeeca5ce3;
 
     protected int flags;
 
@@ -43,7 +43,7 @@ public class TLLangPackLanguage extends TLObject {
 
     protected String translationsUrl;
 
-    private final String _constructor = "langPackLanguage#0";
+    private final String _constructor = "langPackLanguage#eeca5ce3";
 
     public TLLangPackLanguage() {
     }

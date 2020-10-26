@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageEntityPre extends TLAbsMessageEntity {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x73924be0;
 
     protected String language;
 
-    private final String _constructor = "messageEntityPre#0";
+    private final String _constructor = "messageEntityPre#73924be0";
 
     public TLMessageEntityPre() {
     }

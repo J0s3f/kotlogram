@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTextBold extends TLAbsRichText {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6724abc4;
 
     protected TLAbsRichText text;
 
-    private final String _constructor = "textBold#0";
+    private final String _constructor = "textBold#6724abc4";
 
     public TLTextBold() {
     }

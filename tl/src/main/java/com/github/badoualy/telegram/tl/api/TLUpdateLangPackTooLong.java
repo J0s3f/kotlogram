@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateLangPackTooLong extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x46560264;
 
     protected String langCode;
 
-    private final String _constructor = "updateLangPackTooLong#0";
+    private final String _constructor = "updateLangPackTooLong#46560264";
 
     public TLUpdateLangPackTooLong() {
     }

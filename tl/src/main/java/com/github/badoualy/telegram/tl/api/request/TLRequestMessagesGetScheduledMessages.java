@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetScheduledMessages extends TLMethod<TLAbsMessages> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbdbb0464;
 
     protected TLAbsInputPeer peer;
 
     protected TLIntVector id;
 
-    private final String _constructor = "messages.getScheduledMessages#0";
+    private final String _constructor = "messages.getScheduledMessages#bdbb0464";
 
     public TLRequestMessagesGetScheduledMessages() {
     }

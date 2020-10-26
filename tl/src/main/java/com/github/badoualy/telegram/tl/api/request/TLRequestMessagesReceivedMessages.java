@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesReceivedMessages extends TLMethod<TLVector<TLReceivedNotifyMessage>> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5a954c0;
 
     protected int maxId;
 
-    private final String _constructor = "messages.receivedMessages#0";
+    private final String _constructor = "messages.receivedMessages#5a954c0";
 
     public TLRequestMessagesReceivedMessages() {
     }

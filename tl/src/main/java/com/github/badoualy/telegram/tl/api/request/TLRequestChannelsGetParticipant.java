@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsGetParticipant extends TLMethod<TLChannelParticipant> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x546dd7a6;
 
     protected TLAbsInputChannel channel;
 
     protected TLAbsInputUser userId;
 
-    private final String _constructor = "channels.getParticipant#0";
+    private final String _constructor = "channels.getParticipant#546dd7a6";
 
     public TLRequestChannelsGetParticipant() {
     }

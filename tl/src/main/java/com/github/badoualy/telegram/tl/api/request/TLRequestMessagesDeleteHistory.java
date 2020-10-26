@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesDeleteHistory extends TLMethod<TLAffectedHistory> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1c015b09;
 
     protected int flags;
 
@@ -32,7 +32,7 @@ public class TLRequestMessagesDeleteHistory extends TLMethod<TLAffectedHistory> 
 
     protected int maxId;
 
-    private final String _constructor = "messages.deleteHistory#0";
+    private final String _constructor = "messages.deleteHistory#1c015b09";
 
     public TLRequestMessagesDeleteHistory() {
     }

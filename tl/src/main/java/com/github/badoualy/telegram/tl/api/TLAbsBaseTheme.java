@@ -8,11 +8,11 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLBaseThemeArctic}: baseThemeArctic#0</li>
- * <li>{@link TLBaseThemeClassic}: baseThemeClassic#0</li>
- * <li>{@link TLBaseThemeDay}: baseThemeDay#0</li>
- * <li>{@link TLBaseThemeNight}: baseThemeNight#0</li>
- * <li>{@link TLBaseThemeTinted}: baseThemeTinted#0</li>
+ * <li>{@link TLBaseThemeArctic}: baseThemeArctic#5b11125a</li>
+ * <li>{@link TLBaseThemeClassic}: baseThemeClassic#c3a12462</li>
+ * <li>{@link TLBaseThemeDay}: baseThemeDay#fbd81688</li>
+ * <li>{@link TLBaseThemeNight}: baseThemeNight#b7b31ea8</li>
+ * <li>{@link TLBaseThemeTinted}: baseThemeTinted#6d5f77ee</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

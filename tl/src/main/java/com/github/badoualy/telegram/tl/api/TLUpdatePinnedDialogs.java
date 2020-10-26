@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdatePinnedDialogs extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfa0f3ca2;
 
     protected int flags;
 
@@ -26,7 +26,7 @@ public class TLUpdatePinnedDialogs extends TLAbsUpdate {
 
     protected TLVector<TLAbsDialogPeer> order;
 
-    private final String _constructor = "updatePinnedDialogs#0";
+    private final String _constructor = "updatePinnedDialogs#fa0f3ca2";
 
     public TLUpdatePinnedDialogs() {
     }

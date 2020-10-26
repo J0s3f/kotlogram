@@ -23,7 +23,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesSaveDraft extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbc39e14b;
 
     protected int flags;
 
@@ -37,7 +37,7 @@ public class TLRequestMessagesSaveDraft extends TLMethod<TLBool> {
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "messages.saveDraft#0";
+    private final String _constructor = "messages.saveDraft#bc39e14b";
 
     public TLRequestMessagesSaveDraft() {
     }

@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhotoStrippedSize extends TLAbsPhotoSize {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe0b0bc2e;
 
     protected TLBytes bytes;
 
-    private final String _constructor = "photoStrippedSize#0";
+    private final String _constructor = "photoStrippedSize#e0b0bc2e";
 
     public TLPhotoStrippedSize() {
     }

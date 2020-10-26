@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesUploadMedia extends TLMethod<TLAbsMessageMedia> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x519bc2b1;
 
     protected TLAbsInputPeer peer;
 
     protected TLAbsInputMedia media;
 
-    private final String _constructor = "messages.uploadMedia#0";
+    private final String _constructor = "messages.uploadMedia#519bc2b1";
 
     public TLRequestMessagesUploadMedia() {
     }

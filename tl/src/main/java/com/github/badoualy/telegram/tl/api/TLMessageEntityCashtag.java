@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageEntityCashtag extends TLAbsMessageEntity {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4c4e743f;
 
-    private final String _constructor = "messageEntityCashtag#0";
+    private final String _constructor = "messageEntityCashtag#4c4e743f";
 
     public TLMessageEntityCashtag() {
     }

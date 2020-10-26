@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLInputTheme}: inputTheme#0</li>
- * <li>{@link TLInputThemeSlug}: inputThemeSlug#0</li>
+ * <li>{@link TLInputTheme}: inputTheme#3c5693e9</li>
+ * <li>{@link TLInputThemeSlug}: inputThemeSlug#f5890df1</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

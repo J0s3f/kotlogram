@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLJsonNumber extends TLAbsJSONValue {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2be0dfa4;
 
     protected double value;
 
-    private final String _constructor = "jsonNumber#0";
+    private final String _constructor = "jsonNumber#2be0dfa4";
 
     public TLJsonNumber() {
     }

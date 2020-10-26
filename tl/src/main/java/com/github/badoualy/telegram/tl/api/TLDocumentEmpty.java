@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDocumentEmpty extends TLAbsDocument {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x36f8c871;
 
-    private final String _constructor = "documentEmpty#0";
+    private final String _constructor = "documentEmpty#36f8c871";
 
     public TLDocumentEmpty() {
     }

@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateStickerSetsOrder extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbb2d201;
 
     protected int flags;
 
@@ -25,7 +25,7 @@ public class TLUpdateStickerSetsOrder extends TLAbsUpdate {
 
     protected TLLongVector order;
 
-    private final String _constructor = "updateStickerSetsOrder#0";
+    private final String _constructor = "updateStickerSetsOrder#bb2d201";
 
     public TLUpdateStickerSetsOrder() {
     }

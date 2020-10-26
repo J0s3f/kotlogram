@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageActionScreenshotTaken extends TLAbsMessageAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4792929b;
 
-    private final String _constructor = "messageActionScreenshotTaken#0";
+    private final String _constructor = "messageActionScreenshotTaken#4792929b";
 
     public TLMessageActionScreenshotTaken() {
     }

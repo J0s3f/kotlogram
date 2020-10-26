@@ -11,8 +11,8 @@ import com.github.badoualy.telegram.tl.core.TLVector;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLPhotos}: photos.photos#0</li>
- * <li>{@link TLPhotosSlice}: photos.photosSlice#0</li>
+ * <li>{@link TLPhotos}: photos.photos#8dca6aa5</li>
+ * <li>{@link TLPhotosSlice}: photos.photosSlice#15051f54</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

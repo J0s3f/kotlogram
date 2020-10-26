@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputPeerEmpty extends TLAbsInputPeer {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7f3b18ea;
 
-    private final String _constructor = "inputPeerEmpty#0";
+    private final String _constructor = "inputPeerEmpty#7f3b18ea";
 
     public TLInputPeerEmpty() {
     }

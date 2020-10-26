@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputFileLocation extends TLAbsInputFileLocation {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xdfdaabe1;
 
     protected long volumeId;
 
@@ -27,7 +27,7 @@ public class TLInputFileLocation extends TLAbsInputFileLocation {
 
     protected TLBytes fileReference;
 
-    private final String _constructor = "inputFileLocation#0";
+    private final String _constructor = "inputFileLocation#dfdaabe1";
 
     public TLInputFileLocation() {
     }

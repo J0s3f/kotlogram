@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageEntityBotCommand extends TLAbsMessageEntity {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6cef8ac7;
 
-    private final String _constructor = "messageEntityBotCommand#0";
+    private final String _constructor = "messageEntityBotCommand#6cef8ac7";
 
     public TLMessageEntityBotCommand() {
     }

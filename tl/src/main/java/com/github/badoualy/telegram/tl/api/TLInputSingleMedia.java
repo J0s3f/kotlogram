@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputSingleMedia extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1cc6e91f;
 
     protected int flags;
 
@@ -30,7 +30,7 @@ public class TLInputSingleMedia extends TLObject {
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "inputSingleMedia#0";
+    private final String _constructor = "inputSingleMedia#1cc6e91f";
 
     public TLInputSingleMedia() {
     }

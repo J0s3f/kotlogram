@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLGeoPoint}: geoPoint#0</li>
- * <li>{@link TLGeoPointEmpty}: geoPointEmpty#0</li>
+ * <li>{@link TLGeoPoint}: geoPoint#296f104</li>
+ * <li>{@link TLGeoPointEmpty}: geoPointEmpty#1117dd5f</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

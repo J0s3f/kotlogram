@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUserStatusOffline extends TLAbsUserStatus {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8c703f;
 
     protected int wasOnline;
 
-    private final String _constructor = "userStatusOffline#0";
+    private final String _constructor = "userStatusOffline#8c703f";
 
     public TLUserStatusOffline() {
     }

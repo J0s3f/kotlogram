@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesImportChatInvite extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6c50051c;
 
     protected String hash;
 
-    private final String _constructor = "messages.importChatInvite#0";
+    private final String _constructor = "messages.importChatInvite#6c50051c";
 
     public TLRequestMessagesImportChatInvite() {
     }

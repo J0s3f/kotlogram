@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhotoEmpty extends TLAbsPhoto {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2331b22d;
 
-    private final String _constructor = "photoEmpty#0";
+    private final String _constructor = "photoEmpty#2331b22d";
 
     public TLPhotoEmpty() {
     }

@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesSetTyping extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa3825e50;
 
     protected TLAbsInputPeer peer;
 
     protected TLAbsSendMessageAction action;
 
-    private final String _constructor = "messages.setTyping#0";
+    private final String _constructor = "messages.setTyping#a3825e50";
 
     public TLRequestMessagesSetTyping() {
     }

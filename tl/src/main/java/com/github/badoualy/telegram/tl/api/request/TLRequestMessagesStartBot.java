@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesStartBot extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe6df7378;
 
     protected TLAbsInputUser bot;
 
@@ -31,7 +31,7 @@ public class TLRequestMessagesStartBot extends TLMethod<TLAbsUpdates> {
 
     protected String startParam;
 
-    private final String _constructor = "messages.startBot#0";
+    private final String _constructor = "messages.startBot#e6df7378";
 
     public TLRequestMessagesStartBot() {
     }

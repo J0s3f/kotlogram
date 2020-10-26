@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetDocumentByHash extends TLMethod<TLAbsDocument> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x338e2464;
 
     protected TLBytes sha256;
 
@@ -28,7 +28,7 @@ public class TLRequestMessagesGetDocumentByHash extends TLMethod<TLAbsDocument> 
 
     protected String mimeType;
 
-    private final String _constructor = "messages.getDocumentByHash#0";
+    private final String _constructor = "messages.getDocumentByHash#338e2464";
 
     public TLRequestMessagesGetDocumentByHash() {
     }

@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountGetAuthorizationForm extends TLMethod<TLAuthorizationForm> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb86ba8e1;
 
     protected int botId;
 
@@ -27,7 +27,7 @@ public class TLRequestAccountGetAuthorizationForm extends TLMethod<TLAuthorizati
 
     protected String publicKey;
 
-    private final String _constructor = "account.getAuthorizationForm#0";
+    private final String _constructor = "account.getAuthorizationForm#b86ba8e1";
 
     public TLRequestAccountGetAuthorizationForm() {
     }

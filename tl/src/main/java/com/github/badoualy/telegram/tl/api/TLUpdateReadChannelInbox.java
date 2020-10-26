@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateReadChannelInbox extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x330b5424;
 
     protected int flags;
 
@@ -31,7 +31,7 @@ public class TLUpdateReadChannelInbox extends TLAbsUpdate {
 
     protected int pts;
 
-    private final String _constructor = "updateReadChannelInbox#0";
+    private final String _constructor = "updateReadChannelInbox#330b5424";
 
     public TLUpdateReadChannelInbox() {
     }

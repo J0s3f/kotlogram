@@ -22,7 +22,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelDifference extends TLAbsChannelDifference {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2064674e;
 
     protected int pts;
 
@@ -34,7 +34,7 @@ public class TLChannelDifference extends TLAbsChannelDifference {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "updates.channelDifference#0";
+    private final String _constructor = "updates.channelDifference#2064674e";
 
     public TLChannelDifference() {
     }

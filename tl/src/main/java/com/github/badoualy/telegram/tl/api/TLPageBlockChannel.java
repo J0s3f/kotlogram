@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockChannel extends TLAbsPageBlock {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xef1751b5;
 
     protected TLAbsChat channel;
 
-    private final String _constructor = "pageBlockChannel#0";
+    private final String _constructor = "pageBlockChannel#ef1751b5";
 
     public TLPageBlockChannel() {
     }

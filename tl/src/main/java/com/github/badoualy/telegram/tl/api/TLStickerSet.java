@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLStickerSet extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xeeb46f27;
 
     protected int flags;
 
@@ -48,7 +48,7 @@ public class TLStickerSet extends TLObject {
 
     protected int hash;
 
-    private final String _constructor = "stickerSet#0";
+    private final String _constructor = "stickerSet#eeb46f27";
 
     public TLStickerSet() {
     }

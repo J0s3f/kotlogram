@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestUpdatesGetDifference extends TLMethod<TLAbsDifference> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x25939651;
 
     protected int flags;
 
@@ -32,7 +32,7 @@ public class TLRequestUpdatesGetDifference extends TLMethod<TLAbsDifference> {
 
     protected int qts;
 
-    private final String _constructor = "updates.getDifference#0";
+    private final String _constructor = "updates.getDifference#25939651";
 
     public TLRequestUpdatesGetDifference() {
     }

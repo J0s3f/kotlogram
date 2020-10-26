@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageMediaPhoto extends TLAbsMessageMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x695150d7;
 
     protected int flags;
 
@@ -25,7 +25,7 @@ public class TLMessageMediaPhoto extends TLAbsMessageMedia {
 
     protected Integer ttlSeconds;
 
-    private final String _constructor = "messageMediaPhoto#0";
+    private final String _constructor = "messageMediaPhoto#695150d7";
 
     public TLMessageMediaPhoto() {
     }

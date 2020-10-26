@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSentEncryptedFile extends TLAbsSentEncryptedMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9493ff32;
 
     protected TLAbsEncryptedFile file;
 
-    private final String _constructor = "messages.sentEncryptedFile#0";
+    private final String _constructor = "messages.sentEncryptedFile#9493ff32";
 
     public TLSentEncryptedFile() {
     }

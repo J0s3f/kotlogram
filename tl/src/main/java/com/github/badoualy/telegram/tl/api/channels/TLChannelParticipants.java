@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelParticipants extends TLAbsChannelParticipants {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf56ee2a8;
 
     protected int count;
 
@@ -27,7 +27,7 @@ public class TLChannelParticipants extends TLAbsChannelParticipants {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "channels.channelParticipants#0";
+    private final String _constructor = "channels.channelParticipants#f56ee2a8";
 
     public TLChannelParticipants() {
     }

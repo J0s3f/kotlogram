@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateEncryptedMessagesRead extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x38fe25b7;
 
     protected int chatId;
 
@@ -24,7 +24,7 @@ public class TLUpdateEncryptedMessagesRead extends TLAbsUpdate {
 
     protected int date;
 
-    private final String _constructor = "updateEncryptedMessagesRead#0";
+    private final String _constructor = "updateEncryptedMessagesRead#38fe25b7";
 
     public TLUpdateEncryptedMessagesRead() {
     }

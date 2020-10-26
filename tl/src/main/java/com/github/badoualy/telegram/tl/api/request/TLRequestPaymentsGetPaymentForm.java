@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPaymentsGetPaymentForm extends TLMethod<TLPaymentForm> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x99f09745;
 
     protected int msgId;
 
-    private final String _constructor = "payments.getPaymentForm#0";
+    private final String _constructor = "payments.getPaymentForm#99f09745";
 
     public TLRequestPaymentsGetPaymentForm() {
     }

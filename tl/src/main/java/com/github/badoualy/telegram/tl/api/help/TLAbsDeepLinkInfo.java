@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLDeepLinkInfo}: help.deepLinkInfo#0</li>
- * <li>{@link TLDeepLinkInfoEmpty}: help.deepLinkInfoEmpty#0</li>
+ * <li>{@link TLDeepLinkInfo}: help.deepLinkInfo#6a4ee832</li>
+ * <li>{@link TLDeepLinkInfoEmpty}: help.deepLinkInfoEmpty#66afa166</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

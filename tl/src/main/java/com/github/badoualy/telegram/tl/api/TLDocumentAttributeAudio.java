@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDocumentAttributeAudio extends TLAbsDocumentAttribute {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9852f9c6;
 
     protected int flags;
 
@@ -31,7 +31,7 @@ public class TLDocumentAttributeAudio extends TLAbsDocumentAttribute {
 
     protected TLBytes waveform;
 
-    private final String _constructor = "documentAttributeAudio#0";
+    private final String _constructor = "documentAttributeAudio#9852f9c6";
 
     public TLDocumentAttributeAudio() {
     }

@@ -8,9 +8,9 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLInputWallPaper}: inputWallPaper#0</li>
- * <li>{@link TLInputWallPaperNoFile}: inputWallPaperNoFile#0</li>
- * <li>{@link TLInputWallPaperSlug}: inputWallPaperSlug#0</li>
+ * <li>{@link TLInputWallPaper}: inputWallPaper#e630b979</li>
+ * <li>{@link TLInputWallPaperNoFile}: inputWallPaperNoFile#8427bbac</li>
+ * <li>{@link TLInputWallPaperSlug}: inputWallPaperSlug#72091c80</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

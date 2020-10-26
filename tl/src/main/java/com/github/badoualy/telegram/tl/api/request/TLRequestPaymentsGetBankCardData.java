@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPaymentsGetBankCardData extends TLMethod<TLBankCardData> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2e79d779;
 
     protected String number;
 
-    private final String _constructor = "payments.getBankCardData#0";
+    private final String _constructor = "payments.getBankCardData#2e79d779";
 
     public TLRequestPaymentsGetBankCardData() {
     }

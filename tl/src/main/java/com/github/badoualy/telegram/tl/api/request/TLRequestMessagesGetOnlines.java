@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetOnlines extends TLMethod<TLChatOnlines> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6e2be050;
 
     protected TLAbsInputPeer peer;
 
-    private final String _constructor = "messages.getOnlines#0";
+    private final String _constructor = "messages.getOnlines#6e2be050";
 
     public TLRequestMessagesGetOnlines() {
     }

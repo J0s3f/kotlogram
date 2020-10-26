@@ -10,8 +10,8 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLWebDocument}: webDocument#0</li>
- * <li>{@link TLWebDocumentNoProxy}: webDocumentNoProxy#0</li>
+ * <li>{@link TLWebDocument}: webDocument#1c570ed1</li>
+ * <li>{@link TLWebDocumentNoProxy}: webDocumentNoProxy#f9c8bcc6</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

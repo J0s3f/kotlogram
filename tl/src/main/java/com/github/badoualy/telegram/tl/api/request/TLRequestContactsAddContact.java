@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsAddContact extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe8f463d0;
 
     protected int flags;
 
@@ -34,7 +34,7 @@ public class TLRequestContactsAddContact extends TLMethod<TLAbsUpdates> {
 
     protected String phone;
 
-    private final String _constructor = "contacts.addContact#0";
+    private final String _constructor = "contacts.addContact#e8f463d0";
 
     public TLRequestContactsAddContact() {
     }

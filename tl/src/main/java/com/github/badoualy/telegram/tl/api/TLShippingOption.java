@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLShippingOption extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb6213cdf;
 
     protected String id;
 
@@ -26,7 +26,7 @@ public class TLShippingOption extends TLObject {
 
     protected TLVector<TLLabeledPrice> prices;
 
-    private final String _constructor = "shippingOption#0";
+    private final String _constructor = "shippingOption#b6213cdf";
 
     public TLShippingOption() {
     }

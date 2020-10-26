@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFile extends TLAbsFile {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x96a18d5;
 
     protected TLAbsFileType type;
 
@@ -26,7 +26,7 @@ public class TLFile extends TLAbsFile {
 
     protected TLBytes bytes;
 
-    private final String _constructor = "upload.file#0";
+    private final String _constructor = "upload.file#96a18d5";
 
     public TLFile() {
     }

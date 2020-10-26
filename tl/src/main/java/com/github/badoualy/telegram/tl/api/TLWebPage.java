@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLWebPage extends TLAbsWebPage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe89c45b2;
 
     protected int flags;
 
@@ -58,7 +58,7 @@ public class TLWebPage extends TLAbsWebPage {
 
     protected TLVector<TLWebPageAttributeTheme> attributes;
 
-    private final String _constructor = "webPage#0";
+    private final String _constructor = "webPage#e89c45b2";
 
     public TLWebPage() {
     }

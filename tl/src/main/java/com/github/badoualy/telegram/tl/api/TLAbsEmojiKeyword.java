@@ -10,8 +10,8 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLEmojiKeyword}: emojiKeyword#0</li>
- * <li>{@link TLEmojiKeywordDeleted}: emojiKeywordDeleted#0</li>
+ * <li>{@link TLEmojiKeyword}: emojiKeyword#d5b3b9f9</li>
+ * <li>{@link TLEmojiKeywordDeleted}: emojiKeywordDeleted#236df622</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

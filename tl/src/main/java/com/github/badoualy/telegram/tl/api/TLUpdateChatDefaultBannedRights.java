@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateChatDefaultBannedRights extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x54c01850;
 
     protected TLAbsPeer peer;
 
@@ -24,7 +24,7 @@ public class TLUpdateChatDefaultBannedRights extends TLAbsUpdate {
 
     protected int version;
 
-    private final String _constructor = "updateChatDefaultBannedRights#0";
+    private final String _constructor = "updateChatDefaultBannedRights#54c01850";
 
     public TLUpdateChatDefaultBannedRights() {
     }

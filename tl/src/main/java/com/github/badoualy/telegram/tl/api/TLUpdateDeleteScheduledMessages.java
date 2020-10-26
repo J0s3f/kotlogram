@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateDeleteScheduledMessages extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x90866cee;
 
     protected TLAbsPeer peer;
 
     protected TLIntVector messages;
 
-    private final String _constructor = "updateDeleteScheduledMessages#0";
+    private final String _constructor = "updateDeleteScheduledMessages#90866cee";
 
     public TLUpdateDeleteScheduledMessages() {
     }

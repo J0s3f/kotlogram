@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFavedStickersNotModified extends TLAbsFavedStickers {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9e8fa6d3;
 
-    private final String _constructor = "messages.favedStickersNotModified#0";
+    private final String _constructor = "messages.favedStickersNotModified#9e8fa6d3";
 
     public TLFavedStickersNotModified() {
     }

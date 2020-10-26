@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsDeleteMessages extends TLMethod<TLAffectedMessages> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x84c1fd4e;
 
     protected TLAbsInputChannel channel;
 
     protected TLIntVector id;
 
-    private final String _constructor = "channels.deleteMessages#0";
+    private final String _constructor = "channels.deleteMessages#84c1fd4e";
 
     public TLRequestChannelsDeleteMessages() {
     }

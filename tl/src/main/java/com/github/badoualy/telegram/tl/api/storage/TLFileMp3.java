@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFileMp3 extends TLAbsFileType {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x528a0677;
 
-    private final String _constructor = "storage.fileMp3#0";
+    private final String _constructor = "storage.fileMp3#528a0677";
 
     public TLFileMp3() {
     }

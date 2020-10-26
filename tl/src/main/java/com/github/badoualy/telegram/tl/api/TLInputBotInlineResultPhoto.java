@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputBotInlineResultPhoto extends TLAbsInputBotInlineResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa8d864a7;
 
     protected String type;
 
     protected TLAbsInputPhoto photo;
 
-    private final String _constructor = "inputBotInlineResultPhoto#0";
+    private final String _constructor = "inputBotInlineResultPhoto#a8d864a7";
 
     public TLInputBotInlineResultPhoto() {
     }

@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAuthSendCode extends TLMethod<TLSentCode> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa677244f;
 
     protected String phoneNumber;
 
@@ -30,7 +30,7 @@ public class TLRequestAuthSendCode extends TLMethod<TLSentCode> {
 
     protected TLCodeSettings settings;
 
-    private final String _constructor = "auth.sendCode#0";
+    private final String _constructor = "auth.sendCode#a677244f";
 
     public TLRequestAuthSendCode() {
     }

@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDraftMessage extends TLAbsDraftMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfd8e711f;
 
     protected boolean noWebpage;
 
@@ -30,7 +30,7 @@ public class TLDraftMessage extends TLAbsDraftMessage {
 
     protected int date;
 
-    private final String _constructor = "draftMessage#0";
+    private final String _constructor = "draftMessage#fd8e711f";
 
     public TLDraftMessage() {
     }

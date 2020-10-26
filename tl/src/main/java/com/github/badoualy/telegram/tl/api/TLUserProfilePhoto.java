@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUserProfilePhoto extends TLAbsUserProfilePhoto {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xecd75d8c;
 
     protected long photoId;
 
@@ -26,7 +26,7 @@ public class TLUserProfilePhoto extends TLAbsUserProfilePhoto {
 
     protected int dcId;
 
-    private final String _constructor = "userProfilePhoto#0";
+    private final String _constructor = "userProfilePhoto#ecd75d8c";
 
     public TLUserProfilePhoto() {
     }

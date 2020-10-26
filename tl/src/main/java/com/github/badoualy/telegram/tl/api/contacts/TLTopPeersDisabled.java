@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTopPeersDisabled extends TLAbsTopPeers {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb52c939d;
 
-    private final String _constructor = "contacts.topPeersDisabled#0";
+    private final String _constructor = "contacts.topPeersDisabled#b52c939d";
 
     public TLTopPeersDisabled() {
     }

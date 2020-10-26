@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBotInlineMessageMediaVenue extends TLAbsBotInlineMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8a86659c;
 
     protected TLAbsGeoPoint geo;
 
@@ -30,7 +30,7 @@ public class TLBotInlineMessageMediaVenue extends TLAbsBotInlineMessage {
 
     protected String venueType;
 
-    private final String _constructor = "botInlineMessageMediaVenue#0";
+    private final String _constructor = "botInlineMessageMediaVenue#8a86659c";
 
     public TLBotInlineMessageMediaVenue() {
     }

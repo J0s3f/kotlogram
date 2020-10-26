@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPaymentsSendPaymentForm extends TLMethod<TLAbsPaymentResult> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x2b8879b3;
 
     protected int flags;
 
@@ -32,7 +32,7 @@ public class TLRequestPaymentsSendPaymentForm extends TLMethod<TLAbsPaymentResul
 
     protected TLAbsInputPaymentCredentials credentials;
 
-    private final String _constructor = "payments.sendPaymentForm#0";
+    private final String _constructor = "payments.sendPaymentForm#2b8879b3";
 
     public TLRequestPaymentsSendPaymentForm() {
     }

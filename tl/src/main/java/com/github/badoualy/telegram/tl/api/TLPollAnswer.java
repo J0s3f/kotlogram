@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPollAnswer extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6ca9c2e9;
 
     protected String text;
 
     protected TLBytes option;
 
-    private final String _constructor = "pollAnswer#0";
+    private final String _constructor = "pollAnswer#6ca9c2e9";
 
     public TLPollAnswer() {
     }

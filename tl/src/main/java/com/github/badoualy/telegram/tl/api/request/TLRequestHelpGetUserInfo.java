@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetUserInfo extends TLMethod<TLAbsUserInfo> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x38a08d3;
 
     protected TLAbsInputUser userId;
 
-    private final String _constructor = "help.getUserInfo#0";
+    private final String _constructor = "help.getUserInfo#38a08d3";
 
     public TLRequestHelpGetUserInfo() {
     }

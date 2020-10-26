@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsLeaveChannel extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf836aa95;
 
     protected TLAbsInputChannel channel;
 
-    private final String _constructor = "channels.leaveChannel#0";
+    private final String _constructor = "channels.leaveChannel#f836aa95";
 
     public TLRequestChannelsLeaveChannel() {
     }

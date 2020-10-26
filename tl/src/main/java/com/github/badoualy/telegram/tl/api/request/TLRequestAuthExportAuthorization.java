@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAuthExportAuthorization extends TLMethod<TLExportedAuthorization> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe5bfffcd;
 
     protected int dcId;
 
-    private final String _constructor = "auth.exportAuthorization#0";
+    private final String _constructor = "auth.exportAuthorization#e5bfffcd";
 
     public TLRequestAuthExportAuthorization() {
     }

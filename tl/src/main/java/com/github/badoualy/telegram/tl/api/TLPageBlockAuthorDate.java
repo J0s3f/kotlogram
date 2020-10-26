@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockAuthorDate extends TLAbsPageBlock {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbaafe5e0;
 
     protected TLAbsRichText author;
 
     protected int publishedDate;
 
-    private final String _constructor = "pageBlockAuthorDate#0";
+    private final String _constructor = "pageBlockAuthorDate#baafe5e0";
 
     public TLPageBlockAuthorDate() {
     }

@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetMessageEditData extends TLMethod<TLMessageEditData> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfda68d36;
 
     protected TLAbsInputPeer peer;
 
     protected int id;
 
-    private final String _constructor = "messages.getMessageEditData#0";
+    private final String _constructor = "messages.getMessageEditData#fda68d36";
 
     public TLRequestMessagesGetMessageEditData() {
     }

@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesRequestUrlAuth extends TLMethod<TLAbsUrlAuthResult> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe33f5613;
 
     protected TLAbsInputPeer peer;
 
@@ -28,7 +28,7 @@ public class TLRequestMessagesRequestUrlAuth extends TLMethod<TLAbsUrlAuthResult
 
     protected int buttonId;
 
-    private final String _constructor = "messages.requestUrlAuth#0";
+    private final String _constructor = "messages.requestUrlAuth#e33f5613";
 
     public TLRequestMessagesRequestUrlAuth() {
     }

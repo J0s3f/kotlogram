@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputGeoPoint extends TLAbsInputGeoPoint {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf3b7acc9;
 
     protected double lat;
 
     protected double _long;
 
-    private final String _constructor = "inputGeoPoint#0";
+    private final String _constructor = "inputGeoPoint#f3b7acc9";
 
     public TLInputGeoPoint() {
     }

@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSecureValue extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x187fa0ca;
 
     protected int flags;
 
@@ -41,7 +41,7 @@ public class TLSecureValue extends TLObject {
 
     protected TLBytes hash;
 
-    private final String _constructor = "secureValue#0";
+    private final String _constructor = "secureValue#187fa0ca";
 
     public TLSecureValue() {
     }

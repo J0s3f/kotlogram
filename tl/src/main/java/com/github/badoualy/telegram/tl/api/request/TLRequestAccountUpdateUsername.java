@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountUpdateUsername extends TLMethod<TLAbsUser> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3e0bdd7c;
 
     protected String username;
 
-    private final String _constructor = "account.updateUsername#0";
+    private final String _constructor = "account.updateUsername#3e0bdd7c";
 
     public TLRequestAccountUpdateUsername() {
     }

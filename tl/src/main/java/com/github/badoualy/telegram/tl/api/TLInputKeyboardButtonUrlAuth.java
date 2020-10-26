@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputKeyboardButtonUrlAuth extends TLAbsKeyboardButton {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd02e7fd4;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLInputKeyboardButtonUrlAuth extends TLAbsKeyboardButton {
 
     protected TLAbsInputUser bot;
 
-    private final String _constructor = "inputKeyboardButtonUrlAuth#0";
+    private final String _constructor = "inputKeyboardButtonUrlAuth#d02e7fd4";
 
     public TLInputKeyboardButtonUrlAuth() {
     }

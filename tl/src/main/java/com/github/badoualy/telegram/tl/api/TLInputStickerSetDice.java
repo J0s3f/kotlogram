@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputStickerSetDice extends TLAbsInputStickerSet {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe67f520e;
 
     protected String emoticon;
 
-    private final String _constructor = "inputStickerSetDice#0";
+    private final String _constructor = "inputStickerSetDice#e67f520e";
 
     public TLInputStickerSetDice() {
     }

@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesExportChatInvite extends TLMethod<TLAbsExportedChatInvite> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xdf7534c;
 
     protected TLAbsInputPeer peer;
 
-    private final String _constructor = "messages.exportChatInvite#0";
+    private final String _constructor = "messages.exportChatInvite#df7534c";
 
     public TLRequestMessagesExportChatInvite() {
     }

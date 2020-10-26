@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountUpdateStatus extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6628562c;
 
     protected boolean offline;
 
-    private final String _constructor = "account.updateStatus#0";
+    private final String _constructor = "account.updateStatus#6628562c";
 
     public TLRequestAccountUpdateStatus() {
     }

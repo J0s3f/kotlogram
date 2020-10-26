@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPrivacyKeyStatusTimestamp extends TLAbsPrivacyKey {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbc2eab30;
 
-    private final String _constructor = "privacyKeyStatusTimestamp#0";
+    private final String _constructor = "privacyKeyStatusTimestamp#bc2eab30";
 
     public TLPrivacyKeyStatusTimestamp() {
     }

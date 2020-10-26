@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageActionCustomAction extends TLAbsMessageAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfae69f56;
 
     protected String message;
 
-    private final String _constructor = "messageActionCustomAction#0";
+    private final String _constructor = "messageActionCustomAction#fae69f56";
 
     public TLMessageActionCustomAction() {
     }

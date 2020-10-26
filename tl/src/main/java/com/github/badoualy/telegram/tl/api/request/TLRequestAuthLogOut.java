@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAuthLogOut extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5717da40;
 
-    private final String _constructor = "auth.logOut#0";
+    private final String _constructor = "auth.logOut#5717da40";
 
     public TLRequestAuthLogOut() {
     }

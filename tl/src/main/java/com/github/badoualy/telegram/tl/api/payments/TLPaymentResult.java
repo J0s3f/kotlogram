@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPaymentResult extends TLAbsPaymentResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4e5f810d;
 
     protected TLAbsUpdates updates;
 
-    private final String _constructor = "payments.paymentResult#0";
+    private final String _constructor = "payments.paymentResult#4e5f810d";
 
     public TLPaymentResult() {
     }

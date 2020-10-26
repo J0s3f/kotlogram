@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLAuthorization extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xad01d61d;
 
     protected int flags;
 
@@ -51,7 +51,7 @@ public class TLAuthorization extends TLObject {
 
     protected String region;
 
-    private final String _constructor = "authorization#0";
+    private final String _constructor = "authorization#ad01d61d";
 
     public TLAuthorization() {
     }

@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputGameID extends TLAbsInputGame {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x32c3e77;
 
     protected long id;
 
     protected long accessHash;
 
-    private final String _constructor = "inputGameID#0";
+    private final String _constructor = "inputGameID#32c3e77";
 
     public TLInputGameID() {
     }

@@ -8,10 +8,10 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLSentCodeTypeApp}: auth.sentCodeTypeApp#0</li>
- * <li>{@link TLSentCodeTypeCall}: auth.sentCodeTypeCall#0</li>
- * <li>{@link TLSentCodeTypeFlashCall}: auth.sentCodeTypeFlashCall#0</li>
- * <li>{@link TLSentCodeTypeSms}: auth.sentCodeTypeSms#0</li>
+ * <li>{@link TLSentCodeTypeApp}: auth.sentCodeTypeApp#3dbb5986</li>
+ * <li>{@link TLSentCodeTypeCall}: auth.sentCodeTypeCall#5353e5a7</li>
+ * <li>{@link TLSentCodeTypeFlashCall}: auth.sentCodeTypeFlashCall#ab03c6d9</li>
+ * <li>{@link TLSentCodeTypeSms}: auth.sentCodeTypeSms#c000bba2</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

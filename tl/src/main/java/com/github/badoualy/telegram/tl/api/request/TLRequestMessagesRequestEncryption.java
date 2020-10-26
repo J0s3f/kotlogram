@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesRequestEncryption extends TLMethod<TLAbsEncryptedChat> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf64daf43;
 
     protected TLAbsInputUser userId;
 
@@ -29,7 +29,7 @@ public class TLRequestMessagesRequestEncryption extends TLMethod<TLAbsEncryptedC
 
     protected TLBytes gA;
 
-    private final String _constructor = "messages.requestEncryption#0";
+    private final String _constructor = "messages.requestEncryption#f64daf43";
 
     public TLRequestMessagesRequestEncryption() {
     }

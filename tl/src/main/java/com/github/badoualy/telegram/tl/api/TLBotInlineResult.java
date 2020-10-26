@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBotInlineResult extends TLAbsBotInlineResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x11965f3a;
 
     protected String title;
 
@@ -28,7 +28,7 @@ public class TLBotInlineResult extends TLAbsBotInlineResult {
 
     protected TLAbsWebDocument content;
 
-    private final String _constructor = "botInlineResult#0";
+    private final String _constructor = "botInlineResult#11965f3a";
 
     public TLBotInlineResult() {
     }

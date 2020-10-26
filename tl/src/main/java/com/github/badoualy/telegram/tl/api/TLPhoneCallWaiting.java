@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCallWaiting extends TLAbsPhoneCall {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1b8f4ad1;
 
     protected int flags;
 
@@ -35,7 +35,7 @@ public class TLPhoneCallWaiting extends TLAbsPhoneCall {
 
     protected Integer receiveDate;
 
-    private final String _constructor = "phoneCallWaiting#0";
+    private final String _constructor = "phoneCallWaiting#1b8f4ad1";
 
     public TLPhoneCallWaiting() {
     }

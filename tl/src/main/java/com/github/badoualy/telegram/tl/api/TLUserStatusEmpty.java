@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUserStatusEmpty extends TLAbsUserStatus {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9d05049;
 
-    private final String _constructor = "userStatusEmpty#0";
+    private final String _constructor = "userStatusEmpty#9d05049";
 
     public TLUserStatusEmpty() {
     }

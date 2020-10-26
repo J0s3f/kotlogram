@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateUserBlocked extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x80ece81a;
 
     protected int userId;
 
     protected boolean blocked;
 
-    private final String _constructor = "updateUserBlocked#0";
+    private final String _constructor = "updateUserBlocked#80ece81a";
 
     public TLUpdateUserBlocked() {
     }

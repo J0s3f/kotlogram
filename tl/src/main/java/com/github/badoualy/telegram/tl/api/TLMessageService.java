@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageService extends TLAbsMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9e19a1f6;
 
     protected int flags;
 
@@ -43,7 +43,7 @@ public class TLMessageService extends TLAbsMessage {
 
     protected TLAbsMessageAction action;
 
-    private final String _constructor = "messageService#0";
+    private final String _constructor = "messageService#9e19a1f6";
 
     public TLMessageService() {
     }

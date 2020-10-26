@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesInstallStickerSet extends TLMethod<TLAbsStickerSetInstallResult> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc78fe460;
 
     protected TLAbsInputStickerSet stickerset;
 
     protected boolean archived;
 
-    private final String _constructor = "messages.installStickerSet#0";
+    private final String _constructor = "messages.installStickerSet#c78fe460";
 
     public TLRequestMessagesInstallStickerSet() {
     }

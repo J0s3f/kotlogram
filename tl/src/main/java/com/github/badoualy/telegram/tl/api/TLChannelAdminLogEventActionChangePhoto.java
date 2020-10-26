@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelAdminLogEventActionChangePhoto extends TLAbsChannelAdminLogEventAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x434bd2af;
 
     protected TLAbsPhoto prevPhoto;
 
     protected TLAbsPhoto newPhoto;
 
-    private final String _constructor = "channelAdminLogEventActionChangePhoto#0";
+    private final String _constructor = "channelAdminLogEventActionChangePhoto#434bd2af";
 
     public TLChannelAdminLogEventActionChangePhoto() {
     }

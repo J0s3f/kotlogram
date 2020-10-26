@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputPeerUserFromMessage extends TLAbsInputPeer {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x17bae2e6;
 
     protected TLAbsInputPeer peer;
 
@@ -24,7 +24,7 @@ public class TLInputPeerUserFromMessage extends TLAbsInputPeer {
 
     protected int userId;
 
-    private final String _constructor = "inputPeerUserFromMessage#0";
+    private final String _constructor = "inputPeerUserFromMessage#17bae2e6";
 
     public TLInputPeerUserFromMessage() {
     }

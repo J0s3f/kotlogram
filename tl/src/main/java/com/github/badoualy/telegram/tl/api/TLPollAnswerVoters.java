@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPollAnswerVoters extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3b6ddad2;
 
     protected int flags;
 
@@ -30,7 +30,7 @@ public class TLPollAnswerVoters extends TLObject {
 
     protected int voters;
 
-    private final String _constructor = "pollAnswerVoters#0";
+    private final String _constructor = "pollAnswerVoters#3b6ddad2";
 
     public TLPollAnswerVoters() {
     }

@@ -22,7 +22,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesReport extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbd82b658;
 
     protected TLAbsInputPeer peer;
 
@@ -30,7 +30,7 @@ public class TLRequestMessagesReport extends TLMethod<TLBool> {
 
     protected TLAbsReportReason reason;
 
-    private final String _constructor = "messages.report#0";
+    private final String _constructor = "messages.report#bd82b658";
 
     public TLRequestMessagesReport() {
     }

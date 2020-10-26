@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageMediaGeoLive extends TLAbsMessageMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7c3c2609;
 
     protected TLAbsGeoPoint geo;
 
     protected int period;
 
-    private final String _constructor = "messageMediaGeoLive#0";
+    private final String _constructor = "messageMediaGeoLive#7c3c2609";
 
     public TLMessageMediaGeoLive() {
     }

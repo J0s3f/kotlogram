@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputBotInlineMessageMediaAuto extends TLAbsInputBotInlineMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3380c786;
 
     protected String message;
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "inputBotInlineMessageMediaAuto#0";
+    private final String _constructor = "inputBotInlineMessageMediaAuto#3380c786";
 
     public TLInputBotInlineMessageMediaAuto() {
     }

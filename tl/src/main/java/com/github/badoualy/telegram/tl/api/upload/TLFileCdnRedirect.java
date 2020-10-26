@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFileCdnRedirect extends TLAbsFile {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf18cda44;
 
     protected int dcId;
 
@@ -31,7 +31,7 @@ public class TLFileCdnRedirect extends TLAbsFile {
 
     protected TLVector<TLFileHash> fileHashes;
 
-    private final String _constructor = "upload.fileCdnRedirect#0";
+    private final String _constructor = "upload.fileCdnRedirect#f18cda44";
 
     public TLFileCdnRedirect() {
     }

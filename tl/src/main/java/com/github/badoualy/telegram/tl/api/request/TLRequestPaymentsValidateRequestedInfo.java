@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPaymentsValidateRequestedInfo extends TLMethod<TLValidatedRequestedInfo> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x770a8e74;
 
     protected int flags;
 
@@ -30,7 +30,7 @@ public class TLRequestPaymentsValidateRequestedInfo extends TLMethod<TLValidated
 
     protected TLPaymentRequestedInfo info;
 
-    private final String _constructor = "payments.validateRequestedInfo#0";
+    private final String _constructor = "payments.validateRequestedInfo#770a8e74";
 
     public TLRequestPaymentsValidateRequestedInfo() {
     }

@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPasswordInputSettings extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc23727c9;
 
     protected int flags;
 
@@ -34,7 +34,7 @@ public class TLPasswordInputSettings extends TLObject {
 
     protected TLSecureSecretSettings newSecureSettings;
 
-    private final String _constructor = "account.passwordInputSettings#0";
+    private final String _constructor = "account.passwordInputSettings#c23727c9";
 
     public TLPasswordInputSettings() {
     }

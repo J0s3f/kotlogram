@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLPasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow}: passwordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow#0</li>
- * <li>{@link TLPasswordKdfAlgoUnknown}: passwordKdfAlgoUnknown#0</li>
+ * <li>{@link TLPasswordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow}: passwordKdfAlgoSHA256SHA256PBKDF2HMACSHA512iter100000SHA256ModPow#3a912d4a</li>
+ * <li>{@link TLPasswordKdfAlgoUnknown}: passwordKdfAlgoUnknown#d45ab096</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

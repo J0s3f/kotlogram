@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLRecentStickers}: messages.recentStickers#0</li>
- * <li>{@link TLRecentStickersNotModified}: messages.recentStickersNotModified#0</li>
+ * <li>{@link TLRecentStickers}: messages.recentStickers#22f3afb3</li>
+ * <li>{@link TLRecentStickersNotModified}: messages.recentStickersNotModified#b17f890</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

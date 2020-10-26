@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestUsersGetFullUser extends TLMethod<TLUserFull> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xca30a5b1;
 
     protected TLAbsInputUser id;
 
-    private final String _constructor = "users.getFullUser#0";
+    private final String _constructor = "users.getFullUser#ca30a5b1";
 
     public TLRequestUsersGetFullUser() {
     }

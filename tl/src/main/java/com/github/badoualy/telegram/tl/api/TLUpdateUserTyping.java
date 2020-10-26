@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateUserTyping extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5c486927;
 
     protected int userId;
 
     protected TLAbsSendMessageAction action;
 
-    private final String _constructor = "updateUserTyping#0";
+    private final String _constructor = "updateUserTyping#5c486927";
 
     public TLUpdateUserTyping() {
     }

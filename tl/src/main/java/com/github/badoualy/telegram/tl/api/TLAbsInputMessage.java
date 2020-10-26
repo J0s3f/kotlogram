@@ -8,9 +8,9 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLInputMessageID}: inputMessageID#0</li>
- * <li>{@link TLInputMessagePinned}: inputMessagePinned#0</li>
- * <li>{@link TLInputMessageReplyTo}: inputMessageReplyTo#0</li>
+ * <li>{@link TLInputMessageID}: inputMessageID#a676a322</li>
+ * <li>{@link TLInputMessagePinned}: inputMessagePinned#86872538</li>
+ * <li>{@link TLInputMessageReplyTo}: inputMessageReplyTo#bad88395</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

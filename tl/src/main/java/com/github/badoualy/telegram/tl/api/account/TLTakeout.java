@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTakeout extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4dba4501;
 
     protected long id;
 
-    private final String _constructor = "account.takeout#0";
+    private final String _constructor = "account.takeout#4dba4501";
 
     public TLTakeout() {
     }

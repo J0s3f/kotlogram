@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountSendChangePhoneCode extends TLMethod<TLSentCode> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x82574ae5;
 
     protected String phoneNumber;
 
     protected TLCodeSettings settings;
 
-    private final String _constructor = "account.sendChangePhoneCode#0";
+    private final String _constructor = "account.sendChangePhoneCode#82574ae5";
 
     public TLRequestAccountSendChangePhoneCode() {
     }

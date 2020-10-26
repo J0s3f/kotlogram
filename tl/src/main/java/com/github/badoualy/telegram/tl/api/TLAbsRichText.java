@@ -8,22 +8,22 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLTextAnchor}: textAnchor#0</li>
- * <li>{@link TLTextBold}: textBold#0</li>
- * <li>{@link TLTextConcat}: textConcat#0</li>
- * <li>{@link TLTextEmail}: textEmail#0</li>
- * <li>{@link TLTextEmpty}: textEmpty#0</li>
- * <li>{@link TLTextFixed}: textFixed#0</li>
- * <li>{@link TLTextImage}: textImage#0</li>
- * <li>{@link TLTextItalic}: textItalic#0</li>
- * <li>{@link TLTextMarked}: textMarked#0</li>
- * <li>{@link TLTextPhone}: textPhone#0</li>
- * <li>{@link TLTextPlain}: textPlain#0</li>
- * <li>{@link TLTextStrike}: textStrike#0</li>
- * <li>{@link TLTextSubscript}: textSubscript#0</li>
- * <li>{@link TLTextSuperscript}: textSuperscript#0</li>
- * <li>{@link TLTextUnderline}: textUnderline#0</li>
- * <li>{@link TLTextUrl}: textUrl#0</li>
+ * <li>{@link TLTextAnchor}: textAnchor#35553762</li>
+ * <li>{@link TLTextBold}: textBold#6724abc4</li>
+ * <li>{@link TLTextConcat}: textConcat#7e6260d7</li>
+ * <li>{@link TLTextEmail}: textEmail#de5a0dd6</li>
+ * <li>{@link TLTextEmpty}: textEmpty#dc3d824f</li>
+ * <li>{@link TLTextFixed}: textFixed#6c3f19b9</li>
+ * <li>{@link TLTextImage}: textImage#81ccf4f</li>
+ * <li>{@link TLTextItalic}: textItalic#d912a59c</li>
+ * <li>{@link TLTextMarked}: textMarked#34b8621</li>
+ * <li>{@link TLTextPhone}: textPhone#1ccb966a</li>
+ * <li>{@link TLTextPlain}: textPlain#744694e0</li>
+ * <li>{@link TLTextStrike}: textStrike#9bf8bb95</li>
+ * <li>{@link TLTextSubscript}: textSubscript#ed6a8504</li>
+ * <li>{@link TLTextSuperscript}: textSuperscript#c7fb5e01</li>
+ * <li>{@link TLTextUnderline}: textUnderline#c12622c4</li>
+ * <li>{@link TLTextUrl}: textUrl#3c2884c1</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

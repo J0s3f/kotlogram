@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsDeleteHistory extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xaf369d42;
 
     protected TLAbsInputChannel channel;
 
     protected int maxId;
 
-    private final String _constructor = "channels.deleteHistory#0";
+    private final String _constructor = "channels.deleteHistory#af369d42";
 
     public TLRequestChannelsDeleteHistory() {
     }

@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSupport extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x17c6b5f6;
 
     protected String phoneNumber;
 
     protected TLAbsUser user;
 
-    private final String _constructor = "help.support#0";
+    private final String _constructor = "help.support#17c6b5f6";
 
     public TLSupport() {
     }

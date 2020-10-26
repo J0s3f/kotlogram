@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsGetLocated extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd348bc44;
 
     protected int flags;
 
@@ -31,7 +31,7 @@ public class TLRequestContactsGetLocated extends TLMethod<TLAbsUpdates> {
 
     protected Integer selfExpires;
 
-    private final String _constructor = "contacts.getLocated#0";
+    private final String _constructor = "contacts.getLocated#d348bc44";
 
     public TLRequestContactsGetLocated() {
     }

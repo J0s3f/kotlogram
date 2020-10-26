@@ -11,8 +11,8 @@ import com.github.badoualy.telegram.tl.core.TLVector;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLBlocked}: contacts.blocked#0</li>
- * <li>{@link TLBlockedSlice}: contacts.blockedSlice#0</li>
+ * <li>{@link TLBlocked}: contacts.blocked#1c138d15</li>
+ * <li>{@link TLBlockedSlice}: contacts.blockedSlice#900802a1</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

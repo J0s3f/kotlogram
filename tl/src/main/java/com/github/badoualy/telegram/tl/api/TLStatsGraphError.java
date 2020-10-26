@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLStatsGraphError extends TLAbsStatsGraph {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbedc9822;
 
     protected String error;
 
-    private final String _constructor = "statsGraphError#0";
+    private final String _constructor = "statsGraphError#bedc9822";
 
     public TLStatsGraphError() {
     }

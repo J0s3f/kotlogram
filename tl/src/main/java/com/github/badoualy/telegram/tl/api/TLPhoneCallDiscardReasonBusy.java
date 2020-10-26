@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCallDiscardReasonBusy extends TLAbsPhoneCallDiscardReason {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfaf7e8c9;
 
-    private final String _constructor = "phoneCallDiscardReasonBusy#0";
+    private final String _constructor = "phoneCallDiscardReasonBusy#faf7e8c9";
 
     public TLPhoneCallDiscardReasonBusy() {
     }

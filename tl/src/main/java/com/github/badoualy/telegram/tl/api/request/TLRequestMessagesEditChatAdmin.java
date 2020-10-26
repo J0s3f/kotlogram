@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesEditChatAdmin extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa9e69f2e;
 
     protected int chatId;
 
@@ -28,7 +28,7 @@ public class TLRequestMessagesEditChatAdmin extends TLMethod<TLBool> {
 
     protected boolean isAdmin;
 
-    private final String _constructor = "messages.editChatAdmin#0";
+    private final String _constructor = "messages.editChatAdmin#a9e69f2e";
 
     public TLRequestMessagesEditChatAdmin() {
     }

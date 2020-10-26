@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLJsonObjectValue extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc0de1bd9;
 
     protected String key;
 
     protected TLAbsJSONValue value;
 
-    private final String _constructor = "jsonObjectValue#0";
+    private final String _constructor = "jsonObjectValue#c0de1bd9";
 
     public TLJsonObjectValue() {
     }

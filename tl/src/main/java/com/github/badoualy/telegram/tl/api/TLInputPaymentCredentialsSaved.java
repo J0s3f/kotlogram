@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputPaymentCredentialsSaved extends TLAbsInputPaymentCredentials {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc10eb2cf;
 
     protected String id;
 
     protected TLBytes tmpPassword;
 
-    private final String _constructor = "inputPaymentCredentialsSaved#0";
+    private final String _constructor = "inputPaymentCredentialsSaved#c10eb2cf";
 
     public TLInputPaymentCredentialsSaved() {
     }

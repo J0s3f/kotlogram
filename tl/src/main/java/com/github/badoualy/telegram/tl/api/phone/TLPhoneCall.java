@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhoneCall extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xec82e140;
 
     protected TLAbsPhoneCall phoneCall;
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "phone.phoneCall#0";
+    private final String _constructor = "phone.phoneCall#ec82e140";
 
     public TLPhoneCall() {
     }

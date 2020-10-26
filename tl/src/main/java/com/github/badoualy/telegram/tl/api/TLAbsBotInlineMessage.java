@@ -8,11 +8,11 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLBotInlineMessageMediaAuto}: botInlineMessageMediaAuto#0</li>
- * <li>{@link TLBotInlineMessageMediaContact}: botInlineMessageMediaContact#0</li>
- * <li>{@link TLBotInlineMessageMediaGeo}: botInlineMessageMediaGeo#0</li>
- * <li>{@link TLBotInlineMessageMediaVenue}: botInlineMessageMediaVenue#0</li>
- * <li>{@link TLBotInlineMessageText}: botInlineMessageText#0</li>
+ * <li>{@link TLBotInlineMessageMediaAuto}: botInlineMessageMediaAuto#764cf810</li>
+ * <li>{@link TLBotInlineMessageMediaContact}: botInlineMessageMediaContact#18d1cdc2</li>
+ * <li>{@link TLBotInlineMessageMediaGeo}: botInlineMessageMediaGeo#b722de65</li>
+ * <li>{@link TLBotInlineMessageMediaVenue}: botInlineMessageMediaVenue#8a86659c</li>
+ * <li>{@link TLBotInlineMessageText}: botInlineMessageText#8c7f65e2</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

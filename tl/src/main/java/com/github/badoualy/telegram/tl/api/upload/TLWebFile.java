@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLWebFile extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x21e753bc;
 
     protected int size;
 
@@ -31,7 +31,7 @@ public class TLWebFile extends TLObject {
 
     protected TLBytes bytes;
 
-    private final String _constructor = "upload.webFile#0";
+    private final String _constructor = "upload.webFile#21e753bc";
 
     public TLWebFile() {
     }

@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPhotosUploadProfilePhoto extends TLMethod<TLPhoto> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4f32c098;
 
     protected TLAbsInputFile file;
 
-    private final String _constructor = "photos.uploadProfilePhoto#0";
+    private final String _constructor = "photos.uploadProfilePhoto#4f32c098";
 
     public TLRequestPhotosUploadProfilePhoto() {
     }

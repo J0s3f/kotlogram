@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateGeoLiveViewed extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x871fb939;
 
     protected TLAbsPeer peer;
 
     protected int msgId;
 
-    private final String _constructor = "updateGeoLiveViewed#0";
+    private final String _constructor = "updateGeoLiveViewed#871fb939";
 
     public TLUpdateGeoLiveViewed() {
     }

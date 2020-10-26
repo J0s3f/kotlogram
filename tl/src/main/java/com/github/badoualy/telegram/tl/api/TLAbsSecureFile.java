@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLSecureFile}: secureFile#0</li>
- * <li>{@link TLSecureFileEmpty}: secureFileEmpty#0</li>
+ * <li>{@link TLSecureFile}: secureFile#e0277a62</li>
+ * <li>{@link TLSecureFileEmpty}: secureFileEmpty#64199744</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

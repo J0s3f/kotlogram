@@ -8,9 +8,9 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLMessageUserVote}: messageUserVote#0</li>
- * <li>{@link TLMessageUserVoteInputOption}: messageUserVoteInputOption#0</li>
- * <li>{@link TLMessageUserVoteMultiple}: messageUserVoteMultiple#0</li>
+ * <li>{@link TLMessageUserVote}: messageUserVote#a28e5559</li>
+ * <li>{@link TLMessageUserVoteInputOption}: messageUserVoteInputOption#36377430</li>
+ * <li>{@link TLMessageUserVoteMultiple}: messageUserVoteMultiple#e8fe0de</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

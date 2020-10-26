@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRecentMeUrlChat extends TLAbsRecentMeUrl {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa01b22f9;
 
     protected int chatId;
 
-    private final String _constructor = "recentMeUrlChat#0";
+    private final String _constructor = "recentMeUrlChat#a01b22f9";
 
     public TLRecentMeUrlChat() {
     }

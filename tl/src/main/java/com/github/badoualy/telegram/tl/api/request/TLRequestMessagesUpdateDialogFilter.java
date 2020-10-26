@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesUpdateDialogFilter extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1ad4a04a;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLRequestMessagesUpdateDialogFilter extends TLMethod<TLBool> {
 
     protected TLDialogFilter filter;
 
-    private final String _constructor = "messages.updateDialogFilter#0";
+    private final String _constructor = "messages.updateDialogFilter#1ad4a04a";
 
     public TLRequestMessagesUpdateDialogFilter() {
     }

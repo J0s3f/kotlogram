@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputStickeredMediaDocument extends TLAbsInputStickeredMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x438865b;
 
     protected TLAbsInputDocument id;
 
-    private final String _constructor = "inputStickeredMediaDocument#0";
+    private final String _constructor = "inputStickeredMediaDocument#438865b";
 
     public TLInputStickeredMediaDocument() {
     }

@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMediaGeoLive extends TLAbsInputMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xce4e82fd;
 
     protected int flags;
 
@@ -27,7 +27,7 @@ public class TLInputMediaGeoLive extends TLAbsInputMedia {
 
     protected Integer period;
 
-    private final String _constructor = "inputMediaGeoLive#0";
+    private final String _constructor = "inputMediaGeoLive#ce4e82fd";
 
     public TLInputMediaGeoLive() {
     }

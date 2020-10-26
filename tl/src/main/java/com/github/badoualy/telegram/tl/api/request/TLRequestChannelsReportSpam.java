@@ -22,7 +22,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsReportSpam extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfe087810;
 
     protected TLAbsInputChannel channel;
 
@@ -30,7 +30,7 @@ public class TLRequestChannelsReportSpam extends TLMethod<TLBool> {
 
     protected TLIntVector id;
 
-    private final String _constructor = "channels.reportSpam#0";
+    private final String _constructor = "channels.reportSpam#fe087810";
 
     public TLRequestChannelsReportSpam() {
     }

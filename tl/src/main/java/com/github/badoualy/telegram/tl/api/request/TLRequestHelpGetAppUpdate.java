@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetAppUpdate extends TLMethod<TLAbsAppUpdate> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x522d5a7d;
 
     protected String source;
 
-    private final String _constructor = "help.getAppUpdate#0";
+    private final String _constructor = "help.getAppUpdate#522d5a7d";
 
     public TLRequestHelpGetAppUpdate() {
     }

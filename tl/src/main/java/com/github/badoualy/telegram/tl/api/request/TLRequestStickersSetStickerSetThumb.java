@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestStickersSetStickerSetThumb extends TLMethod<TLStickerSet> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9a364e30;
 
     protected TLAbsInputStickerSet stickerset;
 
     protected TLAbsInputDocument thumb;
 
-    private final String _constructor = "stickers.setStickerSetThumb#0";
+    private final String _constructor = "stickers.setStickerSetThumb#9a364e30";
 
     public TLRequestStickersSetStickerSetThumb() {
     }

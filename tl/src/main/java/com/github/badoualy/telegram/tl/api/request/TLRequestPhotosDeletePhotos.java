@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPhotosDeletePhotos extends TLMethod<TLLongVector> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x87cf7f2f;
 
     protected TLVector<TLAbsInputPhoto> id;
 
-    private final String _constructor = "photos.deletePhotos#0";
+    private final String _constructor = "photos.deletePhotos#87cf7f2f";
 
     public TLRequestPhotosDeletePhotos() {
     }

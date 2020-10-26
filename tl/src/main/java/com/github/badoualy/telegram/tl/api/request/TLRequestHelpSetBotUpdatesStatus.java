@@ -19,13 +19,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpSetBotUpdatesStatus extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xec22cfcd;
 
     protected int pendingUpdatesCount;
 
     protected String message;
 
-    private final String _constructor = "help.setBotUpdatesStatus#0";
+    private final String _constructor = "help.setBotUpdatesStatus#ec22cfcd";
 
     public TLRequestHelpSetBotUpdatesStatus() {
     }

@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTextConcat extends TLAbsRichText {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7e6260d7;
 
     protected TLVector<TLAbsRichText> texts;
 
-    private final String _constructor = "textConcat#0";
+    private final String _constructor = "textConcat#7e6260d7";
 
     public TLTextConcat() {
     }

@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSearchCounter extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe844ebff;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLSearchCounter extends TLObject {
 
     protected int count;
 
-    private final String _constructor = "messages.searchCounter#0";
+    private final String _constructor = "messages.searchCounter#e844ebff";
 
     public TLSearchCounter() {
     }

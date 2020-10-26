@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsEditLocation extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x58e63f6d;
 
     protected TLAbsInputChannel channel;
 
@@ -29,7 +29,7 @@ public class TLRequestChannelsEditLocation extends TLMethod<TLBool> {
 
     protected String address;
 
-    private final String _constructor = "channels.editLocation#0";
+    private final String _constructor = "channels.editLocation#58e63f6d";
 
     public TLRequestChannelsEditLocation() {
     }

@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLReplyKeyboardMarkup extends TLAbsReplyMarkup {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3502758c;
 
     protected int flags;
 
@@ -29,7 +29,7 @@ public class TLReplyKeyboardMarkup extends TLAbsReplyMarkup {
 
     protected TLVector<TLKeyboardButtonRow> rows;
 
-    private final String _constructor = "replyKeyboardMarkup#0";
+    private final String _constructor = "replyKeyboardMarkup#3502758c";
 
     public TLReplyKeyboardMarkup() {
     }

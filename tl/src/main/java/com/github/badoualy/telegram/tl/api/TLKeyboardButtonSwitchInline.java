@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLKeyboardButtonSwitchInline extends TLAbsKeyboardButton {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x568a748;
 
     protected int flags;
 
@@ -24,7 +24,7 @@ public class TLKeyboardButtonSwitchInline extends TLAbsKeyboardButton {
 
     protected String query;
 
-    private final String _constructor = "keyboardButtonSwitchInline#0";
+    private final String _constructor = "keyboardButtonSwitchInline#568a748";
 
     public TLKeyboardButtonSwitchInline() {
     }

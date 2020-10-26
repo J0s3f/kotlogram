@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLNearestDc extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8e1a1775;
 
     protected String country;
 
@@ -25,7 +25,7 @@ public class TLNearestDc extends TLObject {
 
     protected int nearestDc;
 
-    private final String _constructor = "nearestDc#0";
+    private final String _constructor = "nearestDc#8e1a1775";
 
     public TLNearestDc() {
     }

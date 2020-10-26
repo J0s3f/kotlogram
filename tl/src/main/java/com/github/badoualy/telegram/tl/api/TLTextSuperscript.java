@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTextSuperscript extends TLAbsRichText {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc7fb5e01;
 
     protected TLAbsRichText text;
 
-    private final String _constructor = "textSuperscript#0";
+    private final String _constructor = "textSuperscript#c7fb5e01";
 
     public TLTextSuperscript() {
     }

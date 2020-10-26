@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageListOrderedItemBlocks extends TLAbsPageListOrderedItem {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x98dd8936;
 
     protected TLVector<TLAbsPageBlock> blocks;
 
-    private final String _constructor = "pageListOrderedItemBlocks#0";
+    private final String _constructor = "pageListOrderedItemBlocks#98dd8936";
 
     public TLPageListOrderedItemBlocks() {
     }

@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputBotInlineMessageID extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x890c3d89;
 
     protected int dcId;
 
@@ -25,7 +25,7 @@ public class TLInputBotInlineMessageID extends TLObject {
 
     protected long accessHash;
 
-    private final String _constructor = "inputBotInlineMessageID#0";
+    private final String _constructor = "inputBotInlineMessageID#890c3d89";
 
     public TLInputBotInlineMessageID() {
     }

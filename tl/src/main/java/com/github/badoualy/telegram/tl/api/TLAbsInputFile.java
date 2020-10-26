@@ -9,8 +9,8 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLInputFile}: inputFile#0</li>
- * <li>{@link TLInputFileBig}: inputFileBig#0</li>
+ * <li>{@link TLInputFile}: inputFile#f52ff27f</li>
+ * <li>{@link TLInputFileBig}: inputFileBig#fa4f0bb5</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

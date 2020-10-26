@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageMediaGame extends TLAbsMessageMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfdb19008;
 
     protected TLGame game;
 
-    private final String _constructor = "messageMediaGame#0";
+    private final String _constructor = "messageMediaGame#fdb19008";
 
     public TLMessageMediaGame() {
     }

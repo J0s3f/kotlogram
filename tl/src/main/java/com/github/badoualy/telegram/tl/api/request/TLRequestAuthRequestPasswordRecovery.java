@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAuthRequestPasswordRecovery extends TLMethod<TLPasswordRecovery> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd897bc66;
 
-    private final String _constructor = "auth.requestPasswordRecovery#0";
+    private final String _constructor = "auth.requestPasswordRecovery#d897bc66";
 
     public TLRequestAuthRequestPasswordRecovery() {
     }

@@ -10,8 +10,8 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLChannelFull}: channelFull#0</li>
- * <li>{@link TLChatFull}: chatFull#0</li>
+ * <li>{@link TLChannelFull}: channelFull#f0e6672a</li>
+ * <li>{@link TLChatFull}: chatFull#1b7c9db3</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

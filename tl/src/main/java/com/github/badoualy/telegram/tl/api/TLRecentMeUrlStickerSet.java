@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRecentMeUrlStickerSet extends TLAbsRecentMeUrl {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbc0a57dc;
 
     protected TLAbsStickerSetCovered set;
 
-    private final String _constructor = "recentMeUrlStickerSet#0";
+    private final String _constructor = "recentMeUrlStickerSet#bc0a57dc";
 
     public TLRecentMeUrlStickerSet() {
     }

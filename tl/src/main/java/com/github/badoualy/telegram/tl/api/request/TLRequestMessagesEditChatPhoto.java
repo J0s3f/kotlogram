@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesEditChatPhoto extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xca4c79d8;
 
     protected int chatId;
 
     protected TLAbsInputChatPhoto photo;
 
-    private final String _constructor = "messages.editChatPhoto#0";
+    private final String _constructor = "messages.editChatPhoto#ca4c79d8";
 
     public TLRequestMessagesEditChatPhoto() {
     }

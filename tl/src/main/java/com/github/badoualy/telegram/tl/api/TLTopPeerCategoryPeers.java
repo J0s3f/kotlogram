@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTopPeerCategoryPeers extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfb834291;
 
     protected TLAbsTopPeerCategory category;
 
@@ -26,7 +26,7 @@ public class TLTopPeerCategoryPeers extends TLObject {
 
     protected TLVector<TLTopPeer> peers;
 
-    private final String _constructor = "topPeerCategoryPeers#0";
+    private final String _constructor = "topPeerCategoryPeers#fb834291";
 
     public TLTopPeerCategoryPeers() {
     }

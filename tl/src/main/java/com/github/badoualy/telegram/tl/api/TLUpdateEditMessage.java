@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateEditMessage extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe40370a3;
 
     protected TLAbsMessage message;
 
@@ -24,7 +24,7 @@ public class TLUpdateEditMessage extends TLAbsUpdate {
 
     protected int ptsCount;
 
-    private final String _constructor = "updateEditMessage#0";
+    private final String _constructor = "updateEditMessage#e40370a3";
 
     public TLUpdateEditMessage() {
     }

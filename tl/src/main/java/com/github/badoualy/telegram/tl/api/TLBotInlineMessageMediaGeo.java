@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBotInlineMessageMediaGeo extends TLAbsBotInlineMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb722de65;
 
     protected TLAbsGeoPoint geo;
 
     protected int period;
 
-    private final String _constructor = "botInlineMessageMediaGeo#0";
+    private final String _constructor = "botInlineMessageMediaGeo#b722de65";
 
     public TLBotInlineMessageMediaGeo() {
     }

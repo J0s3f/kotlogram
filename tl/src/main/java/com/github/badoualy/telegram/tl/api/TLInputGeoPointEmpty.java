@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputGeoPointEmpty extends TLAbsInputGeoPoint {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe4c123d6;
 
-    private final String _constructor = "inputGeoPointEmpty#0";
+    private final String _constructor = "inputGeoPointEmpty#e4c123d6";
 
     public TLInputGeoPointEmpty() {
     }

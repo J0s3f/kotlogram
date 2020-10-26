@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInlineBotSwitchPM extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3c20629f;
 
     protected String text;
 
     protected String startParam;
 
-    private final String _constructor = "inlineBotSwitchPM#0";
+    private final String _constructor = "inlineBotSwitchPM#3c20629f";
 
     public TLInlineBotSwitchPM() {
     }

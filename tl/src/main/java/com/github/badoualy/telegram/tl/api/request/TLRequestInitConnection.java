@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc1cd5ea9;
 
     protected int flags;
 
@@ -44,7 +44,7 @@ public class TLRequestInitConnection<T extends TLObject> extends TLMethod<T> {
 
     protected TLMethod<T> query;
 
-    private final String _constructor = "initConnection#0";
+    private final String _constructor = "initConnection#c1cd5ea9";
 
     public TLRequestInitConnection() {
     }

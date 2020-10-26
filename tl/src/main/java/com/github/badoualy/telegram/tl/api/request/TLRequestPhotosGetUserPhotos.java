@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPhotosGetUserPhotos extends TLMethod<TLAbsPhotos> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x91cd32a8;
 
     protected TLAbsInputUser userId;
 
@@ -30,7 +30,7 @@ public class TLRequestPhotosGetUserPhotos extends TLMethod<TLAbsPhotos> {
 
     protected int limit;
 
-    private final String _constructor = "photos.getUserPhotos#0";
+    private final String _constructor = "photos.getUserPhotos#91cd32a8";
 
     public TLRequestPhotosGetUserPhotos() {
     }

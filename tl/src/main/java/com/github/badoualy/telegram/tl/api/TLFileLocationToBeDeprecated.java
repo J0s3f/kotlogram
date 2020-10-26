@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFileLocationToBeDeprecated extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbc7fc6cd;
 
     protected long volumeId;
 
     protected int localId;
 
-    private final String _constructor = "fileLocationToBeDeprecated#0";
+    private final String _constructor = "fileLocationToBeDeprecated#bc7fc6cd";
 
     public TLFileLocationToBeDeprecated() {
     }

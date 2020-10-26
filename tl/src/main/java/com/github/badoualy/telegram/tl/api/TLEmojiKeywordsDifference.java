@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLEmojiKeywordsDifference extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5cc761bd;
 
     protected String langCode;
 
@@ -28,7 +28,7 @@ public class TLEmojiKeywordsDifference extends TLObject {
 
     protected TLVector<TLAbsEmojiKeyword> keywords;
 
-    private final String _constructor = "emojiKeywordsDifference#0";
+    private final String _constructor = "emojiKeywordsDifference#5cc761bd";
 
     public TLEmojiKeywordsDifference() {
     }

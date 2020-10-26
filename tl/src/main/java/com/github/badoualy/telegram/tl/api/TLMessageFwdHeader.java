@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageFwdHeader extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x353a686b;
 
     protected int flags;
 
@@ -40,7 +40,7 @@ public class TLMessageFwdHeader extends TLObject {
 
     protected String psaType;
 
-    private final String _constructor = "messageFwdHeader#0";
+    private final String _constructor = "messageFwdHeader#353a686b";
 
     public TLMessageFwdHeader() {
     }

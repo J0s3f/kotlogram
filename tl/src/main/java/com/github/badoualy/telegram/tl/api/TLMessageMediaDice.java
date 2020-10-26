@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageMediaDice extends TLAbsMessageMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3f7ee58b;
 
     protected int value;
 
     protected String emoticon;
 
-    private final String _constructor = "messageMediaDice#0";
+    private final String _constructor = "messageMediaDice#3f7ee58b";
 
     public TLMessageMediaDice() {
     }

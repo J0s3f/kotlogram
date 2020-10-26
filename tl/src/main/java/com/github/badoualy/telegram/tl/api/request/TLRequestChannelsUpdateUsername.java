@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsUpdateUsername extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3514b3de;
 
     protected TLAbsInputChannel channel;
 
     protected String username;
 
-    private final String _constructor = "channels.updateUsername#0";
+    private final String _constructor = "channels.updateUsername#3514b3de";
 
     public TLRequestChannelsUpdateUsername() {
     }

@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountConfirmPasswordEmail extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8fdf1920;
 
     protected String code;
 
-    private final String _constructor = "account.confirmPasswordEmail#0";
+    private final String _constructor = "account.confirmPasswordEmail#8fdf1920";
 
     public TLRequestAccountConfirmPasswordEmail() {
     }

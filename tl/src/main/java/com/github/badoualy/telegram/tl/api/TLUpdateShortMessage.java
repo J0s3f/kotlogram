@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateShortMessage extends TLAbsUpdates {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x914fbf11;
 
     protected int flags;
 
@@ -50,7 +50,7 @@ public class TLUpdateShortMessage extends TLAbsUpdates {
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "updateShortMessage#0";
+    private final String _constructor = "updateShortMessage#914fbf11";
 
     public TLUpdateShortMessage() {
     }

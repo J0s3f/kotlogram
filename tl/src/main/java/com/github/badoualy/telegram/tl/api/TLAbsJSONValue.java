@@ -8,12 +8,12 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLJsonArray}: jsonArray#0</li>
- * <li>{@link TLJsonBool}: jsonBool#0</li>
- * <li>{@link TLJsonNull}: jsonNull#0</li>
- * <li>{@link TLJsonNumber}: jsonNumber#0</li>
- * <li>{@link TLJsonObject}: jsonObject#0</li>
- * <li>{@link TLJsonString}: jsonString#0</li>
+ * <li>{@link TLJsonArray}: jsonArray#f7444763</li>
+ * <li>{@link TLJsonBool}: jsonBool#c7345e6a</li>
+ * <li>{@link TLJsonNull}: jsonNull#3f6d7b68</li>
+ * <li>{@link TLJsonNumber}: jsonNumber#2be0dfa4</li>
+ * <li>{@link TLJsonObject}: jsonObject#99c1d49d</li>
+ * <li>{@link TLJsonString}: jsonString#b71e767a</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

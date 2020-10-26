@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesDeleteChatUser extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe0611f16;
 
     protected int chatId;
 
     protected TLAbsInputUser userId;
 
-    private final String _constructor = "messages.deleteChatUser#0";
+    private final String _constructor = "messages.deleteChatUser#e0611f16";
 
     public TLRequestMessagesDeleteChatUser() {
     }

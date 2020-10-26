@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetInlineGameHighScores extends TLMethod<TLHighScores> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf635e1b;
 
     protected TLInputBotInlineMessageID id;
 
     protected TLAbsInputUser userId;
 
-    private final String _constructor = "messages.getInlineGameHighScores#0";
+    private final String _constructor = "messages.getInlineGameHighScores#f635e1b";
 
     public TLRequestMessagesGetInlineGameHighScores() {
     }

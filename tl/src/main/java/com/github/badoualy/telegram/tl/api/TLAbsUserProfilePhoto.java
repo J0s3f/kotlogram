@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLUserProfilePhoto}: userProfilePhoto#0</li>
- * <li>{@link TLUserProfilePhotoEmpty}: userProfilePhotoEmpty#0</li>
+ * <li>{@link TLUserProfilePhoto}: userProfilePhoto#ecd75d8c</li>
+ * <li>{@link TLUserProfilePhotoEmpty}: userProfilePhotoEmpty#4f11bae1</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

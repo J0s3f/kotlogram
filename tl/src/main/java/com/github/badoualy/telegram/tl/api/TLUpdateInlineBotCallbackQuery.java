@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateInlineBotCallbackQuery extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf9d27a5a;
 
     protected int flags;
 
@@ -33,7 +33,7 @@ public class TLUpdateInlineBotCallbackQuery extends TLAbsUpdate {
 
     protected String gameShortName;
 
-    private final String _constructor = "updateInlineBotCallbackQuery#0";
+    private final String _constructor = "updateInlineBotCallbackQuery#f9d27a5a";
 
     public TLUpdateInlineBotCallbackQuery() {
     }

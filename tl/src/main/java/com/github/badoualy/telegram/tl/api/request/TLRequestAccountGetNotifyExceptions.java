@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountGetNotifyExceptions extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x53577479;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLRequestAccountGetNotifyExceptions extends TLMethod<TLAbsUpdates> 
 
     protected TLAbsInputNotifyPeer peer;
 
-    private final String _constructor = "account.getNotifyExceptions#0";
+    private final String _constructor = "account.getNotifyExceptions#53577479";
 
     public TLRequestAccountGetNotifyExceptions() {
     }

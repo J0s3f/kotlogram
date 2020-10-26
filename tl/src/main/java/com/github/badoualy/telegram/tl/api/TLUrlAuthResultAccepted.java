@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUrlAuthResultAccepted extends TLAbsUrlAuthResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8f8c0e4e;
 
     protected String url;
 
-    private final String _constructor = "urlAuthResultAccepted#0";
+    private final String _constructor = "urlAuthResultAccepted#8f8c0e4e";
 
     public TLUrlAuthResultAccepted() {
     }

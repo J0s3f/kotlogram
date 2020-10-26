@@ -19,13 +19,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetWebPage extends TLMethod<TLAbsWebPage> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x32ca8f91;
 
     protected String url;
 
     protected int hash;
 
-    private final String _constructor = "messages.getWebPage#0";
+    private final String _constructor = "messages.getWebPage#32ca8f91";
 
     public TLRequestMessagesGetWebPage() {
     }

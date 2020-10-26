@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputWebFileLocation extends TLAbsInputWebFileLocation {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc239d686;
 
     protected String url;
 
-    private final String _constructor = "inputWebFileLocation#0";
+    private final String _constructor = "inputWebFileLocation#c239d686";
 
     public TLInputWebFileLocation() {
     }

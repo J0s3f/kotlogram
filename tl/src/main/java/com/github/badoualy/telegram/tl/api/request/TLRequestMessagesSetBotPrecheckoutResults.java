@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesSetBotPrecheckoutResults extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9c2dd95;
 
     protected int flags;
 
@@ -29,7 +29,7 @@ public class TLRequestMessagesSetBotPrecheckoutResults extends TLMethod<TLBool> 
 
     protected String error;
 
-    private final String _constructor = "messages.setBotPrecheckoutResults#0";
+    private final String _constructor = "messages.setBotPrecheckoutResults#9c2dd95";
 
     public TLRequestMessagesSetBotPrecheckoutResults() {
     }

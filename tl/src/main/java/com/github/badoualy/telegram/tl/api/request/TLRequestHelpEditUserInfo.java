@@ -22,7 +22,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpEditUserInfo extends TLMethod<TLAbsUserInfo> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x66b91b70;
 
     protected TLAbsInputUser userId;
 
@@ -30,7 +30,7 @@ public class TLRequestHelpEditUserInfo extends TLMethod<TLAbsUserInfo> {
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "help.editUserInfo#0";
+    private final String _constructor = "help.editUserInfo#66b91b70";
 
     public TLRequestHelpEditUserInfo() {
     }

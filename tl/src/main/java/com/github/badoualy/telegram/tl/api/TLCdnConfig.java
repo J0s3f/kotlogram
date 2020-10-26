@@ -18,11 +18,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLCdnConfig extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5725e40a;
 
     protected TLVector<TLCdnPublicKey> publicKeys;
 
-    private final String _constructor = "cdnConfig#0";
+    private final String _constructor = "cdnConfig#5725e40a";
 
     public TLCdnConfig() {
     }

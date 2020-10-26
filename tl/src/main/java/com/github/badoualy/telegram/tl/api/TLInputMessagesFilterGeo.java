@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMessagesFilterGeo extends TLAbsMessagesFilter {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe7026d0d;
 
-    private final String _constructor = "inputMessagesFilterGeo#0";
+    private final String _constructor = "inputMessagesFilterGeo#e7026d0d";
 
     public TLInputMessagesFilterGeo() {
     }

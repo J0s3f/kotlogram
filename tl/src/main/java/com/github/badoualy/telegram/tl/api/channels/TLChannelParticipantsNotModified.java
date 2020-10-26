@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelParticipantsNotModified extends TLAbsChannelParticipants {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf0173fe9;
 
-    private final String _constructor = "channels.channelParticipantsNotModified#0";
+    private final String _constructor = "channels.channelParticipantsNotModified#f0173fe9";
 
     public TLChannelParticipantsNotModified() {
     }

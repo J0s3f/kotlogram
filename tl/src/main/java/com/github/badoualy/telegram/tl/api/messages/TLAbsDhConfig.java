@@ -9,8 +9,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLDhConfig}: messages.dhConfig#0</li>
- * <li>{@link TLDhConfigNotModified}: messages.dhConfigNotModified#0</li>
+ * <li>{@link TLDhConfig}: messages.dhConfig#2c221edd</li>
+ * <li>{@link TLDhConfigNotModified}: messages.dhConfigNotModified#c0e24635</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

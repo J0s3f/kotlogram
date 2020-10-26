@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelAdminLogEventActionTogglePreHistoryHidden extends TLAbsChannelAdminLogEventAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5f5c95f1;
 
     protected boolean newValue;
 
-    private final String _constructor = "channelAdminLogEventActionTogglePreHistoryHidden#0";
+    private final String _constructor = "channelAdminLogEventActionTogglePreHistoryHidden#5f5c95f1";
 
     public TLChannelAdminLogEventActionTogglePreHistoryHidden() {
     }

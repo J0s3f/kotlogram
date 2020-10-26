@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesReadMentions extends TLMethod<TLAffectedHistory> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf0189d3;
 
     protected TLAbsInputPeer peer;
 
-    private final String _constructor = "messages.readMentions#0";
+    private final String _constructor = "messages.readMentions#f0189d3";
 
     public TLRequestMessagesReadMentions() {
     }

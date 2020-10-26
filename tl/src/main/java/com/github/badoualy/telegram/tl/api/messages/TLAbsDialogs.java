@@ -8,9 +8,9 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLDialogs}: messages.dialogs#0</li>
- * <li>{@link TLDialogsNotModified}: messages.dialogsNotModified#0</li>
- * <li>{@link TLDialogsSlice}: messages.dialogsSlice#0</li>
+ * <li>{@link TLDialogs}: messages.dialogs#15ba6c40</li>
+ * <li>{@link TLDialogsNotModified}: messages.dialogsNotModified#f0e3e596</li>
+ * <li>{@link TLDialogsSlice}: messages.dialogsSlice#71e094f3</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFoundStickerSets extends TLAbsFoundStickerSets {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x5108d648;
 
     protected int hash;
 
     protected TLVector<TLAbsStickerSetCovered> sets;
 
-    private final String _constructor = "messages.foundStickerSets#0";
+    private final String _constructor = "messages.foundStickerSets#5108d648";
 
     public TLFoundStickerSets() {
     }

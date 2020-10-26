@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageMediaInvoice extends TLAbsMessageMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x84551347;
 
     protected int flags;
 
@@ -39,7 +39,7 @@ public class TLMessageMediaInvoice extends TLAbsMessageMedia {
 
     protected String startParam;
 
-    private final String _constructor = "messageMediaInvoice#0";
+    private final String _constructor = "messageMediaInvoice#84551347";
 
     public TLMessageMediaInvoice() {
     }

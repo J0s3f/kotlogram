@@ -24,7 +24,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x83557dba;
 
     protected int flags;
 
@@ -40,7 +40,7 @@ public class TLRequestMessagesEditInlineBotMessage extends TLMethod<TLBool> {
 
     protected TLVector<TLAbsMessageEntity> entities;
 
-    private final String _constructor = "messages.editInlineBotMessage#0";
+    private final String _constructor = "messages.editInlineBotMessage#83557dba";
 
     public TLRequestMessagesEditInlineBotMessage() {
     }

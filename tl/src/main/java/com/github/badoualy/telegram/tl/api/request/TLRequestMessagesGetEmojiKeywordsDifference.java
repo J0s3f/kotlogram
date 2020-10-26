@@ -19,13 +19,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetEmojiKeywordsDifference extends TLMethod<TLEmojiKeywordsDifference> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1508b6af;
 
     protected String langCode;
 
     protected int fromVersion;
 
-    private final String _constructor = "messages.getEmojiKeywordsDifference#0";
+    private final String _constructor = "messages.getEmojiKeywordsDifference#1508b6af";
 
     public TLRequestMessagesGetEmojiKeywordsDifference() {
     }

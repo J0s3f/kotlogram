@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestLangpackGetLanguages extends TLMethod<TLVector<TLLangPackLanguage>> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x42c6978f;
 
     protected String langPack;
 
-    private final String _constructor = "langpack.getLanguages#0";
+    private final String _constructor = "langpack.getLanguages#42c6978f";
 
     public TLRequestLangpackGetLanguages() {
     }

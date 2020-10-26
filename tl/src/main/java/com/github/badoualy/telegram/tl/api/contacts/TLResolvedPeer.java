@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLResolvedPeer extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7f077ad9;
 
     protected TLAbsPeer peer;
 
@@ -29,7 +29,7 @@ public class TLResolvedPeer extends TLObject {
 
     protected TLVector<TLAbsUser> users;
 
-    private final String _constructor = "contacts.resolvedPeer#0";
+    private final String _constructor = "contacts.resolvedPeer#7f077ad9";
 
     public TLResolvedPeer() {
     }

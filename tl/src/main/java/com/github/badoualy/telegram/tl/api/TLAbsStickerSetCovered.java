@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLStickerSetCovered}: stickerSetCovered#0</li>
- * <li>{@link TLStickerSetMultiCovered}: stickerSetMultiCovered#0</li>
+ * <li>{@link TLStickerSetCovered}: stickerSetCovered#6410a5d2</li>
+ * <li>{@link TLStickerSetMultiCovered}: stickerSetMultiCovered#3407e51b</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

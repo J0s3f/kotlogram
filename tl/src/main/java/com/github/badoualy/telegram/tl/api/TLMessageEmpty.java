@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageEmpty extends TLAbsMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x83e5de54;
 
-    private final String _constructor = "messageEmpty#0";
+    private final String _constructor = "messageEmpty#83e5de54";
 
     public TLMessageEmpty() {
     }

@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSupportName extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8c05f1c9;
 
     protected String name;
 
-    private final String _constructor = "help.supportName#0";
+    private final String _constructor = "help.supportName#8c05f1c9";
 
     public TLSupportName() {
     }

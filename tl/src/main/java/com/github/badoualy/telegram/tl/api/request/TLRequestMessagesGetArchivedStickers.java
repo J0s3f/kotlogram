@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetArchivedStickers extends TLMethod<TLArchivedStickers> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x57f17692;
 
     protected int flags;
 
@@ -29,7 +29,7 @@ public class TLRequestMessagesGetArchivedStickers extends TLMethod<TLArchivedSti
 
     protected int limit;
 
-    private final String _constructor = "messages.getArchivedStickers#0";
+    private final String _constructor = "messages.getArchivedStickers#57f17692";
 
     public TLRequestMessagesGetArchivedStickers() {
     }

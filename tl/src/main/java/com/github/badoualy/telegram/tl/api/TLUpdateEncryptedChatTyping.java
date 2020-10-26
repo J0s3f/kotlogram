@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateEncryptedChatTyping extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1710f156;
 
     protected int chatId;
 
-    private final String _constructor = "updateEncryptedChatTyping#0";
+    private final String _constructor = "updateEncryptedChatTyping#1710f156";
 
     public TLUpdateEncryptedChatTyping() {
     }

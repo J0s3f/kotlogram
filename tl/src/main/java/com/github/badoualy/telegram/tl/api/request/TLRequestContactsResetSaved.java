@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsResetSaved extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x879537f1;
 
-    private final String _constructor = "contacts.resetSaved#0";
+    private final String _constructor = "contacts.resetSaved#879537f1";
 
     public TLRequestContactsResetSaved() {
     }

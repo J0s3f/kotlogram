@@ -9,8 +9,8 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLBotInlineMediaResult}: botInlineMediaResult#0</li>
- * <li>{@link TLBotInlineResult}: botInlineResult#0</li>
+ * <li>{@link TLBotInlineMediaResult}: botInlineMediaResult#17db940b</li>
+ * <li>{@link TLBotInlineResult}: botInlineResult#11965f3a</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

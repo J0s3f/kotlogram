@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMessageReplyTo extends TLAbsInputMessage {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbad88395;
 
     protected int id;
 
-    private final String _constructor = "inputMessageReplyTo#0";
+    private final String _constructor = "inputMessageReplyTo#bad88395";
 
     public TLInputMessageReplyTo() {
     }

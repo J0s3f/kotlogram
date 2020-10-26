@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputTheme extends TLAbsInputTheme {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3c5693e9;
 
     protected long id;
 
     protected long accessHash;
 
-    private final String _constructor = "inputTheme#0";
+    private final String _constructor = "inputTheme#3c5693e9";
 
     public TLInputTheme() {
     }

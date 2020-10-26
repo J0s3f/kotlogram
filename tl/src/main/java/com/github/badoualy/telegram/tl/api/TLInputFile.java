@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputFile extends TLAbsInputFile {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf52ff27f;
 
     protected String md5Checksum;
 
-    private final String _constructor = "inputFile#0";
+    private final String _constructor = "inputFile#f52ff27f";
 
     public TLInputFile() {
     }

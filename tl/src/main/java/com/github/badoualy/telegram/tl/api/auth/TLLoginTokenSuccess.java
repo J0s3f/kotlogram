@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLLoginTokenSuccess extends TLAbsLoginToken {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x390d5c5e;
 
     protected TLAbsAuthorization authorization;
 
-    private final String _constructor = "auth.loginTokenSuccess#0";
+    private final String _constructor = "auth.loginTokenSuccess#390d5c5e";
 
     public TLLoginTokenSuccess() {
     }

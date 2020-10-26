@@ -9,11 +9,11 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLRecentMeUrlChat}: recentMeUrlChat#0</li>
- * <li>{@link TLRecentMeUrlChatInvite}: recentMeUrlChatInvite#0</li>
- * <li>{@link TLRecentMeUrlStickerSet}: recentMeUrlStickerSet#0</li>
- * <li>{@link TLRecentMeUrlUnknown}: recentMeUrlUnknown#0</li>
- * <li>{@link TLRecentMeUrlUser}: recentMeUrlUser#0</li>
+ * <li>{@link TLRecentMeUrlChat}: recentMeUrlChat#a01b22f9</li>
+ * <li>{@link TLRecentMeUrlChatInvite}: recentMeUrlChatInvite#eb49081d</li>
+ * <li>{@link TLRecentMeUrlStickerSet}: recentMeUrlStickerSet#bc0a57dc</li>
+ * <li>{@link TLRecentMeUrlUnknown}: recentMeUrlUnknown#46e1d13d</li>
+ * <li>{@link TLRecentMeUrlUser}: recentMeUrlUser#8dbc3336</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

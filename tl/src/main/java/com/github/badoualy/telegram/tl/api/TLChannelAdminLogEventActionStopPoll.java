@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelAdminLogEventActionStopPoll extends TLAbsChannelAdminLogEventAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8f079643;
 
     protected TLAbsMessage message;
 
-    private final String _constructor = "channelAdminLogEventActionStopPoll#0";
+    private final String _constructor = "channelAdminLogEventActionStopPoll#8f079643";
 
     public TLChannelAdminLogEventActionStopPoll() {
     }

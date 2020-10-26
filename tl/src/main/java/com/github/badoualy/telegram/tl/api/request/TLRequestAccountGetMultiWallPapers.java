@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountGetMultiWallPapers extends TLMethod<TLVector<TLAbsWallPaper>> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x65ad71dc;
 
     protected TLVector<TLAbsInputWallPaper> wallpapers;
 
-    private final String _constructor = "account.getMultiWallPapers#0";
+    private final String _constructor = "account.getMultiWallPapers#65ad71dc";
 
     public TLRequestAccountGetMultiWallPapers() {
     }

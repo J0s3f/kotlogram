@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountGetPrivacy extends TLMethod<TLPrivacyRules> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xdadbc950;
 
     protected TLAbsInputPrivacyKey key;
 
-    private final String _constructor = "account.getPrivacy#0";
+    private final String _constructor = "account.getPrivacy#dadbc950";
 
     public TLRequestAccountGetPrivacy() {
     }

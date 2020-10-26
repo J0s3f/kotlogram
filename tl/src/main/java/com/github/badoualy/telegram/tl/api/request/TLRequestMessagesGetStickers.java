@@ -19,13 +19,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetStickers extends TLMethod<TLAbsStickers> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x43d4f2c;
 
     protected String emoticon;
 
     protected int hash;
 
-    private final String _constructor = "messages.getStickers#0";
+    private final String _constructor = "messages.getStickers#43d4f2c";
 
     public TLRequestMessagesGetStickers() {
     }

@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSendMessageUploadVideoAction extends TLAbsSendMessageAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe9763aec;
 
     protected int progress;
 
-    private final String _constructor = "sendMessageUploadVideoAction#0";
+    private final String _constructor = "sendMessageUploadVideoAction#e9763aec";
 
     public TLSendMessageUploadVideoAction() {
     }

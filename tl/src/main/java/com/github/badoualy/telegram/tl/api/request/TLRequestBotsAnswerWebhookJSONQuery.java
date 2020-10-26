@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestBotsAnswerWebhookJSONQuery extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe6213f4d;
 
     protected long queryId;
 
     protected TLDataJSON data;
 
-    private final String _constructor = "bots.answerWebhookJSONQuery#0";
+    private final String _constructor = "bots.answerWebhookJSONQuery#e6213f4d";
 
     public TLRequestBotsAnswerWebhookJSONQuery() {
     }

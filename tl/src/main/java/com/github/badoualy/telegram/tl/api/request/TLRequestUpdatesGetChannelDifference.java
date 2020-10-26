@@ -21,7 +21,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestUpdatesGetChannelDifference extends TLMethod<TLAbsChannelDifference> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3173d78;
 
     protected int flags;
 
@@ -35,7 +35,7 @@ public class TLRequestUpdatesGetChannelDifference extends TLMethod<TLAbsChannelD
 
     protected int limit;
 
-    private final String _constructor = "updates.getChannelDifference#0";
+    private final String _constructor = "updates.getChannelDifference#3173d78";
 
     public TLRequestUpdatesGetChannelDifference() {
     }

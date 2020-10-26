@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelParticipantAdmin extends TLAbsChannelParticipant {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xccbebbaf;
 
     protected int flags;
 
@@ -35,7 +35,7 @@ public class TLChannelParticipantAdmin extends TLAbsChannelParticipant {
 
     protected String rank;
 
-    private final String _constructor = "channelParticipantAdmin#0";
+    private final String _constructor = "channelParticipantAdmin#ccbebbaf";
 
     public TLChannelParticipantAdmin() {
     }

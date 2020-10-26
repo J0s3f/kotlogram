@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpAcceptTermsOfService extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xee72f79a;
 
     protected TLDataJSON id;
 
-    private final String _constructor = "help.acceptTermsOfService#0";
+    private final String _constructor = "help.acceptTermsOfService#ee72f79a";
 
     public TLRequestHelpAcceptTermsOfService() {
     }

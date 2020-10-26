@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdates extends TLAbsUpdates {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x74ae4240;
 
     protected TLVector<TLAbsUpdate> updates;
 
@@ -29,7 +29,7 @@ public class TLUpdates extends TLAbsUpdates {
 
     protected int seq;
 
-    private final String _constructor = "updates#0";
+    private final String _constructor = "updates#74ae4240";
 
     public TLUpdates() {
     }

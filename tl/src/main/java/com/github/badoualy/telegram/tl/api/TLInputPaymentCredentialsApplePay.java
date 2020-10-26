@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputPaymentCredentialsApplePay extends TLAbsInputPaymentCredentials {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xaa1c39f;
 
     protected TLDataJSON paymentData;
 
-    private final String _constructor = "inputPaymentCredentialsApplePay#0";
+    private final String _constructor = "inputPaymentCredentialsApplePay#aa1c39f";
 
     public TLInputPaymentCredentialsApplePay() {
     }

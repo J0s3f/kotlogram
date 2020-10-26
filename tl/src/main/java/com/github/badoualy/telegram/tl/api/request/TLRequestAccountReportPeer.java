@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountReportPeer extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xae189d5f;
 
     protected TLAbsInputPeer peer;
 
     protected TLAbsReportReason reason;
 
-    private final String _constructor = "account.reportPeer#0";
+    private final String _constructor = "account.reportPeer#ae189d5f";
 
     public TLRequestAccountReportPeer() {
     }

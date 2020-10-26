@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdatePtsChanged extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3354678f;
 
-    private final String _constructor = "updatePtsChanged#0";
+    private final String _constructor = "updatePtsChanged#3354678f";
 
     public TLUpdatePtsChanged() {
     }

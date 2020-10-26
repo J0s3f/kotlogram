@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLAllStickers extends TLAbsAllStickers {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xedfd405f;
 
     protected int hash;
 
     protected TLVector<TLStickerSet> sets;
 
-    private final String _constructor = "messages.allStickers#0";
+    private final String _constructor = "messages.allStickers#edfd405f";
 
     public TLAllStickers() {
     }

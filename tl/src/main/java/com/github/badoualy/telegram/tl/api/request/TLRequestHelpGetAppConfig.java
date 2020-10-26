@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetAppConfig extends TLMethod<TLAbsJSONValue> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x98914110;
 
-    private final String _constructor = "help.getAppConfig#0";
+    private final String _constructor = "help.getAppConfig#98914110";
 
     public TLRequestHelpGetAppConfig() {
     }

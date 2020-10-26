@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelForbidden extends TLAbsChat {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x289da732;
 
     protected int flags;
 
@@ -31,7 +31,7 @@ public class TLChannelForbidden extends TLAbsChat {
 
     protected Integer untilDate;
 
-    private final String _constructor = "channelForbidden#0";
+    private final String _constructor = "channelForbidden#289da732";
 
     public TLChannelForbidden() {
     }

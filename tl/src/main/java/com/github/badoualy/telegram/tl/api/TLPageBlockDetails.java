@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockDetails extends TLAbsPageBlock {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x76768bed;
 
     protected int flags;
 
@@ -27,7 +27,7 @@ public class TLPageBlockDetails extends TLAbsPageBlock {
 
     protected TLAbsRichText title;
 
-    private final String _constructor = "pageBlockDetails#0";
+    private final String _constructor = "pageBlockDetails#76768bed";
 
     public TLPageBlockDetails() {
     }

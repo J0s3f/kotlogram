@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPassportConfig extends TLAbsPassportConfig {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa098d6af;
 
     protected int hash;
 
     protected TLDataJSON countriesLangs;
 
-    private final String _constructor = "help.passportConfig#0";
+    private final String _constructor = "help.passportConfig#a098d6af";
 
     public TLPassportConfig() {
     }

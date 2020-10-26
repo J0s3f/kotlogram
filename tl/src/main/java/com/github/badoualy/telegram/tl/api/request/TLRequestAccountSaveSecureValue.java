@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountSaveSecureValue extends TLMethod<TLSecureValue> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x899fe31d;
 
     protected TLInputSecureValue value;
 
     protected long secureSecretId;
 
-    private final String _constructor = "account.saveSecureValue#0";
+    private final String _constructor = "account.saveSecureValue#899fe31d";
 
     public TLRequestAccountSaveSecureValue() {
     }

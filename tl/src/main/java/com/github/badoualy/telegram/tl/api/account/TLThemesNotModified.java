@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLThemesNotModified extends TLAbsThemes {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf41eb622;
 
-    private final String _constructor = "account.themesNotModified#0";
+    private final String _constructor = "account.themesNotModified#f41eb622";
 
     public TLThemesNotModified() {
     }

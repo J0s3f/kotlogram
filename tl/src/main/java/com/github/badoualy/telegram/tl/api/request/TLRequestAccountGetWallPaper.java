@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountGetWallPaper extends TLMethod<TLAbsWallPaper> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfc8ddbea;
 
     protected TLAbsInputWallPaper wallpaper;
 
-    private final String _constructor = "account.getWallPaper#0";
+    private final String _constructor = "account.getWallPaper#fc8ddbea";
 
     public TLRequestAccountGetWallPaper() {
     }

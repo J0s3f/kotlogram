@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputWallPaper extends TLAbsInputWallPaper {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe630b979;
 
     protected long id;
 
     protected long accessHash;
 
-    private final String _constructor = "inputWallPaper#0";
+    private final String _constructor = "inputWallPaper#e630b979";
 
     public TLInputWallPaper() {
     }

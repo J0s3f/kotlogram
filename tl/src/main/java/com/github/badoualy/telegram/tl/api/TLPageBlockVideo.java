@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPageBlockVideo extends TLAbsPageBlock {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7c8fe7b6;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLPageBlockVideo extends TLAbsPageBlock {
 
     protected TLPageCaption caption;
 
-    private final String _constructor = "pageBlockVideo#0";
+    private final String _constructor = "pageBlockVideo#7c8fe7b6";
 
     public TLPageBlockVideo() {
     }

@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAuthImportAuthorization extends TLMethod<TLAbsAuthorization> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xe3ef9613;
 
     protected int id;
 
     protected TLBytes bytes;
 
-    private final String _constructor = "auth.importAuthorization#0";
+    private final String _constructor = "auth.importAuthorization#e3ef9613";
 
     public TLRequestAuthImportAuthorization() {
     }

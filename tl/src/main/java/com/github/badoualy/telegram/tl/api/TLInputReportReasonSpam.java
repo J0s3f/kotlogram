@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputReportReasonSpam extends TLAbsReportReason {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x58dbcab8;
 
-    private final String _constructor = "inputReportReasonSpam#0";
+    private final String _constructor = "inputReportReasonSpam#58dbcab8";
 
     public TLInputReportReasonSpam() {
     }

@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetRecentLocations extends TLMethod<TLAbsMessages> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbbc45b09;
 
     protected TLAbsInputPeer peer;
 
@@ -28,7 +28,7 @@ public class TLRequestMessagesGetRecentLocations extends TLMethod<TLAbsMessages>
 
     protected int hash;
 
-    private final String _constructor = "messages.getRecentLocations#0";
+    private final String _constructor = "messages.getRecentLocations#bbc45b09";
 
     public TLRequestMessagesGetRecentLocations() {
     }

@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDialogFilter extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7438f7e8;
 
     protected int flags;
 
@@ -50,7 +50,7 @@ public class TLDialogFilter extends TLObject {
 
     protected TLVector<TLAbsInputPeer> excludePeers;
 
-    private final String _constructor = "dialogFilter#0";
+    private final String _constructor = "dialogFilter#7438f7e8";
 
     public TLDialogFilter() {
     }

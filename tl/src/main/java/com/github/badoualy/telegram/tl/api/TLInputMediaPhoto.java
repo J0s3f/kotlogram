@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMediaPhoto extends TLAbsInputMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb3ba0635;
 
     protected int flags;
 
@@ -25,7 +25,7 @@ public class TLInputMediaPhoto extends TLAbsInputMedia {
 
     protected Integer ttlSeconds;
 
-    private final String _constructor = "inputMediaPhoto#0";
+    private final String _constructor = "inputMediaPhoto#b3ba0635";
 
     public TLInputMediaPhoto() {
     }

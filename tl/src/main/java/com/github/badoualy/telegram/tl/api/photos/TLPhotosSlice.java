@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhotosSlice extends TLAbsPhotos {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x15051f54;
 
     protected int count;
 
-    private final String _constructor = "photos.photosSlice#0";
+    private final String _constructor = "photos.photosSlice#15051f54";
 
     public TLPhotosSlice() {
     }

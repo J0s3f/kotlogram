@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputPhoneContact extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf392b7f4;
 
     protected long clientId;
 
@@ -27,7 +27,7 @@ public class TLInputPhoneContact extends TLObject {
 
     protected String lastName;
 
-    private final String _constructor = "inputPhoneContact#0";
+    private final String _constructor = "inputPhoneContact#f392b7f4";
 
     public TLInputPhoneContact() {
     }

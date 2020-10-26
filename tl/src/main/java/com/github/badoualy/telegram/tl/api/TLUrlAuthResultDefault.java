@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUrlAuthResultDefault extends TLAbsUrlAuthResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa9d6db1f;
 
-    private final String _constructor = "urlAuthResultDefault#0";
+    private final String _constructor = "urlAuthResultDefault#a9d6db1f";
 
     public TLUrlAuthResultDefault() {
     }

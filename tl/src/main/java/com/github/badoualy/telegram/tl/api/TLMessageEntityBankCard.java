@@ -16,9 +16,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageEntityBankCard extends TLAbsMessageEntity {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x761e6af4;
 
-    private final String _constructor = "messageEntityBankCard#0";
+    private final String _constructor = "messageEntityBankCard#761e6af4";
 
     public TLMessageEntityBankCard() {
     }

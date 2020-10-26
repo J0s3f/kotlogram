@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetInviteText extends TLMethod<TLInviteText> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4d392343;
 
-    private final String _constructor = "help.getInviteText#0";
+    private final String _constructor = "help.getInviteText#4d392343";
 
     public TLRequestHelpGetInviteText() {
     }

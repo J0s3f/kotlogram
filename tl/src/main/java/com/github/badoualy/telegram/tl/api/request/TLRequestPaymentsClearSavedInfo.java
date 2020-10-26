@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPaymentsClearSavedInfo extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd83d70c1;
 
     protected int flags;
 
@@ -27,7 +27,7 @@ public class TLRequestPaymentsClearSavedInfo extends TLMethod<TLBool> {
 
     protected boolean info;
 
-    private final String _constructor = "payments.clearSavedInfo#0";
+    private final String _constructor = "payments.clearSavedInfo#d83d70c1";
 
     public TLRequestPaymentsClearSavedInfo() {
     }

@@ -8,14 +8,14 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLPrivacyKeyAddedByPhone}: privacyKeyAddedByPhone#0</li>
- * <li>{@link TLPrivacyKeyChatInvite}: privacyKeyChatInvite#0</li>
- * <li>{@link TLPrivacyKeyForwards}: privacyKeyForwards#0</li>
- * <li>{@link TLPrivacyKeyPhoneCall}: privacyKeyPhoneCall#0</li>
- * <li>{@link TLPrivacyKeyPhoneNumber}: privacyKeyPhoneNumber#0</li>
- * <li>{@link TLPrivacyKeyPhoneP2P}: privacyKeyPhoneP2P#0</li>
- * <li>{@link TLPrivacyKeyProfilePhoto}: privacyKeyProfilePhoto#0</li>
- * <li>{@link TLPrivacyKeyStatusTimestamp}: privacyKeyStatusTimestamp#0</li>
+ * <li>{@link TLPrivacyKeyAddedByPhone}: privacyKeyAddedByPhone#42ffd42b</li>
+ * <li>{@link TLPrivacyKeyChatInvite}: privacyKeyChatInvite#500e6dfa</li>
+ * <li>{@link TLPrivacyKeyForwards}: privacyKeyForwards#69ec56a3</li>
+ * <li>{@link TLPrivacyKeyPhoneCall}: privacyKeyPhoneCall#3d662b7b</li>
+ * <li>{@link TLPrivacyKeyPhoneNumber}: privacyKeyPhoneNumber#d19ae46d</li>
+ * <li>{@link TLPrivacyKeyPhoneP2P}: privacyKeyPhoneP2P#39491cc8</li>
+ * <li>{@link TLPrivacyKeyProfilePhoto}: privacyKeyProfilePhoto#96151fed</li>
+ * <li>{@link TLPrivacyKeyStatusTimestamp}: privacyKeyStatusTimestamp#bc2eab30</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateChatParticipantDelete extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x6e5f8c22;
 
     protected int chatId;
 
@@ -24,7 +24,7 @@ public class TLUpdateChatParticipantDelete extends TLAbsUpdate {
 
     protected int version;
 
-    private final String _constructor = "updateChatParticipantDelete#0";
+    private final String _constructor = "updateChatParticipantDelete#6e5f8c22";
 
     public TLUpdateChatParticipantDelete() {
     }

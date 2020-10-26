@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBotCallbackAnswer extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x36585ea4;
 
     protected int flags;
 
@@ -33,7 +33,7 @@ public class TLBotCallbackAnswer extends TLObject {
 
     protected int cacheTime;
 
-    private final String _constructor = "messages.botCallbackAnswer#0";
+    private final String _constructor = "messages.botCallbackAnswer#36585ea4";
 
     public TLBotCallbackAnswer() {
     }

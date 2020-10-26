@@ -8,9 +8,9 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLInputChannel}: inputChannel#0</li>
- * <li>{@link TLInputChannelEmpty}: inputChannelEmpty#0</li>
- * <li>{@link TLInputChannelFromMessage}: inputChannelFromMessage#0</li>
+ * <li>{@link TLInputChannel}: inputChannel#afeb712e</li>
+ * <li>{@link TLInputChannelEmpty}: inputChannelEmpty#ee8c1e86</li>
+ * <li>{@link TLInputChannelFromMessage}: inputChannelFromMessage#2a286531</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

@@ -8,10 +8,10 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLChannelMessages}: messages.channelMessages#0</li>
- * <li>{@link TLMessages}: messages.messages#0</li>
- * <li>{@link TLMessagesNotModified}: messages.messagesNotModified#0</li>
- * <li>{@link TLMessagesSlice}: messages.messagesSlice#0</li>
+ * <li>{@link TLChannelMessages}: messages.channelMessages#99262e37</li>
+ * <li>{@link TLMessages}: messages.messages#8c718e87</li>
+ * <li>{@link TLMessagesNotModified}: messages.messagesNotModified#74535f21</li>
+ * <li>{@link TLMessagesSlice}: messages.messagesSlice#c8edce1e</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

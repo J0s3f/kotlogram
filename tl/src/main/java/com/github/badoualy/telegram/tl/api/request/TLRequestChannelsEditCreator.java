@@ -22,7 +22,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsEditCreator extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x8f38cd1f;
 
     protected TLAbsInputChannel channel;
 
@@ -30,7 +30,7 @@ public class TLRequestChannelsEditCreator extends TLMethod<TLAbsUpdates> {
 
     protected TLAbsInputCheckPasswordSRP password;
 
-    private final String _constructor = "channels.editCreator#0";
+    private final String _constructor = "channels.editCreator#8f38cd1f";
 
     public TLRequestChannelsEditCreator() {
     }

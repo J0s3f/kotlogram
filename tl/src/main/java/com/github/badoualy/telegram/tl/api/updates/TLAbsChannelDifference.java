@@ -9,9 +9,9 @@ import java.lang.Integer;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLChannelDifference}: updates.channelDifference#0</li>
- * <li>{@link TLChannelDifferenceEmpty}: updates.channelDifferenceEmpty#0</li>
- * <li>{@link TLChannelDifferenceTooLong}: updates.channelDifferenceTooLong#0</li>
+ * <li>{@link TLChannelDifference}: updates.channelDifference#2064674e</li>
+ * <li>{@link TLChannelDifferenceEmpty}: updates.channelDifferenceEmpty#3e11affb</li>
+ * <li>{@link TLChannelDifferenceTooLong}: updates.channelDifferenceTooLong#a4bcc6fe</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

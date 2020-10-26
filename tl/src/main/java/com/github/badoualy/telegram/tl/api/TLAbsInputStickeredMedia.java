@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLInputStickeredMediaDocument}: inputStickeredMediaDocument#0</li>
- * <li>{@link TLInputStickeredMediaPhoto}: inputStickeredMediaPhoto#0</li>
+ * <li>{@link TLInputStickeredMediaDocument}: inputStickeredMediaDocument#438865b</li>
+ * <li>{@link TLInputStickeredMediaPhoto}: inputStickeredMediaPhoto#4a992157</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

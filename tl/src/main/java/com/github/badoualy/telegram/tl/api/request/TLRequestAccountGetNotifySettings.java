@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountGetNotifySettings extends TLMethod<TLPeerNotifySettings> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x12b3ad31;
 
     protected TLAbsInputNotifyPeer peer;
 
-    private final String _constructor = "account.getNotifySettings#0";
+    private final String _constructor = "account.getNotifySettings#12b3ad31";
 
     public TLRequestAccountGetNotifySettings() {
     }

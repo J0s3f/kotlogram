@@ -18,11 +18,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLKeyboardButtonRow extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x77608b83;
 
     protected TLVector<TLAbsKeyboardButton> buttons;
 
-    private final String _constructor = "keyboardButtonRow#0";
+    private final String _constructor = "keyboardButtonRow#77608b83";
 
     public TLKeyboardButtonRow() {
     }

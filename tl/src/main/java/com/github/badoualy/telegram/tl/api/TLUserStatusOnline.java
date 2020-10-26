@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUserStatusOnline extends TLAbsUserStatus {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xedb93949;
 
     protected int expires;
 
-    private final String _constructor = "userStatusOnline#0";
+    private final String _constructor = "userStatusOnline#edb93949";
 
     public TLUserStatusOnline() {
     }

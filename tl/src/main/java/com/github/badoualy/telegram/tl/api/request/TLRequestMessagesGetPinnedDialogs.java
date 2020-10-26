@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetPinnedDialogs extends TLMethod<TLPeerDialogs> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd6b94df2;
 
     protected int folderId;
 
-    private final String _constructor = "messages.getPinnedDialogs#0";
+    private final String _constructor = "messages.getPinnedDialogs#d6b94df2";
 
     public TLRequestMessagesGetPinnedDialogs() {
     }

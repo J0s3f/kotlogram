@@ -23,7 +23,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd9fee60e;
 
     protected int flags;
 
@@ -43,7 +43,7 @@ public class TLRequestMessagesForwardMessages extends TLMethod<TLAbsUpdates> {
 
     protected Integer scheduleDate;
 
-    private final String _constructor = "messages.forwardMessages#0";
+    private final String _constructor = "messages.forwardMessages#d9fee60e";
 
     public TLRequestMessagesForwardMessages() {
     }

@@ -18,11 +18,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSecureValueErrorFiles extends TLAbsSecureValueError {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x666220e9;
 
     protected TLVector<TLBytes> fileHash;
 
-    private final String _constructor = "secureValueErrorFiles#0";
+    private final String _constructor = "secureValueErrorFiles#666220e9";
 
     public TLSecureValueErrorFiles() {
     }

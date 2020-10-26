@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMediaGifExternal extends TLAbsInputMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x4843b0fd;
 
     protected String url;
 
     protected String q;
 
-    private final String _constructor = "inputMediaGifExternal#0";
+    private final String _constructor = "inputMediaGifExternal#4843b0fd";
 
     public TLInputMediaGifExternal() {
     }

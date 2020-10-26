@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageActionChatAddUser extends TLAbsMessageAction {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x488a7337;
 
     protected TLIntVector users;
 
-    private final String _constructor = "messageActionChatAddUser#0";
+    private final String _constructor = "messageActionChatAddUser#488a7337";
 
     public TLMessageActionChatAddUser() {
     }

@@ -20,11 +20,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesGetAllChats extends TLMethod<TLAbsChats> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xeba80ff0;
 
     protected TLIntVector exceptIds;
 
-    private final String _constructor = "messages.getAllChats#0";
+    private final String _constructor = "messages.getAllChats#eba80ff0";
 
     public TLRequestMessagesGetAllChats() {
     }

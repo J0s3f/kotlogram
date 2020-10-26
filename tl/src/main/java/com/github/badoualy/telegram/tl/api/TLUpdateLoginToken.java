@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateLoginToken extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x564fe691;
 
-    private final String _constructor = "updateLoginToken#0";
+    private final String _constructor = "updateLoginToken#564fe691";
 
     public TLUpdateLoginToken() {
     }

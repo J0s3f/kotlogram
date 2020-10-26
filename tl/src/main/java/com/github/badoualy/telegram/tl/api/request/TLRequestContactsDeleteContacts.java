@@ -21,11 +21,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsDeleteContacts extends TLMethod<TLAbsUpdates> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x96a0e00;
 
     protected TLVector<TLAbsInputUser> id;
 
-    private final String _constructor = "contacts.deleteContacts#0";
+    private final String _constructor = "contacts.deleteContacts#96a0e00";
 
     public TLRequestContactsDeleteContacts() {
     }

@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLChannelParticipantBanned extends TLAbsChannelParticipant {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x1c0facaf;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLChannelParticipantBanned extends TLAbsChannelParticipant {
 
     protected TLChatBannedRights bannedRights;
 
-    private final String _constructor = "channelParticipantBanned#0";
+    private final String _constructor = "channelParticipantBanned#1c0facaf";
 
     public TLChannelParticipantBanned() {
     }

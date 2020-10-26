@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSecureValueTypePassport extends TLAbsSecureValueType {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3dac6a00;
 
-    private final String _constructor = "secureValueTypePassport#0";
+    private final String _constructor = "secureValueTypePassport#3dac6a00";
 
     public TLSecureValueTypePassport() {
     }

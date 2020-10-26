@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestStickersChangeStickerPosition extends TLMethod<TLStickerSet> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xffb6d4ca;
 
     protected TLAbsInputDocument sticker;
 
     protected int position;
 
-    private final String _constructor = "stickers.changeStickerPosition#0";
+    private final String _constructor = "stickers.changeStickerPosition#ffb6d4ca";
 
     public TLRequestStickersChangeStickerPosition() {
     }

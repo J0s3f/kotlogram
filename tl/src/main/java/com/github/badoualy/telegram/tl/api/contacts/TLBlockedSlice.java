@@ -19,11 +19,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLBlockedSlice extends TLAbsBlocked {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x900802a1;
 
     protected int count;
 
-    private final String _constructor = "contacts.blockedSlice#0";
+    private final String _constructor = "contacts.blockedSlice#900802a1";
 
     public TLBlockedSlice() {
     }

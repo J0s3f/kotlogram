@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDialogFolder extends TLAbsDialog {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x71bd134c;
 
     protected TLFolder folder;
 
@@ -28,7 +28,7 @@ public class TLDialogFolder extends TLAbsDialog {
 
     protected int unreadUnmutedMessagesCount;
 
-    private final String _constructor = "dialogFolder#0";
+    private final String _constructor = "dialogFolder#71bd134c";
 
     public TLDialogFolder() {
     }

@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLStickerPack extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x12b299d4;
 
     protected String emoticon;
 
     protected TLLongVector documents;
 
-    private final String _constructor = "stickerPack#0";
+    private final String _constructor = "stickerPack#12b299d4";
 
     public TLStickerPack() {
     }

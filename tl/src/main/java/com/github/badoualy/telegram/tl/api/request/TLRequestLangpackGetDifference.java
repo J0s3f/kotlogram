@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestLangpackGetDifference extends TLMethod<TLLangPackDifference> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xcd984aa5;
 
     protected String langPack;
 
@@ -27,7 +27,7 @@ public class TLRequestLangpackGetDifference extends TLMethod<TLLangPackDifferenc
 
     protected int fromVersion;
 
-    private final String _constructor = "langpack.getDifference#0";
+    private final String _constructor = "langpack.getDifference#cd984aa5";
 
     public TLRequestLangpackGetDifference() {
     }

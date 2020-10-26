@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTextUnderline extends TLAbsRichText {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc12622c4;
 
     protected TLAbsRichText text;
 
-    private final String _constructor = "textUnderline#0";
+    private final String _constructor = "textUnderline#c12622c4";
 
     public TLTextUnderline() {
     }

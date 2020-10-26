@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestPaymentsGetSavedInfo extends TLMethod<TLSavedInfo> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x227d824b;
 
-    private final String _constructor = "payments.getSavedInfo#0";
+    private final String _constructor = "payments.getSavedInfo#227d824b";
 
     public TLRequestPaymentsGetSavedInfo() {
     }

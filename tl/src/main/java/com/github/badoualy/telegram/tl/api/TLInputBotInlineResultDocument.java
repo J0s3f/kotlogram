@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputBotInlineResultDocument extends TLAbsInputBotInlineResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xfff8fdc4;
 
     protected int flags;
 
@@ -28,7 +28,7 @@ public class TLInputBotInlineResultDocument extends TLAbsInputBotInlineResult {
 
     protected TLAbsInputDocument document;
 
-    private final String _constructor = "inputBotInlineResultDocument#0";
+    private final String _constructor = "inputBotInlineResultDocument#fff8fdc4";
 
     public TLInputBotInlineResultDocument() {
     }

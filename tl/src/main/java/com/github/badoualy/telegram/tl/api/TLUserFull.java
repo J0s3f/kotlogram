@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUserFull extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xedf17c12;
 
     protected int flags;
 
@@ -52,7 +52,7 @@ public class TLUserFull extends TLObject {
 
     protected Integer folderId;
 
-    private final String _constructor = "userFull#0";
+    private final String _constructor = "userFull#edf17c12";
 
     public TLUserFull() {
     }

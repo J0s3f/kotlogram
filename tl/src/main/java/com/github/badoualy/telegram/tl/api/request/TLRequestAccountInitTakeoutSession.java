@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountInitTakeoutSession extends TLMethod<TLTakeout> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf05b4804;
 
     protected int flags;
 
@@ -38,7 +38,7 @@ public class TLRequestAccountInitTakeoutSession extends TLMethod<TLTakeout> {
 
     protected Integer fileMaxSize;
 
-    private final String _constructor = "account.initTakeoutSession#0";
+    private final String _constructor = "account.initTakeoutSession#f05b4804";
 
     public TLRequestAccountInitTakeoutSession() {
     }

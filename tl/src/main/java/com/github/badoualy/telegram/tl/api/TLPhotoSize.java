@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLPhotoSize extends TLAbsPhotoSize {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x77bfb61b;
 
     protected TLFileLocationToBeDeprecated location;
 
@@ -26,7 +26,7 @@ public class TLPhotoSize extends TLAbsPhotoSize {
 
     protected int size;
 
-    private final String _constructor = "photoSize#0";
+    private final String _constructor = "photoSize#77bfb61b";
 
     public TLPhotoSize() {
     }

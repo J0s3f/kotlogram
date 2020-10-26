@@ -18,13 +18,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestInvokeAfterMsg<T extends TLObject> extends TLMethod<T> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xcb9f372d;
 
     protected long msgId;
 
     protected TLMethod<T> query;
 
-    private final String _constructor = "invokeAfterMsg#0";
+    private final String _constructor = "invokeAfterMsg#cb9f372d";
 
     public TLRequestInvokeAfterMsg() {
     }

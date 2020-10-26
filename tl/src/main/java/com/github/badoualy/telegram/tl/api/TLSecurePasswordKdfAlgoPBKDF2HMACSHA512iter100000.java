@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLSecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000 extends TLAbsSecurePasswordKdfAlgo {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xbbf2dda0;
 
     protected TLBytes salt;
 
-    private final String _constructor = "securePasswordKdfAlgoPBKDF2HMACSHA512iter100000#0";
+    private final String _constructor = "securePasswordKdfAlgoPBKDF2HMACSHA512iter100000#bbf2dda0";
 
     public TLSecurePasswordKdfAlgoPBKDF2HMACSHA512iter100000() {
     }

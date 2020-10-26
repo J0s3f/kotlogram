@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLFeaturedStickers extends TLAbsFeaturedStickers {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xb6abc341;
 
     protected int hash;
 
@@ -27,7 +27,7 @@ public class TLFeaturedStickers extends TLAbsFeaturedStickers {
 
     protected TLLongVector unread;
 
-    private final String _constructor = "messages.featuredStickers#0";
+    private final String _constructor = "messages.featuredStickers#b6abc341";
 
     public TLFeaturedStickers() {
     }

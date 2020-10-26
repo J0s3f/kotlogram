@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMessagesFilterPhotoVideo extends TLAbsMessagesFilter {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x56e9f0e4;
 
-    private final String _constructor = "inputMessagesFilterPhotoVideo#0";
+    private final String _constructor = "inputMessagesFilterPhotoVideo#56e9f0e4";
 
     public TLInputMessagesFilterPhotoVideo() {
     }

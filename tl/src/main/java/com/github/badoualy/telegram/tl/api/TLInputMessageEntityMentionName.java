@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMessageEntityMentionName extends TLAbsMessageEntity {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x208e68c9;
 
     protected TLAbsInputUser userId;
 
-    private final String _constructor = "inputMessageEntityMentionName#0";
+    private final String _constructor = "inputMessageEntityMentionName#208e68c9";
 
     public TLInputMessageEntityMentionName() {
     }

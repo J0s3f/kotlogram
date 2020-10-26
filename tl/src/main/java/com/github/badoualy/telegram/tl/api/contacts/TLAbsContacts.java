@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLContacts}: contacts.contacts#0</li>
- * <li>{@link TLContactsNotModified}: contacts.contactsNotModified#0</li>
+ * <li>{@link TLContacts}: contacts.contacts#eae87e42</li>
+ * <li>{@link TLContactsNotModified}: contacts.contactsNotModified#b74ba9d2</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

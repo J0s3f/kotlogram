@@ -8,8 +8,8 @@ import com.github.badoualy.telegram.tl.core.TLObject;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLPageListItemBlocks}: pageListItemBlocks#0</li>
- * <li>{@link TLPageListItemText}: pageListItemText#0</li>
+ * <li>{@link TLPageListItemBlocks}: pageListItemBlocks#25e073fc</li>
+ * <li>{@link TLPageListItemText}: pageListItemText#b92fb6cd</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUpdateDialogFilterOrder extends TLAbsUpdate {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa5d72105;
 
     protected TLIntVector order;
 
-    private final String _constructor = "updateDialogFilterOrder#0";
+    private final String _constructor = "updateDialogFilterOrder#a5d72105";
 
     public TLUpdateDialogFilterOrder() {
     }

@@ -11,9 +11,9 @@ import java.lang.String;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLNotifyBroadcasts extends TLAbsNotifyPeer {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd612e8ef;
 
-    private final String _constructor = "notifyBroadcasts#0";
+    private final String _constructor = "notifyBroadcasts#d612e8ef";
 
     public TLNotifyBroadcasts() {
     }

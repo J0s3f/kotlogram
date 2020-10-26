@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDataJSON extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x7d748d04;
 
     protected String data;
 
-    private final String _constructor = "dataJSON#0";
+    private final String _constructor = "dataJSON#7d748d04";
 
     public TLDataJSON() {
     }

@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLUrlAuthResultRequest extends TLAbsUrlAuthResult {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x92d33a0e;
 
     protected int flags;
 
@@ -26,7 +26,7 @@ public class TLUrlAuthResultRequest extends TLAbsUrlAuthResult {
 
     protected String domain;
 
-    private final String _constructor = "urlAuthResultRequest#0";
+    private final String _constructor = "urlAuthResultRequest#92d33a0e";
 
     public TLUrlAuthResultRequest() {
     }

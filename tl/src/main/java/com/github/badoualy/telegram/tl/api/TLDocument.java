@@ -18,7 +18,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLDocument extends TLAbsDocument {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9ba29cc1;
 
     protected int flags;
 
@@ -38,7 +38,7 @@ public class TLDocument extends TLAbsDocument {
 
     protected TLVector<TLAbsDocumentAttribute> attributes;
 
-    private final String _constructor = "document#0";
+    private final String _constructor = "document#9ba29cc1";
 
     public TLDocument() {
     }

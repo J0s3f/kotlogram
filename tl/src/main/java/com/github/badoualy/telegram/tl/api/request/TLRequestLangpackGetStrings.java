@@ -20,7 +20,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestLangpackGetStrings extends TLMethod<TLVector<TLAbsLangPackString>> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xefea3803;
 
     protected String langPack;
 
@@ -28,7 +28,7 @@ public class TLRequestLangpackGetStrings extends TLMethod<TLVector<TLAbsLangPack
 
     protected TLStringVector keys;
 
-    private final String _constructor = "langpack.getStrings#0";
+    private final String _constructor = "langpack.getStrings#efea3803";
 
     public TLRequestLangpackGetStrings() {
     }

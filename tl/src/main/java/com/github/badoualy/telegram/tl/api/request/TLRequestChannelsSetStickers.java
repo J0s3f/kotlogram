@@ -21,13 +21,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestChannelsSetStickers extends TLMethod<TLBool> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xea8ca4f9;
 
     protected TLAbsInputChannel channel;
 
     protected TLAbsInputStickerSet stickerset;
 
-    private final String _constructor = "channels.setStickers#0";
+    private final String _constructor = "channels.setStickers#ea8ca4f9";
 
     public TLRequestChannelsSetStickers() {
     }

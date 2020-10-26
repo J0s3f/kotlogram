@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestMessagesSearchStickerSets extends TLMethod<TLAbsFoundStickerSets> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xc2b7d08b;
 
     protected int flags;
 
@@ -29,7 +29,7 @@ public class TLRequestMessagesSearchStickerSets extends TLMethod<TLAbsFoundStick
 
     protected int hash;
 
-    private final String _constructor = "messages.searchStickerSets#0";
+    private final String _constructor = "messages.searchStickerSets#c2b7d08b";
 
     public TLRequestMessagesSearchStickerSets() {
     }

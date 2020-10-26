@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestContactsGetSaved extends TLMethod<TLVector<TLSavedPhoneContact>> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x82f1e39f;
 
-    private final String _constructor = "contacts.getSaved#0";
+    private final String _constructor = "contacts.getSaved#82f1e39f";
 
     public TLRequestContactsGetSaved() {
     }

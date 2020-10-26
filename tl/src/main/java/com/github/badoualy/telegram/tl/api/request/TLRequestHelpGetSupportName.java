@@ -18,9 +18,9 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestHelpGetSupportName extends TLMethod<TLSupportName> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd360e72c;
 
-    private final String _constructor = "help.getSupportName#0";
+    private final String _constructor = "help.getSupportName#d360e72c";
 
     public TLRequestHelpGetSupportName() {
     }

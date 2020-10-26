@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestAccountChangePhone extends TLMethod<TLAbsUser> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x70c32edb;
 
     protected String phoneNumber;
 
@@ -27,7 +27,7 @@ public class TLRequestAccountChangePhone extends TLMethod<TLAbsUser> {
 
     protected String phoneCode;
 
-    private final String _constructor = "account.changePhone#0";
+    private final String _constructor = "account.changePhone#70c32edb";
 
     public TLRequestAccountChangePhone() {
     }

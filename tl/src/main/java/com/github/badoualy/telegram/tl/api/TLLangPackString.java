@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLLangPackString extends TLAbsLangPackString {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xcad181f6;
 
     protected String value;
 
-    private final String _constructor = "langPackString#0";
+    private final String _constructor = "langPackString#cad181f6";
 
     public TLLangPackString() {
     }

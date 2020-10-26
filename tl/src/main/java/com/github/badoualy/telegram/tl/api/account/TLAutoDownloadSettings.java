@@ -17,7 +17,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLAutoDownloadSettings extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x63cacf26;
 
     protected com.github.badoualy.telegram.tl.api.TLAutoDownloadSettings low;
 
@@ -25,7 +25,7 @@ public class TLAutoDownloadSettings extends TLObject {
 
     protected com.github.badoualy.telegram.tl.api.TLAutoDownloadSettings high;
 
-    private final String _constructor = "account.autoDownloadSettings#0";
+    private final String _constructor = "account.autoDownloadSettings#63cacf26";
 
     public TLAutoDownloadSettings() {
     }

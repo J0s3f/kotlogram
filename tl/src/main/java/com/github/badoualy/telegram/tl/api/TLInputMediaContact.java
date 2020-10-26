@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputMediaContact extends TLAbsInputMedia {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xf8ab7dfb;
 
     protected String phoneNumber;
 
@@ -26,7 +26,7 @@ public class TLInputMediaContact extends TLAbsInputMedia {
 
     protected String vcard;
 
-    private final String _constructor = "inputMediaContact#0";
+    private final String _constructor = "inputMediaContact#f8ab7dfb";
 
     public TLInputMediaContact() {
     }

@@ -19,7 +19,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLValidatedRequestedInfo extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xd1451883;
 
     protected int flags;
 
@@ -27,7 +27,7 @@ public class TLValidatedRequestedInfo extends TLObject {
 
     protected TLVector<TLShippingOption> shippingOptions;
 
-    private final String _constructor = "payments.validatedRequestedInfo#0";
+    private final String _constructor = "payments.validatedRequestedInfo#d1451883";
 
     public TLValidatedRequestedInfo() {
     }

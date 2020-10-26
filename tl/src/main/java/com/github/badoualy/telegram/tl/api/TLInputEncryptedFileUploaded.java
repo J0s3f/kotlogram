@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputEncryptedFileUploaded extends TLAbsInputEncryptedFile {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x64bd0306;
 
     protected long id;
 
@@ -26,7 +26,7 @@ public class TLInputEncryptedFileUploaded extends TLAbsInputEncryptedFile {
 
     protected int keyFingerprint;
 
-    private final String _constructor = "inputEncryptedFileUploaded#0";
+    private final String _constructor = "inputEncryptedFileUploaded#64bd0306";
 
     public TLInputEncryptedFileUploaded() {
     }

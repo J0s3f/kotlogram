@@ -9,9 +9,9 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLLangPackString}: langPackString#0</li>
- * <li>{@link TLLangPackStringDeleted}: langPackStringDeleted#0</li>
- * <li>{@link TLLangPackStringPluralized}: langPackStringPluralized#0</li>
+ * <li>{@link TLLangPackString}: langPackString#cad181f6</li>
+ * <li>{@link TLLangPackStringDeleted}: langPackStringDeleted#2979eeb2</li>
+ * <li>{@link TLLangPackStringPluralized}: langPackStringPluralized#6c47ac9f</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com

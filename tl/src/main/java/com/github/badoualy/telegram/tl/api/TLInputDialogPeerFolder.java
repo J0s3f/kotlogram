@@ -16,11 +16,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLInputDialogPeerFolder extends TLAbsInputDialogPeer {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x64600527;
 
     protected int folderId;
 
-    private final String _constructor = "inputDialogPeerFolder#0";
+    private final String _constructor = "inputDialogPeerFolder#64600527";
 
     public TLInputDialogPeerFolder() {
     }

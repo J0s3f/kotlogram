@@ -20,13 +20,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLRequestUploadReuploadCdnFile extends TLMethod<TLVector<TLFileHash>> {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x9b2754a8;
 
     protected TLBytes fileToken;
 
     protected TLBytes requestToken;
 
-    private final String _constructor = "upload.reuploadCdnFile#0";
+    private final String _constructor = "upload.reuploadCdnFile#9b2754a8";
 
     public TLRequestUploadReuploadCdnFile() {
     }

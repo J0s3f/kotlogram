@@ -17,11 +17,11 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLCdnFile extends TLAbsCdnFile {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xa99fca4f;
 
     protected TLBytes bytes;
 
-    private final String _constructor = "upload.cdnFile#0";
+    private final String _constructor = "upload.cdnFile#a99fca4f";
 
     public TLCdnFile() {
     }

@@ -16,7 +16,7 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTextUrl extends TLAbsRichText {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x3c2884c1;
 
     protected TLAbsRichText text;
 
@@ -24,7 +24,7 @@ public class TLTextUrl extends TLAbsRichText {
 
     protected long webpageId;
 
-    private final String _constructor = "textUrl#0";
+    private final String _constructor = "textUrl#3c2884c1";
 
     public TLTextUrl() {
     }

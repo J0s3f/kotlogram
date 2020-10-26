@@ -16,13 +16,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLTextEmail extends TLAbsRichText {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0xde5a0dd6;
 
     protected TLAbsRichText text;
 
     protected String email;
 
-    private final String _constructor = "textEmail#0";
+    private final String _constructor = "textEmail#de5a0dd6";
 
     public TLTextEmail() {
     }

@@ -17,13 +17,13 @@ import java.lang.SuppressWarnings;
  * @see <a href="http://github.com/badoualy/kotlogram">http://github.com/badoualy/kotlogram</a>
  */
 public class TLMessageEditData extends TLObject {
-    public static final int CONSTRUCTOR_ID = 0x0;
+    public static final int CONSTRUCTOR_ID = 0x26b5dde6;
 
     protected int flags;
 
     protected boolean caption;
 
-    private final String _constructor = "messages.messageEditData#0";
+    private final String _constructor = "messages.messageEditData#26b5dde6";
 
     public TLMessageEditData() {
     }

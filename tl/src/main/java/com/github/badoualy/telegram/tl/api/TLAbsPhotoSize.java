@@ -9,10 +9,10 @@ import java.lang.String;
 /**
  * Abstraction level for the following constructors:
  * <ul>
- * <li>{@link TLPhotoCachedSize}: photoCachedSize#0</li>
- * <li>{@link TLPhotoSize}: photoSize#0</li>
- * <li>{@link TLPhotoSizeEmpty}: photoSizeEmpty#0</li>
- * <li>{@link TLPhotoStrippedSize}: photoStrippedSize#0</li>
+ * <li>{@link TLPhotoCachedSize}: photoCachedSize#e9a734fa</li>
+ * <li>{@link TLPhotoSize}: photoSize#77bfb61b</li>
+ * <li>{@link TLPhotoSizeEmpty}: photoSizeEmpty#e17e23c</li>
+ * <li>{@link TLPhotoStrippedSize}: photoStrippedSize#e0b0bc2e</li>
  * </ul>
  *
  * @author Yannick Badoual yann.badoual@gmail.com
