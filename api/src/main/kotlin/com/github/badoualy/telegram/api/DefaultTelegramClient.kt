@@ -62,7 +62,7 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
                 throw RuntimeException("Found an authorization key in storage, but the DC configuration was not found, deleting authorization key")
             }
             logger.warn(marker,
-                        "No data center found in storage, using preferred $preferredDataCenter")
+                    "No data center found in storage, using preferred $preferredDataCenter")
             dataCenter = preferredDataCenter
         }
 
@@ -90,7 +90,7 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
                         // GetNearestDc will not start updates: // TODO: replace with getDifference for updates
                         initConnection(mtProtoHandler!!, TLRequestUpdatesGetState())
                         return
-                    } catch(e: RpcErrorException) {
+                    } catch (e: RpcErrorException) {
                         // User may not be signed in already, in this case, ignore exception
                         if (e.code != 401)
                             throw e
@@ -98,7 +98,7 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
                 }
                 initConnection(mtProtoHandler!!, TLRequestHelpGetNearestDc())
             }
-        } catch(e: Exception) {
+        } catch (e: Exception) {
             mtProtoHandler?.close()
             if (e is RpcErrorException && e.code == -404)
                 throw SecurityException("Your authorization key is invalid (error ${e.code})")
@@ -107,8 +107,8 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
     }
 
     private fun generateAuthKey(): AuthResult {
-        val authResult = AuthKeyCreation.createAuthKey(dataCenter!!, tag) ?:
-                throw RuntimeException("Couldn't generate authorization key")
+        val authResult = AuthKeyCreation.createAuthKey(dataCenter!!, tag)
+                ?: throw RuntimeException("Couldn't generate authorization key")
         authKey = authResult.authKey
         apiStorage.saveAuthKey(authKey!!)
         apiStorage.saveDc(dataCenter!!)
@@ -118,11 +118,14 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
     @Throws(RpcErrorException::class, IOException::class)
     private fun <T : TLObject> initConnection(mtProtoHandler: MTProtoHandler, method: TLMethod<T>): T {
         logger.debug(marker, "Init connection with method $method")
-        val initConnectionRequest = TLRequestInitConnection(application.apiId,
-                                                            application.deviceModel,
-                                                            application.systemVersion,
-                                                            application.appVersion,
-                                                            application.langCode, method)
+        val initConnectionRequest = TLRequestInitConnection(
+                application.apiId,
+                application.deviceModel,
+                application.systemVersion,
+                application.appVersion,
+                application.systemLangCode,
+                application.langPack,
+                application.langCode, null, null, method)
         val result = executeRpcQuery(
                 TLRequestInvokeWithLayer(Kotlogram.API_LAYER, initConnectionRequest),
                 mtProtoHandler)
@@ -134,7 +137,7 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
         logger.debug(marker, "ensureNearestDc()")
         if (nearestDc.thisDc != nearestDc.nearestDc) {
             logger.warn(marker,
-                        "Current DC${nearestDc.thisDc} is not the nearest (DC${nearestDc.nearestDc})")
+                    "Current DC${nearestDc.thisDc} is not the nearest (DC${nearestDc.nearestDc})")
             if (!generateAuthKey) {
                 // Key was provided, yet selected DC is not the nearest
                 // TODO: Should handle authKey migration via auth.exportAuthorization
@@ -171,15 +174,15 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
     override fun isClosed() = closed
 
     override fun getDownloaderClient() = DefaultTelegramClient(application,
-                                                               ReadOnlyApiStorage(authKey!!,
-                                                                                  mtProtoHandler!!.session),
-                                                               updateCallback, preferredDataCenter,
-                                                               "Downloader:$tag")
+            ReadOnlyApiStorage(authKey!!,
+                    mtProtoHandler!!.session),
+            updateCallback, preferredDataCenter,
+            "Downloader:$tag")
 
     /** Queue method now, without handling the result or any possible error */
     override fun <T : TLObject> queueMethodImmediate(method: TLMethod<T>, validityTimeout: Long) {
         queueMethod(method, MTProtoHandler.QUEUE_TYPE_DISCARD, validityTimeout,
-                    Long.MAX_VALUE)?.subscribe()
+                Long.MAX_VALUE)?.subscribe()
     }
 
     override fun <T : TLObject> queueMethod(method: TLMethod<T>, type: Int, validityTimeout: Long, timeout: Long) =
@@ -216,7 +219,7 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
         // BlockingObservable.first() will throw a RuntimeException if onError() is called by observable
         try {
             return mtProtoHandler.executeMethodsSync(methods, timeoutDuration)
-        } catch(exception: RuntimeException) {
+        } catch (exception: RuntimeException) {
             when (exception.cause) {
                 is RpcErrorException -> {
                     val rpcException = (exception.cause as RpcErrorException)
@@ -255,62 +258,23 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
                     }
                     throw TimeoutException("Request timed out")
                 }
-            //is IOException -> throw exception.cause as IOException
+                //is IOException -> throw exception.cause as IOException
                 else -> throw exception
             }
         }
     }
 
-    override fun downloadSync(inputLocation: InputFileLocation, size: Int, partSize: Int, outputStream: OutputStream) {
-        var offset = 0
-        val methods = ArrayList<TLMethod<TLAbsFile>>()
-        do {
-            methods.clear()
-            for (i in 0..5) {
-                methods.add(TLRequestUploadGetFile(inputLocation.inputFileLocation,
-                                                   offset,
-                                                   partSize))
-                offset += partSize
-                if (offset >= size)
-                    break
-            }
-
-            // TODO: handle CDN
-            executeRpcQueries(methods, inputLocation.dcId)
-                    .onEach {
-                        if (it is TLFileCdnRedirect)
-                            throw IOException("Unhandled CDN redirection")
-                    }
-                    .filterIsInstance<TLFile>()
-                    .forEach { part -> outputStream.write(part.bytes.data) }
-            outputStream.flush()
-        } while (offset < size)
-
-        outputStream.flush()
-        outputStream.close()
-    }
-
-    @Throws(RpcErrorException::class, IOException::class)
-    override fun authSendCode(allowFlashcall: Boolean, phoneNumber: String, currentNumber: Boolean) = super.authSendCode(
-            allowFlashcall, phoneNumber, currentNumber, application.apiId, application.apiHash)!!
-
-    @Throws(RpcErrorException::class, IOException::class)
-    override fun authCheckPassword(password: String): TLAuthorization {
-        val tlPassword = accountGetPassword() as? TLPassword
-                ?: throw RpcErrorException(400, "NO_PASSWORD")
-        val passwordHash = CryptoUtils.encodePasswordHash(tlPassword.currentSalt.data, password)
-        return executeRpcQuery(TLRequestAuthCheckPassword(TLBytes(passwordHash)))
-    }
 
     @Throws(RpcErrorException::class, IOException::class)
     override fun <T : TLObject> initConnection(query: TLMethod<T>) = executeRpcQuery(
-            TLRequestInitConnection(application.apiId, application.deviceModel,
-                                    application.systemVersion, application.appVersion,
-                                    application.langCode, query))!!
-
-    @Throws(RpcErrorException::class, IOException::class)
-    override fun messagesSendMessage(peer: TLAbsInputPeer, message: String, randomId: Long) = super.messagesSendMessage(
-            true, false, false, false, peer, null, message, randomId, null, null)!!
+            TLRequestInitConnection(
+                    application.apiId,
+                    application.deviceModel,
+                    application.systemVersion,
+                    application.appVersion,
+                    application.systemLangCode,
+                    application.langPack,
+                    application.langCode, null, null, query))!!
 
     private fun migrate(dcId: Int) {
         logger.info(marker, "Migrating to DC$dcId")
@@ -353,8 +317,8 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
             val mtProtoHandler = MTProtoHandler(authResult, null, tag)
             mtProtoHandler.startWatchdog()
             initConnection(mtProtoHandler,
-                           TLRequestAuthImportAuthorization(exportedAuthorization.id,
-                                                            exportedAuthorization.bytes))
+                    TLRequestAuthImportAuthorization(exportedAuthorization.id,
+                            exportedAuthorization.bytes))
             authKeyMap.put(dcId, authResult.authKey)
             mtProtoHandler
         }
@@ -383,16 +347,16 @@ internal class DefaultTelegramClient internal constructor(val application: Teleg
 
     override fun onUpdates(update: TLAbsUpdates) {
         when (update) {
-        // Multiple messages
+            // Multiple messages
             is TLUpdates -> updateCallback?.onUpdates(this, update)
             is TLUpdatesCombined -> updateCallback?.onUpdatesCombined(this, update)
             is TLUpdateShort -> updateCallback?.onUpdateShort(this, update)
-        // group new message
+            // group new message
             is TLUpdateShortChatMessage -> updateCallback?.onShortChatMessage(this, update)
-        // 1v1 new message
+            // 1v1 new message
             is TLUpdateShortMessage -> updateCallback?.onShortMessage(this, update)
             is TLUpdateShortSentMessage -> updateCallback?.onShortSentMessage(this, update)
-        // Warn that the client should refresh manually
+            // Warn that the client should refresh manually
             is TLUpdatesTooLong -> updateCallback?.onUpdateTooLong(this)
         }
     }
