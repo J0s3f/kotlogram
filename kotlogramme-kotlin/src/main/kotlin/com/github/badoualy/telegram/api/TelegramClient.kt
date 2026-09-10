@@ -45,6 +45,13 @@ interface TelegramClient : AutoCloseable {
     fun messagesEditMessage(peer: TelegramPeer, id: Int, message: String, noWebpage: Boolean = false)
     fun messagesDeleteMessages(peer: TelegramPeer, ids: Collection<Int>): Int
     fun messagesGetHistory(peer: TelegramPeer, limit: Int = 50): List<Message>
+    fun messagesGetMessages(peer: TelegramPeer, ids: Collection<Int>): List<Message?>
+    fun messagesSearch(peer: TelegramPeer, query: String, limit: Int = 50): List<Message>
+    fun messagesForwardMessages(toPeer: TelegramPeer, ids: Collection<Int>, fromPeer: TelegramPeer): List<Message?>
+    fun messagesGetPinnedMessage(peer: TelegramPeer): Message?
+    fun messagesPinMessage(peer: TelegramPeer, id: Int)
+    fun messagesUnpinMessage(peer: TelegramPeer, id: Int)
+    fun messagesUnpinAllMessages(peer: TelegramPeer)
     fun messagesGetDialogs(limit: Int = 50): List<Dialog>
     fun messagesReadHistory(peer: TelegramPeer)
     fun channelsJoinChannel(peer: TelegramPeer): TelegramPeer?
@@ -140,6 +147,33 @@ internal class DefaultTelegramClient(
 
     override fun messagesGetHistory(peer: TelegramPeer, limit: Int): List<Message> =
         client.getHistory(peer.native, limit).map { it.toCompatibility() }
+
+    override fun messagesGetMessages(peer: TelegramPeer, ids: Collection<Int>): List<Message?> =
+        client.getMessages(peer.native, ids).map { it?.toCompatibility() }
+
+    override fun messagesSearch(peer: TelegramPeer, query: String, limit: Int): List<Message> =
+        client.searchMessages(peer.native, query, limit).map { it.toCompatibility() }
+
+    override fun messagesForwardMessages(
+        toPeer: TelegramPeer,
+        ids: Collection<Int>,
+        fromPeer: TelegramPeer,
+    ): List<Message?> = client.forwardMessages(toPeer.native, ids, fromPeer.native).map { it?.toCompatibility() }
+
+    override fun messagesGetPinnedMessage(peer: TelegramPeer): Message? =
+        client.getPinnedMessage(peer.native)?.toCompatibility()
+
+    override fun messagesPinMessage(peer: TelegramPeer, id: Int) {
+        client.pinMessage(peer.native, id)
+    }
+
+    override fun messagesUnpinMessage(peer: TelegramPeer, id: Int) {
+        client.unpinMessage(peer.native, id)
+    }
+
+    override fun messagesUnpinAllMessages(peer: TelegramPeer) {
+        client.unpinAllMessages(peer.native)
+    }
 
     override fun messagesGetDialogs(limit: Int): List<Dialog> = client.getDialogs(limit).map {
         Dialog(it.peer.toCompatibility(), it.lastMessage?.toCompatibility())

@@ -19,6 +19,8 @@ requests:
 | `messagesEditMessage` | `edit_message` |
 | `messagesDeleteMessages` | `delete_messages` |
 | `messagesGetHistory` | `iter_messages` |
+| `messagesGetMessages` / `messagesSearch` / `messagesForwardMessages` | `get_messages_by_id` / `search_messages` / `forward_messages` |
+| `messagesGetPinnedMessage` / `messagesPinMessage` / `messagesUnpinMessage` | `get_pinned_message` / `pin_message` / `unpin_message` |
 | `messagesGetDialogs` | `iter_dialogs` |
 | `messagesReadHistory` | `mark_as_read` |
 | `channelsJoinChannel` / `channelsLeaveChannel` | `join_chat` / `delete_dialog` |

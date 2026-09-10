@@ -89,6 +89,38 @@ class TelegramClient private constructor(
         HistoryPayload(PeerTarget(peer.nativeHandle), limit),
     )
 
+    /** Loads selected messages; missing or inaccessible IDs are represented as null entries. */
+    fun getMessages(peer: Peer, messageIds: Collection<Int>): List<Message?> = request(
+        "getMessages",
+        MessageIdsPayload(PeerTarget(peer.nativeHandle), messageIds.toList()),
+    )
+
+    /** Searches the text content of messages in a peer. */
+    fun searchMessages(peer: Peer, query: String, limit: Int = 50): List<Message> = request(
+        "searchMessages",
+        SearchMessagesPayload(PeerTarget(peer.nativeHandle), query, limit),
+    )
+
+    /** Forwards selected messages and preserves the input order; unavailable results are null. */
+    fun forwardMessages(destination: Peer, messageIds: Collection<Int>, source: Peer): List<Message?> = request(
+        "forwardMessages",
+        ForwardMessagesPayload(PeerTarget(destination.nativeHandle), PeerTarget(source.nativeHandle), messageIds.toList()),
+    )
+
+    fun getPinnedMessage(peer: Peer): Message? = request("getPinnedMessage", PeerTarget(peer.nativeHandle))
+
+    fun pinMessage(peer: Peer, messageId: Int) {
+        request<MessageIdPayload, OperationResult>("pinMessage", MessageIdPayload(PeerTarget(peer.nativeHandle), messageId))
+    }
+
+    fun unpinMessage(peer: Peer, messageId: Int) {
+        request<MessageIdPayload, OperationResult>("unpinMessage", MessageIdPayload(PeerTarget(peer.nativeHandle), messageId))
+    }
+
+    fun unpinAllMessages(peer: Peer) {
+        request<PeerTarget, OperationResult>("unpinAllMessages", PeerTarget(peer.nativeHandle))
+    }
+
     fun getDialogs(limit: Int = 50): List<Dialog> = request("getDialogs", LimitPayload(limit))
 
     fun joinChat(peer: Peer): Peer? {
@@ -233,6 +265,32 @@ class TelegramClient private constructor(
         val limit: Int,
     ) {
         constructor(peer: PeerTarget, limit: Int) : this(peer.peerHandle, peer.username, limit)
+    }
+
+    @Serializable
+    private data class SearchMessagesPayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val query: String,
+        val limit: Int,
+    ) {
+        constructor(peer: PeerTarget, query: String, limit: Int) : this(peer.peerHandle, peer.username, query, limit)
+    }
+
+    @Serializable
+    private data class ForwardMessagesPayload(
+        val destination: PeerTarget,
+        val source: PeerTarget,
+        val messageIds: List<Int>,
+    )
+
+    @Serializable
+    private data class MessageIdPayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val messageId: Int,
+    ) {
+        constructor(peer: PeerTarget, messageId: Int) : this(peer.peerHandle, peer.username, messageId)
     }
 
     @Serializable

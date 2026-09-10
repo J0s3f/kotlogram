@@ -169,6 +169,31 @@ struct HistoryPayload {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+struct SearchMessagesPayload {
+    #[serde(flatten)]
+    peer: PeerTarget,
+    query: String,
+    limit: Option<usize>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ForwardMessagesPayload {
+    destination: PeerTarget,
+    source: PeerTarget,
+    message_ids: Vec<i32>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct MessageIdPayload {
+    #[serde(flatten)]
+    peer: PeerTarget,
+    message_id: i32,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct LimitPayload {
     limit: Option<usize>,
 }
@@ -381,6 +406,99 @@ fn request(native: &NativeClient, operation: &str, payload: &str) -> Result<Stri
                 Ok::<_, String>(result)
             })?;
             json_string(messages)
+        }
+        "getMessages" => {
+            let data: MessageIdsPayload = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+            if data.message_ids.len() > 100 {
+                return Err("at most 100 message IDs can be requested at once".to_owned());
+            }
+            let messages = native
+                .runtime
+                .block_on(native.client.get_messages_by_id(peer, &data.message_ids))
+                .map_err(invocation_error)?
+                .iter()
+                .map(|message| message.as_ref().map(message_dto))
+                .collect::<Vec<_>>();
+            json_string(messages)
+        }
+        "searchMessages" => {
+            let data: SearchMessagesPayload = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+            let limit = data.limit.unwrap_or(50).clamp(1, 100);
+            let messages = native.runtime.block_on(async {
+                let mut iterator = native
+                    .client
+                    .search_messages(peer)
+                    .query(&data.query)
+                    .limit(limit);
+                let mut result = Vec::new();
+                while let Some(message) = iterator.next().await.map_err(invocation_error)? {
+                    result.push(message_dto(&message));
+                }
+                Ok::<_, String>(result)
+            })?;
+            json_string(messages)
+        }
+        "forwardMessages" => {
+            let data: ForwardMessagesPayload = parse_payload(payload)?;
+            if data.message_ids.len() > 100 {
+                return Err("at most 100 messages can be forwarded at once".to_owned());
+            }
+            let destination = native
+                .runtime
+                .block_on(resolve_peer(native, &data.destination))?;
+            let source = native
+                .runtime
+                .block_on(resolve_peer(native, &data.source))?;
+            let messages = native
+                .runtime
+                .block_on(
+                    native
+                        .client
+                        .forward_messages(destination, &data.message_ids, source),
+                )
+                .map_err(invocation_error)?
+                .iter()
+                .map(|message| message.as_ref().map(message_dto))
+                .collect::<Vec<_>>();
+            json_string(messages)
+        }
+        "getPinnedMessage" => {
+            let target: PeerTarget = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &target))?;
+            let message = native
+                .runtime
+                .block_on(native.client.get_pinned_message(peer))
+                .map_err(invocation_error)?;
+            json_string(message.as_ref().map(message_dto))
+        }
+        "pinMessage" => {
+            let data: MessageIdPayload = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+            native
+                .runtime
+                .block_on(native.client.pin_message(peer, data.message_id))
+                .map_err(invocation_error)?;
+            json_string(json!({ "ok": true }))
+        }
+        "unpinMessage" => {
+            let data: MessageIdPayload = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+            native
+                .runtime
+                .block_on(native.client.unpin_message(peer, data.message_id))
+                .map_err(invocation_error)?;
+            json_string(json!({ "ok": true }))
+        }
+        "unpinAllMessages" => {
+            let target: PeerTarget = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &target))?;
+            native
+                .runtime
+                .block_on(native.client.unpin_all_messages(peer))
+                .map_err(invocation_error)?;
+            json_string(json!({ "ok": true }))
         }
         "getDialogs" => {
             let LimitPayload { limit } = parse_payload(payload)?;
