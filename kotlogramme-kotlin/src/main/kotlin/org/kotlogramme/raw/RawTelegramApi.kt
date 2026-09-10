@@ -7,9 +7,9 @@ import org.kotlogramme.TelegramClient
 /**
  * Versioned description of the raw Telegram TL schema bundled with this library.
  *
- * It deliberately exposes schema metadata only. Invoking an arbitrary TL method requires
- * generated Kotlin codecs and a matching Rust dispatcher; accepting unvalidated JSON here would
- * not be a safe or wire-compatible raw API.
+ * It exposes the Layer-specific schema, a dynamic TL codec, and the grammers-backed binary
+ * dispatcher. Callers use [RawValue] rather than JSON so constructor identifiers, optional flags
+ * and byte encodings remain explicit and wire-compatible.
  */
 object RawTelegramApi {
     const val FORMAT: String = "kotlogram-raw-schema/v1"
@@ -20,6 +20,14 @@ object RawTelegramApi {
     fun method(name: String): RawMethod? = schema.functions.firstOrNull { it.name == name }
 
     fun constructor(name: String): RawConstructor? = schema.constructors.firstOrNull { it.name == name }
+
+    /** Encodes a named Layer-216 function from its declared fields. Optional TL flags are derived. */
+    fun encodeRequest(methodName: String, fields: Map<String, RawValue>): ByteArray =
+        codec.encodeMethod(methodName, fields)
+
+    /** Decodes a raw response according to the declared result type of [methodName]. */
+    fun decodeResponse(methodName: String, body: ByteArray): RawValue =
+        codec.decodeMethodResult(methodName, body)
 
     /**
      * Encodes a raw request for a schema method that has no parameters.
@@ -44,6 +52,14 @@ object RawTelegramApi {
     fun invoke(client: TelegramClient, request: RawRequest): ByteArray =
         client.invokeRaw(request.body, request.dataCenterId)
 
+    /** Encodes, invokes and decodes a Layer-216 request in one call. */
+    fun invoke(
+        client: TelegramClient,
+        methodName: String,
+        fields: Map<String, RawValue>,
+        dataCenterId: Int? = null,
+    ): RawValue = decodeResponse(methodName, invoke(client, RawRequest(encodeRequest(methodName, fields), dataCenterId)))
+
     private val schema: RawSchema by lazy {
         val resource = requireNotNull(RawTelegramApi::class.java.getResourceAsStream("/raw/telegram-layer-216.json")) {
             "Bundled Layer-216 raw schema manifest is missing"
@@ -52,6 +68,8 @@ object RawTelegramApi {
     }
 
     private val json = Json { ignoreUnknownKeys = true }
+
+    private val codec: RawTlDynamicCodec by lazy { RawTlDynamicCodec(schema) }
 }
 
 @Serializable

@@ -60,4 +60,46 @@ class RawTelegramApiTest {
         assertTrue(reader.bytes().contentEquals(ByteArray(254) { it.toByte() }))
         reader.requireFullyRead()
     }
+
+    @Test
+    fun `dynamic raw codec derives flags and decodes schema declared responses`() {
+        val request = RawTelegramApi.encodeRequest(
+            "auth.sendCode",
+            mapOf(
+                "phone_number" to RawValue.StringValue("+12025550123"),
+                "api_id" to RawValue.IntValue(1),
+                "api_hash" to RawValue.StringValue("test-hash"),
+                "settings" to RawValue.Object(
+                    "codeSettings",
+                    mapOf("allow_flashcall" to RawValue.BooleanValue(true)),
+                ),
+            ),
+        )
+        val requestReader = TlReader(request)
+        requestReader.constructor(assertNotNull(RawTelegramApi.method("auth.sendCode")).constructorId)
+        assertEquals("+12025550123", requestReader.string())
+        assertEquals(1, requestReader.int())
+        assertEquals("test-hash", requestReader.string())
+        requestReader.constructor(assertNotNull(RawTelegramApi.constructor("codeSettings")).constructorId)
+        assertEquals(1, requestReader.int())
+        requestReader.requireFullyRead()
+
+        val response = TlWriter()
+            .constructor(assertNotNull(RawTelegramApi.constructor("nearestDc")).constructorId)
+            .string("AT")
+            .int(2)
+            .int(1)
+            .toByteArray()
+        assertEquals(
+            RawValue.Object(
+                "nearestDc",
+                mapOf(
+                    "country" to RawValue.StringValue("AT"),
+                    "this_dc" to RawValue.IntValue(2),
+                    "nearest_dc" to RawValue.IntValue(1),
+                ),
+            ),
+            RawTelegramApi.decodeResponse("help.getNearestDc", response),
+        )
+    }
 }

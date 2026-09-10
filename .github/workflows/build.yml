@@ -40,20 +40,15 @@ jobs:
         include:
           - platform: linux-x86_64
             runner: ubuntu-24.04
-            target: x86_64-unknown-linux-gnu
+            targets: x86_64-unknown-linux-gnu
             library: libkotlogramme.so
           - platform: windows-x86_64
             runner: windows-2025
-            target: x86_64-pc-windows-msvc
+            targets: x86_64-pc-windows-msvc
             library: kotlogramme.dll
-          - platform: macos-x86_64
-            runner: macos-13
-            target: x86_64-apple-darwin
-            library: libkotlogramme.dylib
-          - platform: macos-aarch64
+          - platform: macos
             runner: macos-14
-            target: aarch64-apple-darwin
-            library: libkotlogramme.dylib
+            targets: x86_64-apple-darwin,aarch64-apple-darwin
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
@@ -63,14 +58,27 @@ jobs:
           java-version: '17'
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.target }}
+          targets: ${{ matrix.targets }}
       - name: Build native library
-        run: cargo build --release --manifest-path native/Cargo.toml --target ${{ matrix.target }}
+        shell: bash
+        run: |
+          if [ "${{ matrix.platform }}" = "macos" ]; then
+            cargo build --release --manifest-path native/Cargo.toml --target x86_64-apple-darwin
+            cargo build --release --manifest-path native/Cargo.toml --target aarch64-apple-darwin
+          else
+            cargo build --release --manifest-path native/Cargo.toml --target ${{ matrix.targets }}
+          fi
       - name: Stage native library
         shell: bash
         run: |
-          mkdir -p "build/native/${{ matrix.platform }}"
-          cp "native/target/${{ matrix.target }}/release/${{ matrix.library }}" "build/native/${{ matrix.platform }}/"
+          if [ "${{ matrix.platform }}" = "macos" ]; then
+            mkdir -p build/native/macos-x86_64 build/native/macos-aarch64
+            cp native/target/x86_64-apple-darwin/release/libkotlogramme.dylib build/native/macos-x86_64/
+            cp native/target/aarch64-apple-darwin/release/libkotlogramme.dylib build/native/macos-aarch64/
+          else
+            mkdir -p "build/native/${{ matrix.platform }}"
+            cp "native/target/${{ matrix.targets }}/release/${{ matrix.library }}" "build/native/${{ matrix.platform }}/"
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: native-${{ matrix.platform }}

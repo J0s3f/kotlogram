@@ -28,7 +28,12 @@ class TlWriter {
         repeat(Long.SIZE_BYTES) { byte -> output.write(((value ushr (byte * 8)) and 0xff).toInt()) }
     }
 
+    fun double(value: Double): TlWriter = long(value.toRawBits())
+
     fun string(value: String): TlWriter = bytes(value.toByteArray(StandardCharsets.UTF_8))
+
+    /** Writes a fixed-width TL primitive such as int128 or int256 without a byte-array prefix. */
+    fun fixedBytes(value: ByteArray): TlWriter = apply { output.write(value) }
 
     fun <T> vector(values: Iterable<T>, writeElement: TlWriter.(T) -> Unit): TlWriter = apply {
         val entries = values.toList()
@@ -91,6 +96,8 @@ class TlReader(private val input: ByteArray) {
         return value
     }
 
+    fun double(): Double = Double.fromBits(long())
+
     fun boolean(): Boolean = when (val constructor = int()) {
         TlWriter.BOOL_TRUE -> true
         TlWriter.BOOL_FALSE -> false
@@ -119,6 +126,14 @@ class TlReader(private val input: ByteArray) {
         offset += size
         requireAvailable(padding(headerSize + size))
         offset += padding(headerSize + size)
+        return value
+    }
+
+    /** Reads a fixed-width TL primitive such as int128 or int256 without a byte-array prefix. */
+    fun fixedBytes(size: Int): ByteArray {
+        requireAvailable(size)
+        val value = input.copyOfRange(offset, offset + size)
+        offset += size
         return value
     }
 
