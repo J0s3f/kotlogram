@@ -11,7 +11,7 @@ The first compatibility layer is implemented, but it is not yet complete:
 - persistent SQLite sessions through grammers
 - bot and user authentication, including the 2FA step
 - authorization status and public-username resolution
-- sending, editing, deleting, searching, forwarding, pinning and reacting to text messages
+- sending text, documents, photos and media albums; editing, deleting, searching, forwarding, pinning and reacting to messages
 - loading dialogs, message history and chat participants; joining, leaving and moderating chats
 - familiar Kotlogram entry points under `com.github.badoualy.telegram.api`
 - native-library loading from the JAR

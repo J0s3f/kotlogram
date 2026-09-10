@@ -4,7 +4,7 @@ use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
 use grammers_client::types::{InputReactions, Message as ClientMessage, Peer, Role};
-use grammers_client::{Client, InputMessage, InvocationError, SignInError};
+use grammers_client::{Client, InputMedia, InputMessage, InvocationError, SignInError};
 use grammers_mtsender::SenderPool;
 use grammers_session::storages::SqliteSession;
 use jni::objects::{JClass, JString};
@@ -146,6 +146,34 @@ struct SendMessagePayload {
     reply_to_message_id: Option<i32>,
     silent: Option<bool>,
     link_preview: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SendFilePayload {
+    #[serde(flatten)]
+    peer: PeerTarget,
+    path: String,
+    caption: Option<String>,
+    as_photo: Option<bool>,
+    reply_to_message_id: Option<i32>,
+    silent: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct AlbumItemPayload {
+    path: String,
+    caption: Option<String>,
+    as_photo: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SendAlbumPayload {
+    #[serde(flatten)]
+    peer: PeerTarget,
+    items: Vec<AlbumItemPayload>,
 }
 
 #[derive(Deserialize)]
@@ -406,6 +434,63 @@ fn request(native: &NativeClient, operation: &str, payload: &str) -> Result<Stri
                 .block_on(native.client.send_message(peer, message))
                 .map_err(invocation_error)?;
             json_string(message_dto(&message))
+        }
+        "sendFile" => {
+            let data: SendFilePayload = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+            let path = PathBuf::from(data.path);
+            let uploaded = native
+                .runtime
+                .block_on(native.client.upload_file(&path))
+                .map_err(error)?;
+            let message = InputMessage::new()
+                .text(data.caption.unwrap_or_default())
+                .reply_to(data.reply_to_message_id)
+                .silent(data.silent.unwrap_or(false));
+            let message = if data.as_photo.unwrap_or(false) {
+                message.photo(uploaded)
+            } else {
+                message.file(uploaded)
+            };
+            let message = native
+                .runtime
+                .block_on(native.client.send_message(peer, message))
+                .map_err(invocation_error)?;
+            json_string(message_dto(&message))
+        }
+        "sendAlbum" => {
+            let data: SendAlbumPayload = parse_payload(payload)?;
+            if !(1..=10).contains(&data.items.len()) {
+                return Err("an album must contain between 1 and 10 media items".to_owned());
+            }
+            let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+            let messages = native.runtime.block_on(async {
+                let mut media = Vec::with_capacity(data.items.len());
+                for item in data.items {
+                    let uploaded = native
+                        .client
+                        .upload_file(PathBuf::from(item.path))
+                        .await
+                        .map_err(error)?;
+                    let input = InputMedia::new().caption(item.caption.unwrap_or_default());
+                    media.push(if item.as_photo.unwrap_or(false) {
+                        input.photo(uploaded)
+                    } else {
+                        input.file(uploaded)
+                    });
+                }
+                native
+                    .client
+                    .send_album(peer, media)
+                    .await
+                    .map_err(invocation_error)
+            })?;
+            json_string(
+                messages
+                    .iter()
+                    .map(|message| message.as_ref().map(message_dto))
+                    .collect::<Vec<_>>(),
+            )
         }
         "editMessage" => {
             let data: EditMessagePayload = parse_payload(payload)?;

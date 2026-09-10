@@ -2,6 +2,7 @@ package com.github.badoualy.telegram.api
 
 import org.kotlogramme.TelegramClient as GrammersClient
 import org.kotlogramme.TelegramException
+import java.nio.file.Path
 
 /** Kotlogram-shaped API mapped onto grammers' current high-level client operations. */
 interface TelegramClient : AutoCloseable {
@@ -41,6 +42,18 @@ interface TelegramClient : AutoCloseable {
         silent: Boolean = false,
         noWebpage: Boolean = false,
     ): Message
+
+    /** Uploads and sends a local file; set [asPhoto] to let Telegram compress it as a photo. */
+    fun messagesSendFile(
+        peer: TelegramPeer,
+        path: Path,
+        caption: String = "",
+        asPhoto: Boolean = false,
+        replyToMsgId: Int? = null,
+        silent: Boolean = false,
+    ): Message
+
+    fun messagesSendAlbum(peer: TelegramPeer, items: List<OutgoingMedia>): List<Message?>
 
     fun messagesEditMessage(peer: TelegramPeer, id: Int, message: String, noWebpage: Boolean = false)
     fun messagesDeleteMessages(peer: TelegramPeer, ids: Collection<Int>): Int
@@ -87,6 +100,12 @@ data class Message(
     val text: String,
     val outgoing: Boolean,
     val replyToMessageId: Int?,
+)
+
+data class OutgoingMedia(
+    val path: Path,
+    val caption: String = "",
+    val asPhoto: Boolean = false,
 )
 
 data class Dialog(val peer: TelegramPeer, val lastMessage: Message?)
@@ -143,6 +162,19 @@ internal class DefaultTelegramClient(
         silent = silent,
         linkPreview = !noWebpage,
     ).toCompatibility()
+
+    override fun messagesSendFile(
+        peer: TelegramPeer,
+        path: Path,
+        caption: String,
+        asPhoto: Boolean,
+        replyToMsgId: Int?,
+        silent: Boolean,
+    ): Message = client.sendFile(peer.native, path, caption, asPhoto, replyToMsgId, silent).toCompatibility()
+
+    override fun messagesSendAlbum(peer: TelegramPeer, items: List<OutgoingMedia>): List<Message?> =
+        client.sendAlbum(peer.native, items.map { GrammersClient.OutgoingMedia(it.path, it.caption, it.asPhoto) })
+            .map { it?.toCompatibility() }
 
     override fun messagesEditMessage(peer: TelegramPeer, id: Int, message: String, noWebpage: Boolean) {
         client.editMessage(peer.native, id, message, linkPreview = !noWebpage)

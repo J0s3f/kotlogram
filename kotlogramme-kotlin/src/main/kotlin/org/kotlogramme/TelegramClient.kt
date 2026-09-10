@@ -68,6 +68,38 @@ class TelegramClient private constructor(
         SendMessagePayload(PeerTarget(peer.nativeHandle), text, replyToMessageId, silent, linkPreview),
     )
 
+    /** Uploads a local file and sends it as a document, or as a Telegram photo when [asPhoto] is true. */
+    fun sendFile(
+        peer: Peer,
+        path: Path,
+        caption: String = "",
+        asPhoto: Boolean = false,
+        replyToMessageId: Int? = null,
+        silent: Boolean = false,
+    ): Message = request(
+        "sendFile",
+        SendFilePayload(
+            PeerTarget(peer.nativeHandle),
+            path.toAbsolutePath().toString(),
+            caption,
+            asPhoto,
+            replyToMessageId,
+            silent,
+        ),
+    )
+
+    /** Uploads one to ten files and sends them as a Telegram media album. */
+    fun sendAlbum(peer: Peer, items: List<OutgoingMedia>): List<Message?> {
+        require(items.size in 1..10) { "An album must contain between 1 and 10 media items" }
+        return request(
+            "sendAlbum",
+            SendAlbumPayload(
+                PeerTarget(peer.nativeHandle),
+                items.map { AlbumItemPayload(it.path.toAbsolutePath().toString(), it.caption, it.asPhoto) },
+            ),
+        )
+    }
+
     fun editMessage(peer: Peer, messageId: Int, text: String, linkPreview: Boolean = true) {
         request<EditMessagePayload, OperationResult>(
             "editMessage",
@@ -223,6 +255,12 @@ class TelegramClient private constructor(
         val role: String,
     )
 
+    data class OutgoingMedia(
+        val path: Path,
+        val caption: String = "",
+        val asPhoto: Boolean = false,
+    )
+
     @Serializable
     data class LoginCodeSent(val phone: String)
 
@@ -269,6 +307,42 @@ class TelegramClient private constructor(
             silent: Boolean,
             linkPreview: Boolean,
         ) : this(peer.peerHandle, peer.username, text, replyToMessageId, silent, linkPreview)
+    }
+
+    @Serializable
+    private data class SendFilePayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val path: String,
+        val caption: String,
+        val asPhoto: Boolean,
+        val replyToMessageId: Int? = null,
+        val silent: Boolean = false,
+    ) {
+        constructor(
+            peer: PeerTarget,
+            path: String,
+            caption: String,
+            asPhoto: Boolean,
+            replyToMessageId: Int?,
+            silent: Boolean,
+        ) : this(peer.peerHandle, peer.username, path, caption, asPhoto, replyToMessageId, silent)
+    }
+
+    @Serializable
+    private data class AlbumItemPayload(
+        val path: String,
+        val caption: String,
+        val asPhoto: Boolean,
+    )
+
+    @Serializable
+    private data class SendAlbumPayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val items: List<AlbumItemPayload>,
+    ) {
+        constructor(peer: PeerTarget, items: List<AlbumItemPayload>) : this(peer.peerHandle, peer.username, items)
     }
 
     @Serializable

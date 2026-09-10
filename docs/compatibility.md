@@ -16,6 +16,8 @@ its high-level API rather than old Layer-66 TL requests:
 | `authImportBotAuthorization` | `bot_sign_in` |
 | `contactsResolveUsername` | `resolve_username` |
 | `messagesSendMessage` | `send_message` |
+| `messagesSendFile` | `upload_file` + `send_message` |
+| `messagesSendAlbum` | `upload_file` + `send_album` |
 | `messagesEditMessage` | `edit_message` |
 | `messagesDeleteMessages` | `delete_messages` |
 | `messagesGetHistory` | `iter_messages` |
