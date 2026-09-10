@@ -121,6 +121,34 @@ class TelegramClient private constructor(
         request<PeerTarget, OperationResult>("unpinAllMessages", PeerTarget(peer.nativeHandle))
     }
 
+    /** Adds or replaces the account's emoji reaction on a message. */
+    fun sendReaction(peer: Peer, messageId: Int, emoji: String, big: Boolean = false) {
+        request<ReactionPayload, OperationResult>(
+            "sendReaction",
+            ReactionPayload(PeerTarget(peer.nativeHandle), messageId, emoji, remove = false, big),
+        )
+    }
+
+    /** Removes the account's reaction from a message. */
+    fun removeReaction(peer: Peer, messageId: Int) {
+        request<ReactionPayload, OperationResult>(
+            "sendReaction",
+            ReactionPayload(PeerTarget(peer.nativeHandle), messageId, emoji = null, remove = true, big = false),
+        )
+    }
+
+    fun getParticipants(peer: Peer, limit: Int = 100): List<Participant> = request(
+        "getParticipants",
+        ParticipantPayload(PeerTarget(peer.nativeHandle), limit),
+    )
+
+    fun kickParticipant(chat: Peer, user: Peer) {
+        request<KickParticipantPayload, OperationResult>(
+            "kickParticipant",
+            KickParticipantPayload(PeerTarget(chat.nativeHandle), PeerTarget(user.nativeHandle)),
+        )
+    }
+
     fun getDialogs(limit: Int = 50): List<Dialog> = request("getDialogs", LimitPayload(limit))
 
     fun joinChat(peer: Peer): Peer? {
@@ -187,6 +215,12 @@ class TelegramClient private constructor(
     data class Dialog(
         val peer: Peer,
         val lastMessage: Message? = null,
+    )
+
+    @Serializable
+    data class Participant(
+        val user: User,
+        val role: String,
     )
 
     @Serializable
@@ -292,6 +326,34 @@ class TelegramClient private constructor(
     ) {
         constructor(peer: PeerTarget, messageId: Int) : this(peer.peerHandle, peer.username, messageId)
     }
+
+    @Serializable
+    private data class ReactionPayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val messageId: Int,
+        val emoji: String? = null,
+        val remove: Boolean = false,
+        val big: Boolean = false,
+    ) {
+        constructor(peer: PeerTarget, messageId: Int, emoji: String?, remove: Boolean, big: Boolean) :
+            this(peer.peerHandle, peer.username, messageId, emoji, remove, big)
+    }
+
+    @Serializable
+    private data class ParticipantPayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val limit: Int,
+    ) {
+        constructor(peer: PeerTarget, limit: Int) : this(peer.peerHandle, peer.username, limit)
+    }
+
+    @Serializable
+    private data class KickParticipantPayload(
+        val chat: PeerTarget,
+        val user: PeerTarget,
+    )
 
     @Serializable
     private data class LimitPayload(val limit: Int)

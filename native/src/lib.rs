@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
-use grammers_client::types::{Message as ClientMessage, Peer};
+use grammers_client::types::{InputReactions, Message as ClientMessage, Peer, Role};
 use grammers_client::{Client, InputMessage, InvocationError, SignInError};
 use grammers_mtsender::SenderPool;
 use grammers_session::storages::SqliteSession;
@@ -108,6 +108,13 @@ struct DialogDto {
     last_message: Option<MessageDto>,
 }
 
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ParticipantDto {
+    user: UserDto,
+    role: &'static str,
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct PeerTarget {
@@ -194,6 +201,32 @@ struct MessageIdPayload {
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
+struct ReactionPayload {
+    #[serde(flatten)]
+    peer: PeerTarget,
+    message_id: i32,
+    emoji: Option<String>,
+    remove: Option<bool>,
+    big: Option<bool>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ParticipantPayload {
+    #[serde(flatten)]
+    peer: PeerTarget,
+    limit: Option<usize>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct KickParticipantPayload {
+    chat: PeerTarget,
+    user: PeerTarget,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct LimitPayload {
     limit: Option<usize>,
 }
@@ -213,6 +246,17 @@ fn message_dto(message: &ClientMessage) -> MessageDto {
         text: message.text().to_owned(),
         outgoing: message.outgoing(),
         reply_to_message_id: message.reply_to_message_id(),
+    }
+}
+
+fn role_name(role: &Role) -> &'static str {
+    match role {
+        Role::User(_) => "member",
+        Role::Creator(_) => "creator",
+        Role::Admin(_) => "admin",
+        Role::Banned(_) => "banned",
+        Role::Left(_) => "left",
+        _ => "unknown",
     }
 }
 
@@ -497,6 +541,63 @@ fn request(native: &NativeClient, operation: &str, payload: &str) -> Result<Stri
             native
                 .runtime
                 .block_on(native.client.unpin_all_messages(peer))
+                .map_err(invocation_error)?;
+            json_string(json!({ "ok": true }))
+        }
+        "sendReaction" => {
+            let data: ReactionPayload = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+            let reactions = if data.remove.unwrap_or(false) {
+                InputReactions::remove()
+            } else {
+                let emoji = data
+                    .emoji
+                    .filter(|emoji| !emoji.is_empty())
+                    .ok_or_else(|| "emoji is required unless remove is true".to_owned())?;
+                let reactions = InputReactions::emoticon(emoji).add_to_recent();
+                if data.big.unwrap_or(false) {
+                    reactions.big()
+                } else {
+                    reactions
+                }
+            };
+            native
+                .runtime
+                .block_on(
+                    native
+                        .client
+                        .send_reactions(peer, data.message_id, reactions),
+                )
+                .map_err(invocation_error)?;
+            json_string(json!({ "ok": true }))
+        }
+        "getParticipants" => {
+            let data: ParticipantPayload = parse_payload(payload)?;
+            let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+            let limit = data.limit.unwrap_or(100).clamp(1, 200);
+            let participants = native.runtime.block_on(async {
+                let mut iterator = native.client.iter_participants(peer);
+                let mut result = Vec::new();
+                while result.len() < limit {
+                    let Some(participant) = iterator.next().await.map_err(invocation_error)? else {
+                        break;
+                    };
+                    result.push(ParticipantDto {
+                        user: user_dto(&participant.user),
+                        role: role_name(&participant.role),
+                    });
+                }
+                Ok::<_, String>(result)
+            })?;
+            json_string(participants)
+        }
+        "kickParticipant" => {
+            let data: KickParticipantPayload = parse_payload(payload)?;
+            let chat = native.runtime.block_on(resolve_peer(native, &data.chat))?;
+            let user = native.runtime.block_on(resolve_peer(native, &data.user))?;
+            native
+                .runtime
+                .block_on(native.client.kick_participant(chat, user))
                 .map_err(invocation_error)?;
             json_string(json!({ "ok": true }))
         }

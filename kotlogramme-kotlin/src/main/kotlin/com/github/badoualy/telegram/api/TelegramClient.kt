@@ -52,10 +52,14 @@ interface TelegramClient : AutoCloseable {
     fun messagesPinMessage(peer: TelegramPeer, id: Int)
     fun messagesUnpinMessage(peer: TelegramPeer, id: Int)
     fun messagesUnpinAllMessages(peer: TelegramPeer)
+    fun messagesSendReaction(peer: TelegramPeer, id: Int, emoji: String, big: Boolean = false)
+    fun messagesRemoveReaction(peer: TelegramPeer, id: Int)
     fun messagesGetDialogs(limit: Int = 50): List<Dialog>
     fun messagesReadHistory(peer: TelegramPeer)
     fun channelsJoinChannel(peer: TelegramPeer): TelegramPeer?
     fun channelsLeaveChannel(peer: TelegramPeer)
+    fun channelsGetParticipants(peer: TelegramPeer, limit: Int = 100): List<Participant>
+    fun channelsKickParticipant(peer: TelegramPeer, user: TelegramPeer)
 }
 
 data class SentCode(val phoneNumber: String, val phoneCodeHash: String)
@@ -86,6 +90,8 @@ data class Message(
 )
 
 data class Dialog(val peer: TelegramPeer, val lastMessage: Message?)
+
+data class Participant(val user: User, val role: String)
 
 class PasswordRequiredException(val hint: String?) : TelegramException("Two-factor authentication password required")
 
@@ -175,6 +181,14 @@ internal class DefaultTelegramClient(
         client.unpinAllMessages(peer.native)
     }
 
+    override fun messagesSendReaction(peer: TelegramPeer, id: Int, emoji: String, big: Boolean) {
+        client.sendReaction(peer.native, id, emoji, big)
+    }
+
+    override fun messagesRemoveReaction(peer: TelegramPeer, id: Int) {
+        client.removeReaction(peer.native, id)
+    }
+
     override fun messagesGetDialogs(limit: Int): List<Dialog> = client.getDialogs(limit).map {
         Dialog(it.peer.toCompatibility(), it.lastMessage?.toCompatibility())
     }
@@ -187,6 +201,13 @@ internal class DefaultTelegramClient(
 
     override fun channelsLeaveChannel(peer: TelegramPeer) {
         client.leaveChat(peer.native)
+    }
+
+    override fun channelsGetParticipants(peer: TelegramPeer, limit: Int): List<Participant> =
+        client.getParticipants(peer.native, limit).map { Participant(it.user.toCompatibility(), it.role) }
+
+    override fun channelsKickParticipant(peer: TelegramPeer, user: TelegramPeer) {
+        client.kickParticipant(peer.native, user.native)
     }
 
     override fun close() {
