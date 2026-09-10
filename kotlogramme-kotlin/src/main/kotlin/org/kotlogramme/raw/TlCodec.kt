@@ -13,6 +13,8 @@ import java.nio.charset.StandardCharsets
 class TlWriter {
     private val output = ByteArrayOutputStream()
 
+    fun boolean(value: Boolean): TlWriter = constructor(if (value) BOOL_TRUE else BOOL_FALSE)
+
     fun constructor(id: Int): TlWriter = int(id)
 
     fun int(value: Int): TlWriter = apply {
@@ -27,6 +29,13 @@ class TlWriter {
     }
 
     fun string(value: String): TlWriter = bytes(value.toByteArray(StandardCharsets.UTF_8))
+
+    fun <T> vector(values: Iterable<T>, writeElement: TlWriter.(T) -> Unit): TlWriter = apply {
+        val entries = values.toList()
+        constructor(VECTOR_CONSTRUCTOR)
+        int(entries.size)
+        entries.forEach { writeElement(it) }
+    }
 
     fun bytes(value: ByteArray): TlWriter = apply {
         require(value.size <= 0x00ff_ffff) { "TL byte arrays cannot exceed 16,777,215 bytes" }
@@ -47,6 +56,12 @@ class TlWriter {
     fun toByteArray(): ByteArray = output.toByteArray()
 
     private fun padding(size: Int): Int = (Int.SIZE_BYTES - size % Int.SIZE_BYTES) % Int.SIZE_BYTES
+
+    companion object {
+        const val BOOL_FALSE: Int = -1132882121
+        const val BOOL_TRUE: Int = -1720552011
+        const val VECTOR_CONSTRUCTOR: Int = 481674261
+    }
 }
 
 /** Reader counterpart to [TlWriter] for generated Layer-specific response codecs. */
@@ -76,6 +91,12 @@ class TlReader(private val input: ByteArray) {
         return value
     }
 
+    fun boolean(): Boolean = when (val constructor = int()) {
+        TlWriter.BOOL_TRUE -> true
+        TlWriter.BOOL_FALSE -> false
+        else -> throw IllegalArgumentException("Unexpected TL boolean constructor: 0x${constructor.toUInt().toString(16)}")
+    }
+
     fun bytes(): ByteArray {
         requireAvailable(1)
         val prefix = input[offset++].toInt() and 0xff
@@ -103,6 +124,13 @@ class TlReader(private val input: ByteArray) {
 
     fun string(): String = String(bytes(), StandardCharsets.UTF_8)
 
+    fun <T> vector(readElement: TlReader.() -> T): List<T> {
+        constructor(TlWriter.VECTOR_CONSTRUCTOR)
+        val size = int()
+        require(size in 0..MAX_VECTOR_SIZE) { "Invalid TL vector size: $size" }
+        return List(size) { readElement() }
+    }
+
     fun requireFullyRead() {
         require(offset == input.size) { "TL input has ${input.size - offset} trailing byte(s)" }
     }
@@ -112,4 +140,8 @@ class TlReader(private val input: ByteArray) {
     }
 
     private fun padding(size: Int): Int = (Int.SIZE_BYTES - size % Int.SIZE_BYTES) % Int.SIZE_BYTES
+
+    private companion object {
+        const val MAX_VECTOR_SIZE: Int = 1_000_000
+    }
 }

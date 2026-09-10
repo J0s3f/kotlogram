@@ -15,17 +15,9 @@ import re
 from pathlib import Path
 
 
-def parse_functions(schema: str) -> tuple[int, list[dict[str, str | int]]]:
-    layer_match = re.search(r"^\s*//\s*LAYER\s+(\d+)\s*$", schema, re.MULTILINE)
-    if layer_match is None:
-        raise ValueError("The schema does not declare a TL layer")
-    marker = "---functions---"
-    if marker not in schema:
-        raise ValueError("The schema does not contain a functions section")
-
-    functions_source = schema.split(marker, 1)[1]
-    without_comments = "\n".join(line.split("//", 1)[0] for line in functions_source.splitlines())
-    functions: list[dict[str, str | int]] = []
+def parse_declarations(source: str, section: str) -> list[dict[str, str | int]]:
+    without_comments = "\n".join(line.split("//", 1)[0] for line in source.splitlines())
+    declarations: list[dict[str, str | int]] = []
     for candidate in without_comments.split(";"):
         declaration = " ".join(candidate.split())
         if not declaration or "=" not in declaration:
@@ -33,13 +25,13 @@ def parse_functions(schema: str) -> tuple[int, list[dict[str, str | int]]]:
         left, result = (part.strip() for part in declaration.split("=", 1))
         name_match = re.match(r"^([A-Za-z0-9_.]+)#([0-9a-f]+)(?:\s|$)", left)
         if name_match is None:
-            raise ValueError(f"Function declaration is missing a constructor ID: {declaration}")
+            raise ValueError(f"{section} declaration is missing a constructor ID: {declaration}")
         name = name_match.group(1)
         constructor_id = int(name_match.group(2), 16)
         if constructor_id >= 2**31:
             constructor_id -= 2**32
         parameters = left[name_match.end() :].strip()
-        functions.append(
+        declarations.append(
             {
                 "name": name,
                 "constructorId": constructor_id,
@@ -48,17 +40,26 @@ def parse_functions(schema: str) -> tuple[int, list[dict[str, str | int]]]:
                 "declaration": f"{declaration};",
             }
         )
-    if not functions:
-        raise ValueError("No functions were parsed from the schema")
-    return int(layer_match.group(1)), functions
+    if not declarations:
+        raise ValueError(f"No {section.lower()} declarations were parsed from the schema")
+    return declarations
 
 
 def generate(schema_path: Path) -> str:
     schema = schema_path.read_text(encoding="utf-8")
-    layer, functions = parse_functions(schema)
+    layer_match = re.search(r"^\s*//\s*LAYER\s+(\d+)\s*$", schema, re.MULTILINE)
+    if layer_match is None:
+        raise ValueError("The schema does not declare a TL layer")
+    marker = "---functions---"
+    if marker not in schema:
+        raise ValueError("The schema does not contain a functions section")
+    constructors_source, functions_source = schema.split(marker, 1)
+    constructors = parse_declarations(constructors_source, "Constructor")
+    functions = parse_declarations(functions_source, "Function")
     document = {
+        "constructors": constructors,
         "format": "kotlogram-raw-schema/v1",
-        "layer": layer,
+        "layer": int(layer_match.group(1)),
         "schemaSha256": hashlib.sha256(schema.encode("utf-8")).hexdigest(),
         "functions": functions,
     }

@@ -15,6 +15,8 @@ class RawTelegramApiTest {
         assertEquals(Kotlogram.API_LAYER, schema.layer)
         assertEquals(RawTelegramApi.LAYER, schema.layer)
         assertTrue(schema.functions.size > 500)
+        assertTrue(schema.constructors.size > 1_000)
+        assertTrue(assertNotNull(RawTelegramApi.constructor("inputPeerUser")).constructorId != 0)
         assertTrue(assertNotNull(RawTelegramApi.method("messages.sendMessage")).constructorId != 0)
         assertTrue(assertNotNull(RawTelegramApi.method("auth.sendCode")).constructorId != 0)
     }
@@ -41,14 +43,20 @@ class RawTelegramApiTest {
         val encoded = TlWriter()
             .int(0x78563412)
             .long(0x0807060504030201)
+            .boolean(true)
+            .boolean(false)
             .string("raw")
+            .vector(listOf(1, 2, 3)) { int(it) }
             .bytes(ByteArray(254) { it.toByte() })
             .toByteArray()
         val reader = TlReader(encoded)
 
         assertEquals(0x78563412, reader.int())
         assertEquals(0x0807060504030201, reader.long())
+        assertTrue(reader.boolean())
+        assertTrue(!reader.boolean())
         assertEquals("raw", reader.string())
+        assertEquals(listOf(1, 2, 3), reader.vector { int() })
         assertTrue(reader.bytes().contentEquals(ByteArray(254) { it.toByte() }))
         reader.requireFullyRead()
     }

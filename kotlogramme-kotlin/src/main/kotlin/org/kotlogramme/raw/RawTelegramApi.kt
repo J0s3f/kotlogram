@@ -19,6 +19,8 @@ object RawTelegramApi {
 
     fun method(name: String): RawMethod? = schema.functions.firstOrNull { it.name == name }
 
+    fun constructor(name: String): RawConstructor? = schema.constructors.firstOrNull { it.name == name }
+
     /**
      * Encodes a raw request for a schema method that has no parameters.
      *
@@ -54,10 +56,21 @@ object RawTelegramApi {
 
 @Serializable
 data class RawSchema(
+    val constructors: List<RawConstructor>,
     val format: String,
     val layer: Int,
     val schemaSha256: String,
     val functions: List<RawMethod>,
+)
+
+/** A Layer-specific TL type constructor that can be used by a generated response codec. */
+@Serializable
+data class RawConstructor(
+    val name: String,
+    val constructorId: Int,
+    val parameters: String,
+    val result: String,
+    val declaration: String,
 )
 
 @Serializable
