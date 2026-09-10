@@ -36,3 +36,15 @@ cannot safely be retained.
 The generated `com.github.badoualy.telegram.tl.*` Layer-66 model is intentionally not shipped.
 Using it against the supported Layer-216 schema would silently serialize stale constructors. Add
 missing capabilities through a versioned raw API that uses the grammers layer instead.
+
+## Raw API contract
+
+`org.kotlogramme.raw.RawTelegramApi` bundles a generated `kotlogram-raw-schema/v1` manifest for
+Layer 216. Its experimental `invoke` method transmits an already TL-encoded request through the
+grammers sender pool and returns the raw response bytes. The caller must use a codec generated for
+the same manifest version and layer.
+
+The manifest generator is deliberately separate from the JVM build. CI regenerates it from the
+schema resolved by Cargo and compares it with the committed resource. This is the deployment gate
+for a future code generator that produces Kotlin codecs and Rust method dispatchers; a grammers
+upgrade must create a new `telegram-tl-<layer>` API version instead of mutating an existing one.

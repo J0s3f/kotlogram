@@ -5,10 +5,11 @@ use std::sync::{Arc, Mutex, OnceLock};
 
 use grammers_client::types::{InputReactions, Message as ClientMessage, Peer, Role};
 use grammers_client::{Client, InputMedia, InputMessage, InvocationError, SignInError};
-use grammers_mtsender::SenderPool;
+use grammers_mtsender::{SenderPool, SenderPoolHandle};
 use grammers_session::storages::SqliteSession;
-use jni::objects::{JClass, JString};
-use jni::sys::jlong;
+use grammers_session::Session;
+use jni::objects::{JByteArray, JClass, JString};
+use jni::sys::{jbyteArray, jlong};
 use jni::JNIEnv;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
@@ -18,6 +19,8 @@ use tokio::runtime::Runtime;
 struct NativeClient {
     runtime: Runtime,
     client: Client,
+    sender: SenderPoolHandle,
+    session: Arc<SqliteSession>,
     api_hash: String,
     authentication: Mutex<AuthenticationState>,
     peers: Mutex<HashMap<i64, Peer>>,
@@ -40,6 +43,18 @@ fn clients() -> &'static Clients {
 fn java_string(env: &mut JNIEnv<'_>, value: String) -> jni::sys::jstring {
     env.new_string(value)
         .map_or(std::ptr::null_mut(), |value| value.into_raw())
+}
+
+fn java_bytes(env: &mut JNIEnv<'_>, value: Result<Vec<u8>, String>) -> jbyteArray {
+    match value {
+        Ok(value) => env
+            .byte_array_from_slice(&value)
+            .map_or(std::ptr::null_mut(), |value| value.into_raw()),
+        Err(message) => {
+            let _ = env.throw_new("org/kotlogramme/TelegramException", error(message));
+            std::ptr::null_mut()
+        }
+    }
 }
 
 fn read_string(env: &mut JNIEnv<'_>, value: JString<'_>) -> Result<String, String> {
@@ -739,17 +754,19 @@ pub extern "system" fn Java_org_kotlogramme_TelegramClient_00024Native_create(
         let api_hash = read_string(&mut env, api_hash)?;
         let path = PathBuf::from(read_string(&mut env, session_path)?);
         let runtime = Runtime::new().map_err(error)?;
-        let (client, runner) = runtime.block_on(async move {
+        let (client, sender, session, runner) = runtime.block_on(async move {
             let session = Arc::new(SqliteSession::open(path).map_err(error)?);
-            let pool = SenderPool::new(session, api_id);
+            let pool = SenderPool::new(Arc::clone(&session), api_id);
             let client = Client::new(&pool);
-            Ok::<_, String>((client, pool.runner))
+            Ok::<_, String>((client, pool.handle, session, pool.runner))
         })?;
         runtime.spawn(runner.run());
 
         let native = Arc::new(NativeClient {
             runtime,
             client,
+            sender,
+            session,
             api_hash,
             authentication: Mutex::new(AuthenticationState::Idle),
             peers: Mutex::new(HashMap::new()),
@@ -777,10 +794,38 @@ pub extern "system" fn Java_org_kotlogramme_TelegramClient_00024Native_close(
         .map_err(|_| "client registry is poisoned".to_owned())
         .map(|mut map| map.remove(&handle));
     let message = match result {
-        Ok(Some(_)) | Ok(None) => "ok".to_owned(),
+        Ok(Some(client)) => {
+            client.sender.quit();
+            "ok".to_owned()
+        }
+        Ok(None) => "ok".to_owned(),
         Err(message) => error(message),
     };
     java_string(&mut env, message)
+}
+
+#[no_mangle]
+pub extern "system" fn Java_org_kotlogramme_TelegramClient_00024Native_invokeRaw(
+    mut env: JNIEnv<'_>,
+    _class: JClass<'_>,
+    handle: jlong,
+    body: JByteArray<'_>,
+    data_center_id: i32,
+) -> jbyteArray {
+    let result = (|| {
+        let body = env.convert_byte_array(body).map_err(error)?;
+        let native = get_client(handle)?;
+        let data_center_id = if data_center_id > 0 {
+            data_center_id
+        } else {
+            native.session.home_dc_id()
+        };
+        native
+            .runtime
+            .block_on(native.sender.invoke_in_dc(data_center_id, body))
+            .map_err(invocation_error)
+    })();
+    java_bytes(&mut env, result)
 }
 
 #[no_mangle]

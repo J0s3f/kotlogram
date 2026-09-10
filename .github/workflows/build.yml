@@ -4,10 +4,34 @@ on:
   push:
   pull_request:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
+  raw-schema:
+    name: raw-schema
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Fetch the pinned grammers schema
+        run: cargo fetch --manifest-path native/Cargo.toml
+      - name: Generate and verify the Layer manifest
+        shell: bash
+        run: |
+          schema="$(find "${CARGO_HOME:-$HOME/.cargo}/registry/src" -path '*/grammers-tl-types-*/tl/api.tl' -print -quit)"
+          test -n "$schema"
+          python3 tools/generate_raw_schema.py --schema "$schema" --output generated/raw-schema/telegram-layer-216.json
+          cmp generated/raw-schema/telegram-layer-216.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-216.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: raw-schema
+          path: generated/raw-schema/telegram-layer-216.json
+
   native:
     name: native-${{ matrix.platform }}
     strategy:
@@ -53,7 +77,7 @@ jobs:
           path: build/native
 
   package:
-    needs: native
+    needs: [native, raw-schema]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -62,6 +86,12 @@ jobs:
           pattern: native-*
           path: generated/native
           merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: raw-schema
+          path: generated/raw-schema
+      - name: Verify bundled raw schema source
+        run: cmp generated/raw-schema/telegram-layer-216.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-216.json
       - uses: actions/setup-java@v4
         with:
           distribution: temurin

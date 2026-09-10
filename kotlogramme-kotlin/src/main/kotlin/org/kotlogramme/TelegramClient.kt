@@ -192,6 +192,18 @@ class TelegramClient private constructor(
         request<PeerTarget, OperationResult>("leaveChat", PeerTarget(peer.nativeHandle))
     }
 
+    /**
+     * Sends one Layer-216 TL-encoded request body and returns the raw TL response body.
+     *
+     * This is experimental. Callers are responsible for generating a request compatible with
+     * [com.github.badoualy.telegram.api.Kotlogram.API_LAYER] and decoding the corresponding
+     * response type. Pass null to use the session's home data center.
+     */
+    fun invokeRaw(body: ByteArray, dataCenterId: Int? = null): ByteArray = call {
+        require(body.isNotEmpty()) { "A raw TL request body must not be empty" }
+        Native.invokeRaw(handle, body, dataCenterId ?: 0)
+    }
+
     override fun close() {
         if (closed.compareAndSet(false, true)) {
             Native.close(handle)
@@ -484,5 +496,6 @@ class TelegramClient private constructor(
         external fun signInBot(handle: Long, token: String, apiHash: String): String
         external fun sendMessage(handle: Long, username: String, text: String): String
         external fun request(handle: Long, operation: String, payload: String): String
+        external fun invokeRaw(handle: Long, body: ByteArray, dataCenterId: Int): ByteArray
     }
 }
