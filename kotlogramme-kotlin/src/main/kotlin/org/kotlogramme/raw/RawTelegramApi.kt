@@ -20,6 +20,20 @@ object RawTelegramApi {
     fun method(name: String): RawMethod? = schema.functions.firstOrNull { it.name == name }
 
     /**
+     * Encodes a raw request for a schema method that has no parameters.
+     *
+     * This is deliberately narrow: callers with parameters should use [TlWriter] and the
+     * schema declaration until the Layer-216 request-code generator emits typed request classes.
+     */
+    fun encodeNoArgumentRequest(methodName: String): ByteArray {
+        val method = requireNotNull(method(methodName)) { "Unknown Layer-$LAYER method: $methodName" }
+        require(method.parameters.isEmpty()) {
+            "$methodName has parameters and must be encoded with a Layer-$LAYER codec"
+        }
+        return TlWriter().constructor(method.constructorId).toByteArray()
+    }
+
+    /**
      * Invokes an already TL-encoded Layer-216 request through grammers' sender pool.
      *
      * The schema manifest is the version contract for generated codecs. This method does not
@@ -49,6 +63,7 @@ data class RawSchema(
 @Serializable
 data class RawMethod(
     val name: String,
+    val constructorId: Int,
     val parameters: String,
     val result: String,
     val declaration: String,

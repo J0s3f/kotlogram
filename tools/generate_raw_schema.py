@@ -15,7 +15,7 @@ import re
 from pathlib import Path
 
 
-def parse_functions(schema: str) -> tuple[int, list[dict[str, str]]]:
+def parse_functions(schema: str) -> tuple[int, list[dict[str, str | int]]]:
     layer_match = re.search(r"^\s*//\s*LAYER\s+(\d+)\s*$", schema, re.MULTILINE)
     if layer_match is None:
         raise ValueError("The schema does not declare a TL layer")
@@ -25,20 +25,24 @@ def parse_functions(schema: str) -> tuple[int, list[dict[str, str]]]:
 
     functions_source = schema.split(marker, 1)[1]
     without_comments = "\n".join(line.split("//", 1)[0] for line in functions_source.splitlines())
-    functions: list[dict[str, str]] = []
+    functions: list[dict[str, str | int]] = []
     for candidate in without_comments.split(";"):
         declaration = " ".join(candidate.split())
         if not declaration or "=" not in declaration:
             continue
         left, result = (part.strip() for part in declaration.split("=", 1))
-        name_match = re.match(r"^([A-Za-z0-9_.]+)(?:#[0-9a-f]+)?(?:\s|$)", left)
+        name_match = re.match(r"^([A-Za-z0-9_.]+)#([0-9a-f]+)(?:\s|$)", left)
         if name_match is None:
-            continue
+            raise ValueError(f"Function declaration is missing a constructor ID: {declaration}")
         name = name_match.group(1)
+        constructor_id = int(name_match.group(2), 16)
+        if constructor_id >= 2**31:
+            constructor_id -= 2**32
         parameters = left[name_match.end() :].strip()
         functions.append(
             {
                 "name": name,
+                "constructorId": constructor_id,
                 "parameters": parameters,
                 "result": result,
                 "declaration": f"{declaration};",

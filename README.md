@@ -57,7 +57,7 @@ Kotlogram shipped generated Layer-66 TL classes. They are not recreated under a 
 
 ## Versioned raw API and code generation
 
-`RawTelegramApi` exposes the bundled Layer-216 schema manifest and an experimental binary request path. `RawTelegramApi.invoke` sends an already TL-encoded request body through grammers' sender pool and returns the raw TL response bytes. It intentionally does not accept JSON: Telegram TL uses constructor identifiers, conditional flags and binary encodings that JSON cannot represent safely.
+`RawTelegramApi` exposes the bundled Layer-216 schema manifest and an experimental binary request path. `RawTelegramApi.invoke` sends an already TL-encoded request body through grammers' sender pool and returns the raw TL response bytes. `TlWriter` and `TlReader` provide the stable primitive TL framing used by generated codecs; `RawTelegramApi.encodeNoArgumentRequest` demonstrates schema-derived request construction for methods without parameters. It intentionally does not accept JSON: Telegram TL uses constructor identifiers, conditional flags and binary encodings that JSON cannot represent safely.
 
 [`tools/generate_raw_schema.py`](tools/generate_raw_schema.py) generates `raw/telegram-layer-216.json` from grammers' `api.tl`. GitHub Actions fetches the exact crate resolved by `native/Cargo.lock`, regenerates the manifest and fails if the committed resource differs. This makes a future generated Kotlin codec and matching Rust dispatcher practical: a grammers upgrade produces an explicit schema-drift failure instead of silently deploying incompatible raw types.
 
