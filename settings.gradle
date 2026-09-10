@@ -1,2 +1,0 @@
-rootProject.name = 'kotlogram'
-include 'tl', 'mtproto', 'api', 'tl-builder', 'sample'

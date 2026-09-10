@@ -1,0 +1,294 @@
+package org.kotlogramme
+
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.concurrent.atomic.AtomicBoolean
+
+/**
+ * Synchronous Kotlin/JVM facade over the grammers Telegram client.
+ *
+ * The native side owns the Tokio runtime and the grammers client. Calls are safe to make from
+ * different JVM threads; a single client should still be closed exactly once.
+ */
+class TelegramClient private constructor(
+    private val handle: Long,
+) : AutoCloseable {
+    private val closed = AtomicBoolean(false)
+
+    /** Returns whether this session is already authorized with Telegram. */
+    fun isAuthorized(): Boolean = call {
+        val result = Native.isAuthorized(handle)
+        result.toBooleanStrictOrNull() ?: throw TelegramException(result)
+    }
+
+    /** Signs in a bot using a token created by BotFather. */
+    fun signInBot(botToken: String, apiHash: String): User = call {
+        decode(Native.signInBot(handle, botToken, apiHash))
+    }
+
+    /** Requests the code needed to sign in to a regular user account. */
+    fun requestLoginCode(phone: String): LoginCodeSent = request("requestLoginCode", PhonePayload(phone))
+
+    /** Completes the code step of a user login. */
+    fun signIn(code: String): SignInResult {
+        val response: SignInResponse = request("signIn", CodePayload(code))
+        return when (response.status) {
+            "authorized" -> SignInResult.Authorized(requireNotNull(response.user))
+            "passwordRequired" -> SignInResult.PasswordRequired(response.hint)
+            else -> throw TelegramException("Unexpected sign-in response: ${response.status}")
+        }
+    }
+
+    /** Completes a two-factor-authentication login after [signIn] returned PasswordRequired. */
+    fun checkPassword(password: String): User = request("checkPassword", PasswordPayload(password))
+
+    /** Fetches the account associated with the current session. */
+    fun getMe(): User = request("getMe", EmptyPayload)
+
+    /** Resolves a public @username into a peer handle usable by the other operations. */
+    fun resolveUsername(username: String): Peer =
+        request("resolveUsername", PeerTarget(username = username.removePrefix("@")))
+
+    /** Resolves a public username and sends a plain text message to it. */
+    fun sendMessage(username: String, text: String): Message = call {
+        decode(Native.sendMessage(handle, username.removePrefix("@"), text))
+    }
+
+    fun sendMessage(
+        peer: Peer,
+        text: String,
+        replyToMessageId: Int? = null,
+        silent: Boolean = false,
+        linkPreview: Boolean = true,
+    ): Message = request(
+        "sendMessage",
+        SendMessagePayload(PeerTarget(peer.nativeHandle), text, replyToMessageId, silent, linkPreview),
+    )
+
+    fun editMessage(peer: Peer, messageId: Int, text: String, linkPreview: Boolean = true) {
+        request<EditMessagePayload, OperationResult>(
+            "editMessage",
+            EditMessagePayload(PeerTarget(peer.nativeHandle), messageId, text, linkPreview),
+        )
+    }
+
+    fun deleteMessages(peer: Peer, messageIds: Collection<Int>): Int = request<MessageIdsPayload, DeleteResult>(
+        "deleteMessages",
+        MessageIdsPayload(PeerTarget(peer.nativeHandle), messageIds.toList()),
+    ).deleted
+
+    fun markAsRead(peer: Peer) {
+        request<PeerTarget, OperationResult>("markAsRead", PeerTarget(peer.nativeHandle))
+    }
+
+    fun getHistory(peer: Peer, limit: Int = 50): List<Message> = request(
+        "getHistory",
+        HistoryPayload(PeerTarget(peer.nativeHandle), limit),
+    )
+
+    fun getDialogs(limit: Int = 50): List<Dialog> = request("getDialogs", LimitPayload(limit))
+
+    fun joinChat(peer: Peer): Peer? {
+        val result: JoinResult = request("joinChat", PeerTarget(peer.nativeHandle))
+        return result.peer
+    }
+
+    fun leaveChat(peer: Peer) {
+        request<PeerTarget, OperationResult>("leaveChat", PeerTarget(peer.nativeHandle))
+    }
+
+    override fun close() {
+        if (closed.compareAndSet(false, true)) {
+            Native.close(handle)
+        }
+    }
+
+    private fun <T> call(block: () -> T): T {
+        check(!closed.get()) { "TelegramClient is already closed" }
+        return block()
+    }
+
+    private inline fun <reified Payload : Any, reified Result> request(
+        operation: String,
+        payload: Payload,
+    ): Result = call {
+        decode(Native.request(handle, operation, json.encodeToString(payload)))
+    }
+
+    private inline fun <reified T> decode(payload: String): T {
+        if (!payload.trimStart().startsWith('{') && !payload.trimStart().startsWith('[')) {
+            throw TelegramException(payload)
+        }
+        return json.decodeFromString(payload)
+    }
+
+    @Serializable
+    data class User(
+        val id: Long,
+        val username: String? = null,
+        val firstName: String? = null,
+        val lastName: String? = null,
+    )
+
+    @ConsistentCopyVisibility
+    @Serializable
+    data class Peer internal constructor(
+        internal val nativeHandle: Long,
+        val id: Long,
+        val kind: String,
+        val username: String? = null,
+        val name: String? = null,
+    )
+
+    @Serializable
+    data class Message(
+        val id: Int,
+        val text: String,
+        val outgoing: Boolean,
+        val replyToMessageId: Int? = null,
+    )
+
+    @Serializable
+    data class Dialog(
+        val peer: Peer,
+        val lastMessage: Message? = null,
+    )
+
+    @Serializable
+    data class LoginCodeSent(val phone: String)
+
+    sealed interface SignInResult {
+        data class Authorized(val user: User) : SignInResult
+        data class PasswordRequired(val hint: String?) : SignInResult
+    }
+
+    @Serializable
+    private data class SignInResponse(
+        val status: String,
+        val user: User? = null,
+        val hint: String? = null,
+    )
+
+    @Serializable
+    private data class PeerTarget(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+    )
+
+    @Serializable
+    private data class PhonePayload(val phone: String)
+
+    @Serializable
+    private data class CodePayload(val code: String)
+
+    @Serializable
+    private data class PasswordPayload(val password: String)
+
+    @Serializable
+    private data class SendMessagePayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val text: String,
+        val replyToMessageId: Int? = null,
+        val silent: Boolean = false,
+        val linkPreview: Boolean = true,
+    ) {
+        constructor(
+            peer: PeerTarget,
+            text: String,
+            replyToMessageId: Int?,
+            silent: Boolean,
+            linkPreview: Boolean,
+        ) : this(peer.peerHandle, peer.username, text, replyToMessageId, silent, linkPreview)
+    }
+
+    @Serializable
+    private data class EditMessagePayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val messageId: Int,
+        val text: String,
+        val linkPreview: Boolean = true,
+    ) {
+        constructor(peer: PeerTarget, messageId: Int, text: String, linkPreview: Boolean) :
+            this(peer.peerHandle, peer.username, messageId, text, linkPreview)
+    }
+
+    @Serializable
+    private data class MessageIdsPayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val messageIds: List<Int>,
+    ) {
+        constructor(peer: PeerTarget, messageIds: List<Int>) : this(peer.peerHandle, peer.username, messageIds)
+    }
+
+    @Serializable
+    private data class HistoryPayload(
+        val peerHandle: Long? = null,
+        val username: String? = null,
+        val limit: Int,
+    ) {
+        constructor(peer: PeerTarget, limit: Int) : this(peer.peerHandle, peer.username, limit)
+    }
+
+    @Serializable
+    private data class LimitPayload(val limit: Int)
+
+    @Serializable
+    private data class DeleteResult(val deleted: Int)
+
+    @Serializable
+    private data class OperationResult(val ok: Boolean)
+
+    @Serializable
+    private data class JoinResult(
+        val nativeHandle: Long? = null,
+        val id: Long? = null,
+        val kind: String? = null,
+        val username: String? = null,
+        val name: String? = null,
+        val joined: Boolean? = null,
+    ) {
+        val peer: Peer?
+            get() = if (nativeHandle != null && id != null && kind != null) {
+                Peer(nativeHandle, id, kind, username, name)
+            } else {
+                null
+            }
+    }
+
+    @Serializable
+    private object EmptyPayload
+
+    companion object {
+        private val json = Json { ignoreUnknownKeys = true }
+
+        /** Creates a client backed by a persistent grammers SQLite session. */
+        @JvmStatic
+        fun create(apiId: Int, apiHash: String, sessionPath: Path): TelegramClient {
+            require(apiId > 0) { "apiId must be positive" }
+            require(apiHash.isNotBlank()) { "apiHash must not be blank" }
+            NativeLibraryLoader.ensureLoaded()
+            val result = Native.create(apiId, apiHash, sessionPath.toAbsolutePath().toString())
+            val handle = result.toLongOrNull() ?: throw TelegramException(result)
+            return TelegramClient(handle)
+        }
+
+        @JvmStatic
+        fun create(apiId: Int, apiHash: String, sessionPath: String): TelegramClient =
+            create(apiId, apiHash, Paths.get(sessionPath))
+    }
+
+    private object Native {
+        external fun create(apiId: Int, apiHash: String, sessionPath: String): String
+        external fun close(handle: Long): String
+        external fun isAuthorized(handle: Long): String
+        external fun signInBot(handle: Long, token: String, apiHash: String): String
+        external fun sendMessage(handle: Long, username: String, text: String): String
+        external fun request(handle: Long, operation: String, payload: String): String
+    }
+}

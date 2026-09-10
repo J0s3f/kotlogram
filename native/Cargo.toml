@@ -1,0 +1,19 @@
+[package]
+name = "kotlogramme"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "JNI bridge between Kotlin/JVM and the grammers Telegram client"
+repository = "https://codeberg.org/kotlogramme/kotlogramme"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+grammers-client = "=0.8.1"
+grammers-mtsender = "=0.8.1"
+grammers-session = "=0.8.0"
+jni = "0.21.1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1.47.1", features = ["rt-multi-thread"] }
