@@ -42,9 +42,17 @@ jobs:
             runner: ubuntu-24.04
             targets: x86_64-unknown-linux-gnu
             library: libkotlogramme.so
+          - platform: linux-aarch64
+            runner: ubuntu-24.04-arm
+            targets: aarch64-unknown-linux-gnu
+            library: libkotlogramme.so
           - platform: windows-x86_64
             runner: windows-2025
             targets: x86_64-pc-windows-msvc
+            library: kotlogramme.dll
+          - platform: windows-aarch64
+            runner: windows-11-arm
+            targets: aarch64-pc-windows-msvc
             library: kotlogramme.dll
           - platform: macos
             runner: macos-14
@@ -110,7 +118,7 @@ jobs:
       - run: gradle --no-daemon clean test jar
       - name: Verify bundled native libraries
         run: |
-          jar tf kotlogramme-kotlin/build/libs/*.jar | grep -E '^native/(linux-x86_64/libkotlogramme\.so|windows-x86_64/kotlogramme\.dll|macos-x86_64/libkotlogramme\.dylib|macos-aarch64/libkotlogramme\.dylib)$'
+          jar tf kotlogramme-kotlin/build/libs/*.jar | grep -E '^native/(linux-x86_64/libkotlogramme\.so|linux-aarch64/libkotlogramme\.so|windows-x86_64/kotlogramme\.dll|windows-aarch64/kotlogramme\.dll|macos-x86_64/libkotlogramme\.dylib|macos-aarch64/libkotlogramme\.dylib)$'
       - uses: actions/upload-artifact@v4
         with:
           name: kotlogramme-jars

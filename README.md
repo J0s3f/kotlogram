@@ -15,7 +15,7 @@ The first compatibility layer is implemented, but it is not yet complete:
 - loading dialogs, message history and chat participants; joining, leaving and moderating chats
 - familiar Kotlogram entry points under `com.github.badoualy.telegram.api`
 - native-library loading from the JAR
-- CI builds for Linux x86_64, macOS x86_64/arm64 and Windows x86_64
+- CI builds for Linux x86_64/ARM64, macOS x86_64/ARM64 and Windows x86_64/ARM64
 
 Notable gaps include complete coverage of the historical generated TL API and an ordered update stream. Treat the library as WIP and test the mapped operations in your application.
 
@@ -51,7 +51,7 @@ Your API ID and API hash come from `my.telegram.org`; bot tokens come from BotFa
 
 ## Architecture
 
-`kotlogramme-kotlin` contains the public JVM API and native-library loader. The drop-in-oriented facade lives under `com.github.badoualy.telegram.api`; `org.kotlogramme` is the smaller direct bridge. `native` owns a Tokio runtime and invokes the grammers client API. GitHub Actions build native libraries for Windows x86_64, Linux x86_64 and macOS x86_64/arm64. The packaging job bundles all four variants as resources in the Maven JAR; at startup, the loader extracts and loads only the variant matching the current operating system and architecture. The bridge currently pins grammers to 0.8.1 because newer crates.io releases do not build reproducibly with their current dependency state (0.9 references a yanked dependency and 0.10 has an incompatible transitive dependency graph).
+`kotlogramme-kotlin` contains the public JVM API and native-library loader. The drop-in-oriented facade lives under `com.github.badoualy.telegram.api`; `org.kotlogramme` is the smaller direct bridge. `native` owns a Tokio runtime and invokes the grammers client API. GitHub Actions build native libraries for Windows, Linux and macOS on both x86_64 and ARM64. The packaging job bundles all six variants as resources in the Maven JAR; at startup, the loader extracts and loads only the variant matching the current operating system and architecture. The bridge currently pins grammers to 0.8.1 because newer crates.io releases do not build reproducibly with their current dependency state (0.9 references a yanked dependency and 0.10 has an incompatible transitive dependency graph).
 
 Kotlogram shipped generated Layer-66 TL classes. They are not recreated under a false claim of compatibility, because they would not reliably work against the supported layer 216 schema. Missing specialized operations will be added through a versioned raw API; [`docs/compatibility.md`](docs/compatibility.md) lists the current core mappings.
 

@@ -23,7 +23,10 @@ internal object NativeLibraryLoader {
             return
         }
 
-        val platform = Platform.current()
+        val platform = nativePlatformFor(
+            System.getProperty("os.name"),
+            System.getProperty("os.arch"),
+        )
         val resourceName = "native/${platform.resourceDirectory}/${platform.libraryFileName}"
         val resource = NativeLibraryLoader::class.java.classLoader.getResourceAsStream(resourceName)
             ?: run {
@@ -46,30 +49,27 @@ internal object NativeLibraryLoader {
         loaded = true
     }
 
-    private data class Platform(
-        val resourceDirectory: String,
-        val libraryFileName: String,
-    ) {
-        companion object {
-            fun current(): Platform {
-                val os = System.getProperty("os.name").lowercase(Locale.ROOT)
-                val arch = System.getProperty("os.arch").lowercase(Locale.ROOT)
-                val normalizedArch = when (arch) {
-                    "amd64", "x86_64" -> "x86_64"
-                    "aarch64", "arm64" -> "aarch64"
-                    else -> error("Unsupported CPU architecture: $arch")
-                }
+}
 
-                return when {
-                    os.contains("win") && normalizedArch == "x86_64" ->
-                        Platform("windows-x86_64", "kotlogramme.dll")
-                    os.contains("mac") || os.contains("darwin") ->
-                        Platform("macos-$normalizedArch", "libkotlogramme.dylib")
-                    os.contains("linux") && normalizedArch == "x86_64" ->
-                        Platform("linux-x86_64", "libkotlogramme.so")
-                    else -> error("Unsupported operating system/architecture: $os/$arch")
-                }
-            }
-        }
+internal data class NativePlatform(
+    val resourceDirectory: String,
+    val libraryFileName: String,
+)
+
+/** Maps JVM system properties to a bundled native-library resource. */
+internal fun nativePlatformFor(osName: String, osArch: String): NativePlatform {
+    val os = osName.lowercase(Locale.ROOT)
+    val arch = osArch.lowercase(Locale.ROOT)
+    val normalizedArch = when (arch) {
+        "amd64", "x86_64" -> "x86_64"
+        "aarch64", "arm64" -> "aarch64"
+        else -> error("Unsupported CPU architecture: $arch")
+    }
+
+    return when {
+        os.contains("win") -> NativePlatform("windows-$normalizedArch", "kotlogramme.dll")
+        os.contains("mac") || os.contains("darwin") -> NativePlatform("macos-$normalizedArch", "libkotlogramme.dylib")
+        os.contains("linux") -> NativePlatform("linux-$normalizedArch", "libkotlogramme.so")
+        else -> error("Unsupported operating system/architecture: $os/$arch")
     }
 }
