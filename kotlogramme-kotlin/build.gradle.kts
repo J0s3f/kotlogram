@@ -33,6 +33,20 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    exclude("**/LiveTelegramIntegrationTest.*")
+}
+
+val integrationTest by tasks.registering(Test::class) {
+    description = "Runs opt-in live Telegram integration tests."
+    group = "verification"
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform()
+    include("**/LiveTelegramIntegrationTest.*")
+    shouldRunAfter(tasks.test)
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
 
 publishing {

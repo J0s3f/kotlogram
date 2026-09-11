@@ -61,6 +61,10 @@ Kotlogram shipped generated Layer-66 TL classes. They are not recreated under a 
 
 The dynamic raw API intentionally does not accept JSON: Telegram TL uses constructor identifiers, conditional flags and binary encodings that JSON cannot represent safely. It is an experimental escape hatch for methods not yet present in the Kotlogram compatibility facade. A future static-code generator can use this same checked-in manifest to publish friendlier, versioned Kotlin request and response classes without changing the raw contract in place.
 
+## Live integration testing
+
+An opt-in integration test authorizes a bot, uses a pre-authorized user session to join a public test supergroup, sends a message, and verifies that the bot receives it through channel history. It is excluded from GitHub Actions and the default test task because it needs real, dedicated Telegram accounts. See [`docs/integration-testing.md`](docs/integration-testing.md) for setup and execution.
+
 [`tools/generate_raw_schema.py`](tools/generate_raw_schema.py) generates `raw/telegram-layer-216.json` from grammers' `api.tl`. GitHub Actions fetches the exact crate resolved by `native/Cargo.lock`, regenerates the manifest and fails if the committed resource differs. This makes a future generated Kotlin codec and matching Rust dispatcher practical: a grammers upgrade produces an explicit schema-drift failure instead of silently deploying incompatible raw types.
 
 The manifest and byte-level transport are the initial raw-API contract. Generating a full friendly Kotlin API still requires a second generator that emits Layer-specific Kotlin codecs and Rust dispatch cases from this same schema; it should remain opt-in and versioned (`telegram-tl-<layer>`) so updating grammers never changes an existing raw API in place.
