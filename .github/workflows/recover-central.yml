@@ -10,6 +10,18 @@ jobs:
   transfer-staged-repository:
     runs-on: ubuntu-24.04
     steps:
+      - name: Report the publishing key fingerprint
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          keyring="$(mktemp -d)"
+          trap 'rm -rf "$keyring"' EXIT
+          export GNUPGHOME="$keyring"
+          printf '%s\n' "$SIGNING_KEY" | gpg --batch --import
+          gpg --batch --with-colons --list-secret-keys \
+            | awk -F: '$1 == "fpr" { print "Publishing key fingerprint: " $10; exit }'
       - name: Locate and submit the open Central staging repository
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
@@ -26,10 +38,11 @@ jobs:
             --header "Authorization: Bearer $authorization" \
             "$search_url" > repositories.json
 
+          jq --raw-output '.repositories[] | [.key, .state, (.portal_deployment_id // "-")] | @tsv' repositories.json
           repository_key="$(jq --exit-status --raw-output '
             [.repositories[] | select(.state == "open" and ((.portal_deployment_id // "") == ""))]
             | if length == 1 then .[0].key
-              else error("Expected exactly one open repository without a Portal deployment; found \\(length).")
+              else error("Expected exactly one open repository without a Portal deployment; found \(length).")
               end
           ' repositories.json)"
 
