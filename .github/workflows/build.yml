@@ -3,6 +3,12 @@ name: build
 on:
   push:
   pull_request:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version to publish, without the v prefix
+        required: true
+        type: string
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -121,7 +127,7 @@ jobs:
           path: kotlogramme-kotlin/build/libs/*.jar
 
   publish-central:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || github.event_name == 'workflow_dispatch'
     needs: [native, raw-schema, package]
     runs-on: ubuntu-24.04
     permissions:
@@ -146,7 +152,11 @@ jobs:
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
         shell: bash
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
           test -n "$CENTRAL_USERNAME"
           test -n "$CENTRAL_PASSWORD"
           test -n "$SIGNING_KEY"
