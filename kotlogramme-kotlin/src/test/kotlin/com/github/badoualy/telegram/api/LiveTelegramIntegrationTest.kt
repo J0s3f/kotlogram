@@ -17,7 +17,7 @@ import kotlin.test.assertTrue
  */
 class LiveTelegramIntegrationTest {
     @Test
-    fun `bot and user join a channel then exchange a message`() {
+    fun `bot and user exchange messages after the user joins a channel`() {
         val config = LiveTelegramConfig.loadOrSkip() ?: return
         val botSessionDirectory = Files.createTempDirectory("kotlogramme-live-bot-")
         val botSession = botSessionDirectory.resolve("bot.session")
@@ -36,16 +36,25 @@ class LiveTelegramIntegrationTest {
                     val userChannel = user.contactsResolveUsername(config.channelUsername)
                     user.channelsJoinChannel(userChannel)
                     val botChannel = bot.contactsResolveUsername(config.channelUsername)
-                    val marker = "kotlogramme-live-${UUID.randomUUID()}"
+                    val userMarker = "kotlogramme-live-user-${UUID.randomUUID()}"
+                    val botMarker = "kotlogramme-live-bot-${UUID.randomUUID()}"
 
-                    user.messagesSendMessage(userChannel, marker)
+                    user.messagesSendMessage(userChannel, userMarker)
+                    val botReceived = poll(Duration.ofSeconds(30)) {
+                        bot.getNextUpdate(timeoutMillis = 1_000)?.message
+                            ?.takeIf { message -> message.text == userMarker }
+                    }
+                    assertNotNull(botReceived, "The bot did not receive the user test message as an update")
+                    assertTrue(!botReceived.outgoing, "The received message must be incoming to the bot")
+
+                    bot.messagesSendMessage(botChannel, botMarker)
 
                     val received = poll(Duration.ofSeconds(30)) {
-                        bot.messagesGetHistory(botChannel, limit = 100)
-                            .firstOrNull { message -> message.text == marker }
+                        user.messagesGetHistory(userChannel, limit = 100)
+                            .firstOrNull { message -> message.text == botMarker }
                     }
-                    assertNotNull(received, "The bot did not receive the test message through channel history")
-                    assertTrue(!received.outgoing, "The received message must be incoming to the bot")
+                    assertNotNull(received, "The user did not receive the bot test message through channel history")
+                    assertTrue(!received.outgoing, "The received message must be incoming to the user")
                 }
             }
         } finally {

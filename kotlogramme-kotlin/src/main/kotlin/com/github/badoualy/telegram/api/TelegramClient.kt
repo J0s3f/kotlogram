@@ -58,6 +58,7 @@ interface TelegramClient : AutoCloseable {
     fun messagesEditMessage(peer: TelegramPeer, id: Int, message: String, noWebpage: Boolean = false)
     fun messagesDeleteMessages(peer: TelegramPeer, ids: Collection<Int>): Int
     fun messagesGetHistory(peer: TelegramPeer, limit: Int = 50): List<Message>
+    fun getNextUpdate(timeoutMillis: Long = 30_000): TelegramUpdate?
     fun messagesGetMessages(peer: TelegramPeer, ids: Collection<Int>): List<Message?>
     fun messagesSearch(peer: TelegramPeer, query: String, limit: Int = 50): List<Message>
     fun messagesForwardMessages(toPeer: TelegramPeer, ids: Collection<Int>, fromPeer: TelegramPeer): List<Message?>
@@ -100,6 +101,12 @@ data class Message(
     val text: String,
     val outgoing: Boolean,
     val replyToMessageId: Int?,
+)
+
+/** A current-layer Telegram update delivered by grammers' ordered update stream. */
+data class TelegramUpdate(
+    val kind: String,
+    val message: Message? = null,
 )
 
 data class OutgoingMedia(
@@ -186,6 +193,9 @@ internal class DefaultTelegramClient(
     override fun messagesGetHistory(peer: TelegramPeer, limit: Int): List<Message> =
         client.getHistory(peer.native, limit).map { it.toCompatibility() }
 
+    override fun getNextUpdate(timeoutMillis: Long): TelegramUpdate? =
+        client.nextUpdate(timeoutMillis)?.toCompatibility()
+
     override fun messagesGetMessages(peer: TelegramPeer, ids: Collection<Int>): List<Message?> =
         client.getMessages(peer.native, ids).map { it?.toCompatibility() }
 
@@ -257,3 +267,5 @@ private fun GrammersClient.User.toCompatibility() = User(id, username, firstName
 private fun GrammersClient.Peer.toCompatibility() = TelegramPeer(id, kind, username, name, this)
 
 private fun GrammersClient.Message.toCompatibility() = Message(id, text, outgoing, replyToMessageId)
+
+private fun GrammersClient.Update.toCompatibility() = TelegramUpdate(kind, message?.toCompatibility())

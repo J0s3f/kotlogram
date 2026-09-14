@@ -3,9 +3,9 @@ package com.github.badoualy.telegram.api
 /**
  * Reserved compatibility hook for the original Kotlogram callback type.
  *
- * Update streaming is intentionally not dispatched through this callback yet. The bridge first
- * maps request/response operations and will expose grammers' ordered update stream in a dedicated
- * follow-up API instead of forwarding stale Layer-66 update objects.
+ * Update streaming is available through [TelegramClient.getNextUpdate]. This legacy callback is
+ * retained for source compatibility but is not automatically dispatched, because forwarding
+ * stale Layer-66 update objects would produce misleading compatibility semantics.
  */
 fun interface UpdateCallback {
     fun onUpdate(client: TelegramClient)

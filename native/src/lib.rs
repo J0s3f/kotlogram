@@ -2,9 +2,13 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
+use std::time::Duration;
 
+use grammers_client::client::updates::UpdateStream;
 use grammers_client::types::{InputReactions, Message as ClientMessage, Peer, Role};
-use grammers_client::{Client, InputMedia, InputMessage, InvocationError, SignInError};
+use grammers_client::{
+    Client, InputMedia, InputMessage, InvocationError, SignInError, Update, UpdatesConfiguration,
+};
 use grammers_mtsender::{SenderPool, SenderPoolHandle};
 use grammers_session::storages::SqliteSession;
 use grammers_session::Session;
@@ -20,6 +24,7 @@ struct NativeClient {
     runtime: Runtime,
     client: Client,
     sender: SenderPoolHandle,
+    updates: Mutex<UpdateStream>,
     session: Arc<SqliteSession>,
     api_hash: String,
     authentication: Mutex<AuthenticationState>,
@@ -114,6 +119,13 @@ struct MessageDto {
     text: String,
     outgoing: bool,
     reply_to_message_id: Option<i32>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateDto {
+    kind: &'static str,
+    message: Option<MessageDto>,
 }
 
 #[derive(Serialize)]
@@ -215,6 +227,12 @@ struct HistoryPayload {
     #[serde(flatten)]
     peer: PeerTarget,
     limit: Option<usize>,
+}
+
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct NextUpdatePayload {
+    timeout_millis: Option<u64>,
 }
 
 #[derive(Deserialize)]
@@ -551,6 +569,57 @@ fn request(native: &NativeClient, operation: &str, payload: &str) -> Result<Stri
             })?;
             json_string(messages)
         }
+        "nextUpdate" => {
+            let data: NextUpdatePayload = parse_payload(payload)?;
+            let timeout =
+                Duration::from_millis(data.timeout_millis.unwrap_or(30_000).clamp(1, 60_000));
+            let mut updates = native
+                .updates
+                .lock()
+                .map_err(|_| "update stream is poisoned".to_owned())?;
+            let update = native.runtime.block_on(async {
+                match tokio::time::timeout(timeout, updates.next()).await {
+                    Ok(Ok(update)) => Ok(Some(update)),
+                    Ok(Err(error)) => Err(invocation_error(error)),
+                    Err(_) => Ok(None),
+                }
+            })?;
+            let update = update.map(|update| match update {
+                Update::NewMessage(message) => UpdateDto {
+                    kind: "newMessage",
+                    message: Some(message_dto(&message)),
+                },
+                Update::MessageEdited(message) => UpdateDto {
+                    kind: "messageEdited",
+                    message: Some(message_dto(&message)),
+                },
+                Update::MessageDeleted(_) => UpdateDto {
+                    kind: "messageDeleted",
+                    message: None,
+                },
+                Update::CallbackQuery(_) => UpdateDto {
+                    kind: "callbackQuery",
+                    message: None,
+                },
+                Update::InlineQuery(_) => UpdateDto {
+                    kind: "inlineQuery",
+                    message: None,
+                },
+                Update::InlineSend(_) => UpdateDto {
+                    kind: "inlineSend",
+                    message: None,
+                },
+                Update::Raw(_) => UpdateDto {
+                    kind: "raw",
+                    message: None,
+                },
+                _ => UpdateDto {
+                    kind: "unknown",
+                    message: None,
+                },
+            });
+            json_string(json!({ "update": update }))
+        }
         "getMessages" => {
             let data: MessageIdsPayload = parse_payload(payload)?;
             let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
@@ -754,11 +823,12 @@ pub extern "system" fn Java_org_kotlogramme_TelegramClient_00024Native_create(
         let api_hash = read_string(&mut env, api_hash)?;
         let path = PathBuf::from(read_string(&mut env, session_path)?);
         let runtime = Runtime::new().map_err(error)?;
-        let (client, sender, session, runner) = runtime.block_on(async move {
+        let (client, sender, updates, session, runner) = runtime.block_on(async move {
             let session = Arc::new(SqliteSession::open(path).map_err(error)?);
             let pool = SenderPool::new(Arc::clone(&session), api_id);
             let client = Client::new(&pool);
-            Ok::<_, String>((client, pool.handle, session, pool.runner))
+            let updates = client.stream_updates(pool.updates, UpdatesConfiguration::default());
+            Ok::<_, String>((client, pool.handle, updates, session, pool.runner))
         })?;
         runtime.spawn(runner.run());
 
@@ -766,6 +836,7 @@ pub extern "system" fn Java_org_kotlogramme_TelegramClient_00024Native_create(
             runtime,
             client,
             sender,
+            updates: Mutex::new(updates),
             session,
             api_hash,
             authentication: Mutex::new(AuthenticationState::Idle),

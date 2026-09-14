@@ -13,11 +13,11 @@ The first compatibility layer is implemented, but it is not yet complete:
 - authorization status and public-username resolution
 - sending text, documents, photos and media albums; editing, deleting, searching, forwarding, pinning and reacting to messages
 - loading dialogs, message history and chat participants; joining, leaving and moderating chats
-- familiar Kotlogram entry points under `com.github.badoualy.telegram.api`
+- familiar Kotlogram entry points under `com.github.badoualy.telegram.api`, including an ordered `getNextUpdate` stream
 - native-library loading from the JAR
 - CI builds for Linux x86_64/ARM64, macOS x86_64/ARM64 and Windows x86_64/ARM64
 
-Notable gaps include complete coverage of the historical generated TL API and an ordered update stream. Treat the library as WIP and test the mapped operations in your application.
+Notable gaps include complete coverage of the historical generated TL API and automatic dispatch through the legacy `UpdateCallback`. Treat the library as WIP and test the mapped operations in your application.
 
 The original Kotlogram code base is archived and uses an old Telegram TL layer. This project is therefore deliberately not a source-code copy: it is a new compatibility-oriented Kotlin facade with grammers as its protocol and update layer.
 

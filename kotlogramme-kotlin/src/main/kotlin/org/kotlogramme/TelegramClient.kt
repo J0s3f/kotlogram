@@ -121,6 +121,12 @@ class TelegramClient private constructor(
         HistoryPayload(PeerTarget(peer.nativeHandle), limit),
     )
 
+    /** Waits for the next ordered grammers update, or returns null after [timeoutMillis]. */
+    fun nextUpdate(timeoutMillis: Long = 30_000): Update? {
+        require(timeoutMillis in 1..60_000) { "timeoutMillis must be between 1 and 60000" }
+        return request<NextUpdatePayload, NextUpdateResult>("nextUpdate", NextUpdatePayload(timeoutMillis)).update
+    }
+
     /** Loads selected messages; missing or inaccessible IDs are represented as null entries. */
     fun getMessages(peer: Peer, messageIds: Collection<Int>): List<Message?> = request(
         "getMessages",
@@ -256,6 +262,12 @@ class TelegramClient private constructor(
     )
 
     @Serializable
+    data class Update(
+        val kind: String,
+        val message: Message? = null,
+    )
+
+    @Serializable
     data class Dialog(
         val peer: Peer,
         val lastMessage: Message? = null,
@@ -386,6 +398,12 @@ class TelegramClient private constructor(
     ) {
         constructor(peer: PeerTarget, limit: Int) : this(peer.peerHandle, peer.username, limit)
     }
+
+    @Serializable
+    private data class NextUpdatePayload(val timeoutMillis: Long)
+
+    @Serializable
+    private data class NextUpdateResult(val update: Update? = null)
 
     @Serializable
     private data class SearchMessagesPayload(
