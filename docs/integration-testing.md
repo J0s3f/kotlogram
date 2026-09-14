@@ -8,7 +8,7 @@ It is deliberately excluded from `test` and GitHub Actions. The test causes real
 
 Create a public **supergroup** rather than a broadcast-only channel. Its members must be allowed to send messages. Add the test bot to it in advance and disable the bot's privacy mode with BotFather, so the bot can access ordinary group messages. Do not use a production or private chat.
 
-The user session must already be authorized for the same API ID and API hash. Telegram phone codes cannot safely be automated in a non-interactive test. Keep that SQLite session outside the repository; it contains authentication material.
+The user session must be authorized for the same API ID and API hash. Telegram phone codes cannot safely be put in a non-interactive test. Keep that SQLite session outside the repository; it contains authentication material.
 
 ## Running the test
 
@@ -19,9 +19,16 @@ Set these environment variables:
 - `KOTLOGRAMME_TEST_API_HASH`
 - `KOTLOGRAMME_TEST_BOT_TOKEN`
 - `KOTLOGRAMME_TEST_USER_SESSION` — absolute path to the pre-authorized user SQLite session
+- `KOTLOGRAMME_TEST_USER_PHONE` — phone number used once to bootstrap that session
 - `KOTLOGRAMME_TEST_CHANNEL_USERNAME` — public supergroup username, with or without `@`
 
-Make a matching native library available, either by running from the packaged JAR or by setting `-Dkotlogramme.native.path` to a locally built library for the current platform. Then run:
+Make a matching native library available by setting `-Dkotlogramme.native.path` to a locally built library for the current platform. Bootstrap the session once; the program asks for the Telegram login code and optional 2FA password in the terminal rather than reading either from an environment variable:
+
+```text
+gradle -Dkotlogramme.native.path=/absolute/path/to/native-library :kotlogramme-kotlin:authorizeLiveTestUser
+```
+
+Then run:
 
 ```text
 gradle :kotlogramme-kotlin:integrationTest

@@ -49,6 +49,17 @@ val integrationTest by tasks.registering(Test::class) {
     }
 }
 
+tasks.register<JavaExec>("authorizeLiveTestUser") {
+    description = "Interactively creates or verifies the pre-authorized Telegram user session for live tests."
+    group = "verification"
+    classpath = sourceSets.test.get().runtimeClasspath
+    mainClass.set("com.github.badoualy.telegram.api.LiveTelegramSessionBootstrap")
+    standardInput = System.`in`
+    System.getProperty("kotlogramme.native.path")?.let { nativeLibrary ->
+        systemProperty("kotlogramme.native.path", nativeLibrary)
+    }
+}
+
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
