@@ -119,3 +119,47 @@ jobs:
         with:
           name: kotlogramme-jars
           path: kotlogramme-kotlin/build/libs/*.jar
+
+  publish-central:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: [native, raw-schema, package]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          path: generated/native
+          merge-multiple: true
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Publish the signed release to the Central staging API
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        shell: bash
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          test -n "$CENTRAL_USERNAME"
+          test -n "$CENTRAL_PASSWORD"
+          test -n "$SIGNING_KEY"
+          test -n "$SIGNING_PASSWORD"
+          test "$version" = "${version%-SNAPSHOT}"
+          ./gradlew --no-daemon -Pversion="$version" :kotlogramme-kotlin:publishMavenJavaPublicationToCentralRepository
+      - name: Submit the staged deployment to the Central Portal
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+        shell: bash
+        run: |
+          authorization="$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 --wrap=0)"
+          curl --fail --silent --show-error --request POST \
+            --header "Authorization: Bearer $authorization" \
+            "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.github.j0s3f?publishing_type=automatic"

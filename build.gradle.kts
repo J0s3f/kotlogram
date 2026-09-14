@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 
-group = "org.kotlogramme"
+group = "io.github.j0s3f"
 version = providers.gradleProperty("version").orElse("0.1.0-SNAPSHOT").get()
 
 subprojects {

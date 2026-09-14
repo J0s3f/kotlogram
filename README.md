@@ -47,6 +47,10 @@ Kotlogram.getDefaultClient(
 }
 ```
 
+## Maven Central
+
+Release artifacts are published as `io.github.j0s3f:kotlogramme:<version>`. The first public release is pending; see [the publishing guide](docs/publishing.md) for the release process.
+
 Your API ID and API hash come from `my.telegram.org`; bot tokens come from BotFather. Sessions contain sensitive authentication data and must not be committed to Git.
 
 ## Architecture
@@ -63,7 +67,7 @@ The dynamic raw API intentionally does not accept JSON: Telegram TL uses constru
 
 ## Live integration testing
 
-An opt-in integration test authorizes a bot, uses a pre-authorized user session to join a public test supergroup, sends a message, and verifies that the bot receives it through channel history. An interactive local bootstrap task creates that user session without storing phone or 2FA codes. The live test is excluded from GitHub Actions and the default test task because it needs real, dedicated Telegram accounts. See [`docs/integration-testing.md`](docs/integration-testing.md) for setup and execution.
+An opt-in integration test authorizes a bot, uses a pre-authorized user session to join a public test supergroup, verifies bot receipt through the ordered update stream, and verifies a bot reply through the user's history. An interactive local bootstrap task creates that user session without storing phone or 2FA codes. The live test is excluded from GitHub Actions and the default test task because it needs real, dedicated Telegram accounts. See [`docs/integration-testing.md`](docs/integration-testing.md) for setup and execution.
 
 [`tools/generate_raw_schema.py`](tools/generate_raw_schema.py) generates `raw/telegram-layer-216.json` from grammers' `api.tl`. GitHub Actions fetches the exact crate resolved by `native/Cargo.lock`, regenerates the manifest and fails if the committed resource differs. This makes a future generated Kotlin codec and matching Rust dispatcher practical: a grammers upgrade produces an explicit schema-drift failure instead of silently deploying incompatible raw types.
 

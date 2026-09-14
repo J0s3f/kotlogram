@@ -1,8 +1,11 @@
+import org.gradle.plugins.signing.SigningExtension
+
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
     `java-library`
     `maven-publish`
+    signing
 }
 
 kotlin {
@@ -67,6 +70,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
+            artifactId = "kotlogramme"
             pom {
                 name.set("kotlogramme")
                 description.set("Kotlin/JVM Telegram API built on the grammers Rust client")
@@ -77,11 +81,47 @@ publishing {
                         url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
                     }
                 }
+                developers {
+                    developer {
+                        id.set("J0s3f")
+                        name.set("J0s3f")
+                        url.set("https://github.com/J0s3f")
+                    }
+                }
                 scm {
-                    connection.set("scm:git:https://github.com/J0s3f/kotlogram.git")
+                    connection.set("scm:git:git://github.com/J0s3f/kotlogram.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/J0s3f/kotlogram.git")
                     url.set("https://github.com/J0s3f/kotlogram")
                 }
             }
         }
+    }
+    repositories {
+        maven {
+            name = "Central"
+            url = uri("https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2/")
+            credentials {
+                username = providers.gradleProperty("centralUsername")
+                    .orElse(providers.environmentVariable("CENTRAL_USERNAME"))
+                    .orNull
+                password = providers.gradleProperty("centralPassword")
+                    .orElse(providers.environmentVariable("CENTRAL_PASSWORD"))
+                    .orNull
+            }
+        }
+    }
+}
+
+val signingKey = providers.gradleProperty("signingKey")
+    .orElse(providers.environmentVariable("SIGNING_KEY"))
+    .orNull
+val signingPassword = providers.gradleProperty("signingPassword")
+    .orElse(providers.environmentVariable("SIGNING_PASSWORD"))
+    .orNull
+
+if (!signingKey.isNullOrBlank() && !signingPassword.isNullOrBlank()) {
+    extensions.configure<SigningExtension> {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications)
     }
 }
