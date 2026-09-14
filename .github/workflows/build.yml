@@ -160,6 +160,6 @@ jobs:
         shell: bash
         run: |
           authorization="$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 --wrap=0)"
-          curl --fail --silent --show-error --request POST \
+          curl --fail-with-body --silent --show-error --request POST --data '' \
             --header "Authorization: Bearer $authorization" \
             "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.github.j0s3f?publishing_type=automatic"

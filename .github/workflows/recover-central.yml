@@ -1,0 +1,40 @@
+name: recover-central-deployment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  transfer-staged-repository:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Locate and submit the open Central staging repository
+        env:
+          CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
+          CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$CENTRAL_USERNAME"
+          test -n "$CENTRAL_PASSWORD"
+
+          authorization="$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 --wrap=0)"
+          search_url="https://ossrh-staging-api.central.sonatype.com/manual/search/repositories?ip=any&profile_id=io.github.j0s3f"
+          curl --fail-with-body --silent --show-error \
+            --header "Authorization: Bearer $authorization" \
+            "$search_url" > repositories.json
+
+          repository_key="$(jq --exit-status --raw-output '
+            [.repositories[] | select(.state == "open" and ((.portal_deployment_id // "") == ""))]
+            | if length == 1 then .[0].key
+              else error("Expected exactly one open repository without a Portal deployment; found \\(length).")
+              end
+          ' repositories.json)"
+
+          test -n "$repository_key"
+          echo "Submitting the staged repository: $repository_key"
+          curl --fail-with-body --silent --show-error --request POST --data '' \
+            --header "Authorization: Bearer $authorization" \
+            "https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$repository_key?publishing_type=automatic"
