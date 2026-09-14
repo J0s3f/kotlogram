@@ -12,6 +12,8 @@ The user session must be authorized for the same API ID and API hash. Telegram p
 
 ## Running the test
 
+Run Gradle with JDK 21. The pinned Kotlin build tooling does not yet support JDK 25 as its launcher JVM. The repository includes `gradlew` / `gradlew.bat`, so no global Gradle installation is required.
+
 Set these environment variables:
 
 - `KOTLOGRAMME_RUN_LIVE_TESTS=true`
@@ -25,13 +27,13 @@ Set these environment variables:
 Make a matching native library available by setting `-Dkotlogramme.native.path` to a locally built library for the current platform. Bootstrap the session once; the program asks for the Telegram login code and optional 2FA password in the terminal rather than reading either from an environment variable:
 
 ```text
-gradle -Dkotlogramme.native.path=/absolute/path/to/native-library :kotlogramme-kotlin:authorizeLiveTestUser
+./gradlew -Dkotlogramme.native.path=/absolute/path/to/native-library :kotlogramme-kotlin:authorizeLiveTestUser
 ```
 
 Then run:
 
 ```text
-gradle :kotlogramme-kotlin:integrationTest
+./gradlew :kotlogramme-kotlin:integrationTest
 ```
 
 The test creates a temporary bot session and removes it after completion. It does not delete the user session or the message posted to the dedicated test supergroup.
