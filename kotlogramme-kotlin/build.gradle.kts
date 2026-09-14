@@ -44,6 +44,9 @@ val integrationTest by tasks.registering(Test::class) {
     useJUnitPlatform()
     include("**/LiveTelegramIntegrationTest.*")
     shouldRunAfter(tasks.test)
+    System.getProperty("kotlogramme.native.path")?.let { nativeLibrary ->
+        systemProperty("kotlogramme.native.path", nativeLibrary)
+    }
     testLogging {
         events("passed", "skipped", "failed")
     }
