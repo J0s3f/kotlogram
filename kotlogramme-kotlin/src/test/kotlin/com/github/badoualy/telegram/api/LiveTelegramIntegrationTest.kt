@@ -6,7 +6,9 @@ import java.time.Duration
 import java.time.Instant
 import java.util.UUID
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -60,6 +62,72 @@ class LiveTelegramIntegrationTest {
         } finally {
             deleteSessionFiles(botSession)
             Files.deleteIfExists(botSessionDirectory)
+        }
+    }
+
+    @Test
+    fun `bot sends media and the user downloads and inspects it`() {
+        val config = LiveTelegramConfig.loadOrSkip() ?: return
+        val botSessionDirectory = Files.createTempDirectory("kotlogramme-live-bot-")
+        val botSession = botSessionDirectory.resolve("bot.session")
+        val scratchDirectory = Files.createTempDirectory("kotlogramme-live-scratch-")
+
+        try {
+            val application = TelegramApp(config.apiId, config.apiHash)
+            Kotlogram.getDefaultClient(application, FileTelegramApiStorage(config.userSession)).use { user ->
+                assertTrue(user.isAuthorized(), "The configured user session is not authorized")
+
+                Kotlogram.getDefaultClient(application, FileTelegramApiStorage(botSession)).use { bot ->
+                    if (!bot.isAuthorized()) {
+                        bot.authImportBotAuthorization(config.botToken)
+                    }
+                    assertTrue(bot.isAuthorized(), "Bot authorization did not complete")
+
+                    val channel = bot.contactsResolveUsername(config.channelUsername)
+                    val mediaMarker = "kotlogramme-live-media-${UUID.randomUUID()}"
+                    val payload = Files.writeString(
+                        Files.createTempFile(scratchDirectory, "kotlogramme-live-file-", ".txt"),
+                        "kotlogramme live media payload\n".repeat(64),
+                    )
+
+                    // The bot uploads a document and sends it with a caption; the user's search
+                    // finds it by the caption once Telegram has indexed it.
+                    bot.mediaSend(channel, payload, caption = mediaMarker)
+                    val sent = poll(Duration.ofSeconds(30)) {
+                        user.messagesSearch(channel, mediaMarker, limit = 10)
+                            .firstOrNull { message -> message.text == mediaMarker }
+                    }
+                    assertNotNull(sent, "The user did not find the bot media message through search")
+                    assertTrue(sent.id > 0, "The sent media message must carry a message id")
+
+                    // The whole-file download matches the uploaded bytes, and the chunked one reads
+                    // the same media.
+                    val target = scratchDirectory.resolve("out.txt")
+                    val downloaded = user.downloadMedia(channel, sent.id, target)
+                    assertEquals(payload.toFile().length(), downloaded.size, "The download must hold the whole file")
+                    val firstChunk = user.downloadMediaChunk(channel, sent.id, chunkSize = 512 * 1024, skipChunks = 0)
+                    assertNotNull(firstChunk, "The first chunk of the media must exist")
+                    assertTrue(firstChunk.size > 0, "The first chunk must carry bytes")
+                    assertEquals(Files.size(target), firstChunk.size, "The chunk must cover the file")
+
+                    // A plain text message carries no markup, no service action and no reply target:
+                    // all three operations answer null through the bare-null result path.
+                    val plainMarker = "kotlogramme-live-plain-${UUID.randomUUID()}"
+                    user.messagesSendMessage(channel, plainMarker)
+                    val plain = poll(Duration.ofSeconds(30)) {
+                        user.messagesSearch(channel, plainMarker, limit = 10)
+                            .firstOrNull { message -> message.text == plainMarker }
+                    }
+                    assertNotNull(plain, "The user did not find its own plain message through search")
+                    assertNull(user.markupGetReplyMarkup(channel, plain.id), "A plain message has no markup")
+                    assertNull(user.actionsGetMessageAction(channel, plain.id), "A plain message has no service action")
+                    assertNull(user.messagesGetReplyToMessage(channel, plain.id), "A plain message has no reply target")
+                }
+            }
+        } finally {
+            deleteSessionFiles(botSession)
+            Files.deleteIfExists(botSessionDirectory)
+            scratchDirectory.toFile().deleteRecursively()
         }
     }
 

@@ -25,7 +25,7 @@ object Kotlogram {
         updateCallback: UpdateCallback? = null,
         @Suppress("UNUSED_PARAMETER") preferredDataCenter: DataCenter = PROD_DC4,
         @Suppress("UNUSED_PARAMETER") tag: String = Random.nextInt().toString(),
-    ): TelegramClient = DefaultTelegramClient(
+    ): TelegramClient = InternalTelegramClient(
         GrammersClient.create(application.apiId, application.apiHash, apiStorage.sessionPath),
         application,
         updateCallback,

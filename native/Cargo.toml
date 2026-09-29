@@ -10,7 +10,8 @@ repository = "https://codeberg.org/kotlogramme/kotlogramme"
 crate-type = ["cdylib"]
 
 [dependencies]
-grammers-client = "=0.8.1"
+grammers-client = { version = "=0.8.1", features = ["html", "markdown"] }
+mime_guess = "2"
 grammers-mtsender = "=0.8.1"
 grammers-session = "=0.8.0"
 jni = "0.21.1"

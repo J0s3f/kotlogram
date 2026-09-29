@@ -1,12 +1,13 @@
 package com.github.badoualy.telegram.api
 
 /**
- * Reserved compatibility hook for the original Kotlogram callback type.
+ * A callback into the update stream, mirroring Kotlogram's `UpdateCallback`.
  *
- * Update streaming is available through [TelegramClient.getNextUpdate]. This legacy callback is
- * retained for source compatibility but is not automatically dispatched, because forwarding
- * stale Layer-66 update objects would produce misleading compatibility semantics.
+ * Unlike the reserved one-argument hook the facade started with, this one carries the projected
+ * update, so a handler can act on the payload instead of only knowing that something arrived.
+ * Dispatching it is a blocking wait, so a caller that wants a loop drives
+ * [UpdatesApi.dispatchNextUpdate] itself.
  */
 fun interface UpdateCallback {
-    fun onUpdate(client: TelegramClient)
+    fun onUpdate(client: TelegramClient, update: TypedUpdate)
 }

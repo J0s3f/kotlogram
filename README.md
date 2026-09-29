@@ -6,18 +6,27 @@ A Kotlin/JVM facade for the Telegram API, built on grammers and designed around 
 
 ## Status
 
-The first compatibility layer is implemented, but it is not yet complete:
+The compatibility layer is implemented across every domain the plan scoped: 66 native operations,
+each reachable from Kotlin through a 132-test Rust suite and a 158-test JVM suite.
 
 - persistent SQLite sessions through grammers
-- bot and user authentication, including the 2FA step
-- authorization status and public-username resolution
-- sending text, documents, photos and media albums; editing, deleting, searching, forwarding, pinning and reacting to messages
-- loading dialogs, message history and chat participants; joining, leaving and moderating chats
-- familiar Kotlogram entry points under `com.github.badoualy.telegram.api`, including an ordered `getNextUpdate` stream
-- native-library loading from the JAR
-- CI builds for Linux x86_64/ARM64, macOS x86_64/ARM64 and Windows x86_64/ARM64
+- bot and user authentication (2FA included), `signOut`, the full account identity and its data
+  centre
+- sending text, files and typed media with captions, parse modes, spoilers, TTLs and scheduling;
+  editing, deleting, searching (with filters, totals and global search), forwarding, pinning,
+  replying and reacting to messages
+- dialogs with raw-layer metadata, totals and mention clearing; message history paging and totals;
+  chat participants, permissions, ban/admin rights, invite links and resolving by id
+- typed update payloads and the raw update with its state; inline-bot queries, answers and inline
+  edits; the four reply markups and chat actions
+- familiar Kotlogram entry points under `com.github.badoualy.telegram.api`, including the ordered
+  `getNextUpdate` stream and the on-demand `dispatchNextUpdate` through the legacy `UpdateCallback`
+- native-library loading from the JAR and CI builds for Linux/macOS/Windows on x86_64/ARM64
 
-Notable gaps include complete coverage of the historical generated TL API and automatic dispatch through the legacy `UpdateCallback`. Treat the library as WIP and test the mapped operations in your application.
+Notable gaps: the historical generated TL API is not recreated (only the versioned raw API exposed);
+grammers 0.8.1 exposes no typed contacts or account API, so those families stay behind
+`invokeRaw`; and `UpdateCallback` is delivered on demand rather than by a background loop. Treat
+the library as WIP and test the mapped operations in your application.
 
 The original Kotlogram code base is archived and uses an old Telegram TL layer. This project is therefore deliberately not a source-code copy: it is a new compatibility-oriented Kotlin facade with grammers as its protocol and update layer.
 
@@ -56,6 +65,20 @@ Your API ID and API hash come from `my.telegram.org`; bot tokens come from BotFa
 ## Architecture
 
 `kotlogramme-kotlin` contains the public JVM API and native-library loader. The drop-in-oriented facade lives under `com.github.badoualy.telegram.api`; `org.kotlogramme` is the smaller direct bridge. `native` owns a Tokio runtime and invokes the grammers client API. GitHub Actions build native libraries for Windows, Linux and macOS on both x86_64 and ARM64. The packaging job bundles all six variants as resources in the Maven JAR; at startup, the loader extracts and loads only the variant matching the current operating system and architecture. The bridge currently pins grammers to 0.8.1 because newer crates.io releases do not build reproducibly with their current dependency state (0.9 references a yanked dependency and 0.10 has an incompatible transitive dependency graph).
+
+### Module layout
+
+Each side of the bridge is organised per domain, so a feature area is added as its own file plus one registration line rather than as an edit to a shared dispatch table.
+
+On the native side, `native/src/lib.rs` holds only the seven `#[no_mangle]` JNI exports, because their names are ABI. The session and its registries live in `client.rs`, the JNI conversion helpers in `error.rs`, the JSON result shapes in `dto/`, the request payloads in `payload.rs`, and one module per domain in `ops/`. An `ops` module declares the operation names it answers for in an `OPERATIONS` constant and maps each name to a handler in `route`; `ops::dispatch` tries every module in turn.
+
+On the JVM side, `org.kotlogramme.TelegramClient` is the transport layer: one method per native operation, with the wire models in `org.kotlogramme.protocol` and the request payloads grouped by domain. The Kotlogram-shaped facade is composed the same way: `com.github.badoualy.telegram.api.TelegramClient` extends one interface per domain, and each of those declares its methods with default implementations that delegate to the bridge. Adding a domain therefore means one new `*Api.kt`, one new `ops/*.rs`, and one supertype.
+
+### Operation inventory
+
+`native/operations.txt` lists every operation the crate answers, sorted, one name per line: the names routed through `request` plus the three that dedicated JNI exports implement. Two tests keep it honest, and they are the gate that keeps the two sides from drifting apart. The Rust unit tests in `native/src/ops/tests.rs` assert that every declared name routes to a handler, that no two modules claim the same name, that the file matches the dispatcher, and that the seven JNI exports are still present under their original names. `OperationParityTest` on the JVM asserts that the file equals the set of `@Operation` names found on the bridge by reflection. Adding, renaming or removing an operation on one side without the other fails the build.
+
+`docs/grammers-parity-plan.md` records the gap analysis behind the current layout and the plan for closing it.
 
 Kotlogram shipped generated Layer-66 TL classes. They are not recreated under a false claim of compatibility, because they would not reliably work against the supported layer 216 schema. Missing specialized operations will be added through a versioned raw API; [`docs/compatibility.md`](docs/compatibility.md) lists the current core mappings.
 

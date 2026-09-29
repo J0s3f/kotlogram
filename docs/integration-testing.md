@@ -1,6 +1,6 @@
 # Live Telegram integration test
 
-`LiveTelegramIntegrationTest` proves the public compatibility facade against Telegram itself. It authorizes a bot, verifies an already-authorized user session, has the user join a public test supergroup, sends a unique user message, verifies that the bot receives it through `getNextUpdate`, sends a unique bot reply, and polls the user's channel history until that reply is received. Telegram does not allow bot MTProto sessions to call `messages.getHistory`, so bot input is asserted through the ordered update stream instead.
+`LiveTelegramIntegrationTest` proves the public compatibility facade against Telegram itself. It authorizes a bot, verifies an already-authorized user session, has the user join a public test supergroup, and runs two scenarios. The first sends a unique user message, verifies that the bot receives it through `getNextUpdate`, sends a unique bot reply, and polls the user's channel history until that reply is received. The second has the bot upload and send a media document with a caption, has the user find it by search, download it whole and in chunks, and then verifies that plain messages answer `null` for the markup, service-action and reply-target operations. Telegram does not allow bot MTProto sessions to call `messages.getHistory`, so bot input is asserted through the ordered update stream instead.
 
 It is deliberately excluded from `test` and GitHub Actions. The test causes real Telegram activity and must use dedicated, disposable test accounts.
 

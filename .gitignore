@@ -3,7 +3,10 @@ build/
 **/build/
 generated/
 native/target/
+.worktrees/
 *.session
 *.session-shm
 *.session-wal
 local.properties
+.kotlin/
+.secret/
