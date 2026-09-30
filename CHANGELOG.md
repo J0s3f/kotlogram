@@ -7,7 +7,23 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
-## 0.2.0 — unreleased
+## 0.3.0 — unreleased
+
+### Added
+
+- `ChatsApi.channelsInviteToChannel(peer, user)` — adds a member to a channel, supergroup or basic
+  group. The facade could join, leave, list and kick but nothing added a member, which the live-test
+  client hit immediately. grammers has no invite method, so the layer's requests are written
+  directly (`channels.InviteToChannel` / `messages.AddChatUser`) with the same peer-kind branching
+  the banned-rights path uses. 97 operations.
+
+### Fixed
+
+- Dialog folders no longer fail with `CHANNEL_PRIVATE` when a folder references a channel the
+  account cannot access; the projection skips the peer it cannot resolve instead of losing the whole
+  listing.
+
+## 0.2.0 — 2026-09-30
 
 Second release. It keeps the 0.1.0 parity surface, adds the post-parity feature work below, and
 aligns the raw API to Telegram TL layer 229. Ninety-six native operations, each reachable from
