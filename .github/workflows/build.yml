@@ -1,8 +1,12 @@
 name: build
 
+# Builds and publishes run for release tags only, plus a manual dispatch. A plain push to main or a
+# branch is not a release: it used to spin up the whole native matrix, which is slow and depends on
+# fetching grammers from codeberg, so it is not worth spending on documentation commits.
 on:
   push:
-  pull_request:
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version:

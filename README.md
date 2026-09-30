@@ -7,7 +7,7 @@ A Kotlin/JVM facade for the Telegram API, built on grammers and designed around 
 ## Status
 
 The compatibility layer is implemented across every domain the plan scoped: 98 native operations,
-each reachable from Kotlin through a 240-test Rust suite and a 249-test JVM suite.
+each reachable from Kotlin through a 242-test Rust suite and a 251-test JVM suite.
 
 - persistent SQLite sessions through grammers
 - bot and user authentication (2FA included), `signOut`, the full account identity and its data
