@@ -99,7 +99,7 @@ developed and reviewed independently.
 `native/operations.txt` is the shared contract listing every operation the native crate answers.
 The Rust unit tests and `OperationParityTest` on the JVM both assert against it, so the bridge
 cannot declare a capability the native side does not implement, or the reverse. It currently
-lists 96 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
+lists 98 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
 analysis behind the layout, and [`docs/gap-closure-roadmap.md`](gap-closure-roadmap.md) the work
 that closed the post-parity gaps.
 

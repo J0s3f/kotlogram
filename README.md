@@ -6,7 +6,7 @@ A Kotlin/JVM facade for the Telegram API, built on grammers and designed around 
 
 ## Status
 
-The compatibility layer is implemented across every domain the plan scoped: 96 native operations,
+The compatibility layer is implemented across every domain the plan scoped: 98 native operations,
 each reachable from Kotlin through a 240-test Rust suite and a 249-test JVM suite.
 
 - persistent SQLite sessions through grammers
@@ -27,9 +27,11 @@ each reachable from Kotlin through a 240-test Rust suite and a 249-test JVM suit
 - native-library loading from the JAR and CI builds for Linux/macOS/Windows on x86_64/ARM64
 
 Notable gaps: the historical generated TL API is not recreated (only the versioned raw API exposed);
-formatting entities are writable but not projected on received messages; sticker install/archive,
-per-peer notification settings and the story/paid-media surfaces stay behind `invokeRaw`; and
-`UpdateCallback` is delivered on demand rather than by a background loop. Treat the library as WIP
+formatting entities are writable but not projected on received messages; a message's inline-bot
+origin is projected as a bare `viaBotId` with no user-by-id lookup to turn it into a username
+(`contactsResolveUsername` resolves the other direction, and grammers exposes no `via_bot()` peer);
+sticker install/archive, per-peer notification settings and the story/paid-media surfaces stay behind
+`invokeRaw`; and `UpdateCallback` is delivered on demand rather than by a background loop. Treat the library as WIP
 and test the mapped operations in your application.
 
 The original Kotlogram code base is archived and uses an old Telegram TL layer. This project is therefore deliberately not a source-code copy: it is a new compatibility-oriented Kotlin facade with grammers as its protocol and update layer.
