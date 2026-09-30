@@ -30,6 +30,11 @@ interface ChatsApi : BridgeApi {
         bridge.kickParticipant(peer.native, user.native)
     }
 
+    /** Adds a user to a channel, supergroup or basic group. */
+    fun channelsInviteToChannel(peer: TelegramPeer, user: TelegramPeer) {
+        bridge.inviteToChannel(peer.native, user.native)
+    }
+
     /** Reports one member's role in a chat, which is grammers' `get_permissions`. */
     fun channelsGetParticipantPermissions(
         peer: TelegramPeer,

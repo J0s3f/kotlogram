@@ -48,6 +48,14 @@ internal interface ChatsBridge {
         )
     }
 
+    @Operation("inviteToChannel")
+    fun inviteToChannel(chat: Peer, user: Peer) {
+        transport.request<KickParticipantPayload, OperationResult>(
+            "inviteToChannel",
+            KickParticipantPayload(PeerTarget(chat.nativeHandle), PeerTarget(user.nativeHandle)),
+        )
+    }
+
     @Operation("joinChat")
     fun joinChat(peer: Peer): Peer? = transport.request<PeerTarget, JoinResult>(
         "joinChat",

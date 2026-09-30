@@ -94,6 +94,7 @@ struct ResolvePeerPayload {
 pub(crate) const OPERATIONS: &[&str] = &[
     "getParticipants",
     "kickParticipant",
+    "inviteToChannel",
     "joinChat",
     "leaveChat",
     "getPermissions",
@@ -112,6 +113,7 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
     Some(match operation {
         "getParticipants" => get_participants,
         "kickParticipant" => kick_participant,
+        "inviteToChannel" => invite_to_channel,
         "joinChat" => join_chat,
         "leaveChat" => leave_chat,
         "getPermissions" => get_permissions,
@@ -158,6 +160,45 @@ fn kick_participant(native: &NativeClient, payload: &str) -> Result<String, Stri
         .runtime
         .block_on(native.client.kick_participant(chat, user))
         .map_err(invocation_error)?;
+    json_string(json!({ "ok": true }))
+}
+
+/// Adds a member to a chat, choosing the request the peer kind requires.
+///
+/// grammers has no invite method, so the layer's requests are written directly: a channel or
+/// supergroup takes `channels.InviteToChannel`, a basic group takes `messages.AddChatUser`. The
+/// resolved peers already carry the access hashes both requests need.
+fn invite_to_channel(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: ParticipantPairPayload = parse_payload(payload)?;
+    let chat = native.runtime.block_on(resolve_peer(native, &data.chat))?;
+    let user = native.runtime.block_on(resolve_peer(native, &data.user))?;
+    native.runtime.block_on(async {
+        match chat.id.kind() {
+            PeerKind::Channel => {
+                native
+                    .client
+                    .invoke(&tl::functions::channels::InviteToChannel {
+                        channel: chat.into(),
+                        users: vec![user.into()],
+                    })
+                    .await
+                    .map_err(invocation_error)?;
+            }
+            PeerKind::Chat => {
+                native
+                    .client
+                    .invoke(&tl::functions::messages::AddChatUser {
+                        chat_id: chat.into(),
+                        user_id: user.into(),
+                        fwd_limit: 0,
+                    })
+                    .await
+                    .map_err(invocation_error)?;
+            }
+            _ => return Err("PEER_ID_INVALID".to_owned()),
+        }
+        Ok(())
+    })?;
     json_string(json!({ "ok": true }))
 }
 

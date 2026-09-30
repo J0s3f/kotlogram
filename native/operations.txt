@@ -48,6 +48,7 @@ getPinnedMessage
 getReplyMarkup
 getReplyToMessage
 inlineQuery
+inviteToChannel
 invokeRaw
 isAuthorized
 iterProfilePhotos
