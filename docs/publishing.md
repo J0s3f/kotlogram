@@ -33,11 +33,17 @@ Ensure `main` is green, choose a new semantic version, and create an annotated t
 ```bash
 git checkout main
 git pull --ff-only
-git tag -a v0.1.0 -m "Release 0.1.0"
-git push origin v0.1.0
+git tag -a v0.2.0 -m "Release 0.2.0"
+git push origin v0.2.0
 ```
 
-The `publish-central` job then uploads to the Central Portal with automatic publication enabled. Inspect its GitHub Actions log and the Portal deployment page. A first publication or a failed validation may require intervention in the Portal; published versions cannot be changed or removed.
+The tag runs the full release: `raw-schema` and the five native builds, `package` (which bundles and
+verifies the six native libraries), `publish-central` (uploads to the Central Portal with automatic
+publication enabled) and `github-release` (attaches the per-platform native archives and the JAR to
+a GitHub Release).
+
+Inspect the `publish-central` log and the Portal deployment page. A first publication or a failed
+validation may require intervention in the Portal; published versions cannot be changed or removed.
 
 ## Local dry run
 

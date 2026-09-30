@@ -7,11 +7,11 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
-## 0.1.0 — unreleased
+## 0.2.0 — unreleased
 
-First compatibility release, 0.1.0 is the WIP surface that closes the Phase 1 gap to the grammers
-typed client API, plus the post-parity feature work below. Ninety-six native operations, each
-reachable from Kotlin.
+Second release. It keeps the 0.1.0 parity surface, adds the post-parity feature work below, and
+aligns the raw API to Telegram TL layer 229. Ninety-six native operations, each reachable from
+Kotlin.
 
 ### Bridge
 
