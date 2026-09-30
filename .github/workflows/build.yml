@@ -29,14 +29,17 @@ jobs:
       - name: Generate and verify the Layer manifest
         shell: bash
         run: |
-          schema="$(find "${CARGO_HOME:-$HOME/.cargo}/registry/src" -path '*/grammers-tl-types-*/tl/api.tl' -print -quit)"
+          cargo_root="${CARGO_HOME:-$HOME/.cargo}"
+          # grammers is a git dependency, so its api.tl lives under git/checkouts as
+          # `grammers-tl-types` (no version suffix); registry/src is kept as a fallback.
+          schema="$(find "$cargo_root/git/checkouts" "$cargo_root/registry/src" -path '*/grammers-tl-types*/tl/api.tl' -print -quit 2>/dev/null || true)"
           test -n "$schema"
-          python3 tools/generate_raw_schema.py --schema "$schema" --output generated/raw-schema/telegram-layer-216.json
-          cmp generated/raw-schema/telegram-layer-216.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-216.json
+          python3 tools/generate_raw_schema.py --schema "$schema" --output generated/raw-schema/telegram-layer-229.json
+          cmp generated/raw-schema/telegram-layer-229.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-229.json
       - uses: actions/upload-artifact@v4
         with:
           name: raw-schema
-          path: generated/raw-schema/telegram-layer-216.json
+          path: generated/raw-schema/telegram-layer-229.json
 
   native:
     name: native-${{ matrix.platform }}
@@ -109,7 +112,7 @@ jobs:
           name: raw-schema
           path: generated/raw-schema
       - name: Verify bundled raw schema source
-        run: cmp generated/raw-schema/telegram-layer-216.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-216.json
+        run: cmp generated/raw-schema/telegram-layer-229.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-229.json
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -170,6 +173,22 @@ jobs:
         shell: bash
         run: |
           authorization="$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 --wrap=0)"
+
+          # Resolve the open staging repository the Gradle publish step just created, then submit
+          # that repository by key. The old `manual/upload/defaultRepository/<namespace>` endpoint
+          # answers 400; the same search-and-submit flow as recover-central works.
+          curl --fail-with-body --silent --show-error \
+            --header "Authorization: Bearer $authorization" \
+            "https://ossrh-staging-api.central.sonatype.com/manual/search/repositories?ip=any&profile_id=io.github.j0s3f" > repositories.json
+
+          repository_key="$(jq --exit-status --raw-output '
+            [.repositories[] | select(.state == "open" and ((.portal_deployment_id // "") == ""))]
+            | if length == 1 then .[0].key
+              else error("Expected exactly one open repository without a Portal deployment; found \(length).")
+              end
+          ' repositories.json)"
+          test -n "$repository_key"
+          echo "Submitting the staged repository: $repository_key"
           curl --fail-with-body --silent --show-error --request POST --data '' \
             --header "Authorization: Bearer $authorization" \
-            "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.github.j0s3f?publishing_type=automatic"
+            "https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$repository_key?publishing_type=automatic"

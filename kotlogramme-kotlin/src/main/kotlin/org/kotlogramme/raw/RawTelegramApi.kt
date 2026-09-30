@@ -13,7 +13,7 @@ import org.kotlogramme.TelegramClient
  */
 object RawTelegramApi {
     const val FORMAT: String = "kotlogram-raw-schema/v1"
-    const val LAYER: Int = 216
+    const val LAYER: Int = 229
 
     fun schema(): RawSchema = schema
 
@@ -21,7 +21,7 @@ object RawTelegramApi {
 
     fun constructor(name: String): RawConstructor? = schema.constructors.firstOrNull { it.name == name }
 
-    /** Encodes a named Layer-216 function from its declared fields. Optional TL flags are derived. */
+    /** Encodes a named Layer-229 function from its declared fields. Optional TL flags are derived. */
     fun encodeRequest(methodName: String, fields: Map<String, RawValue>): ByteArray =
         codec.encodeMethod(methodName, fields)
 
@@ -33,7 +33,7 @@ object RawTelegramApi {
      * Encodes a raw request for a schema method that has no parameters.
      *
      * This is deliberately narrow: callers with parameters should use [TlWriter] and the
-     * schema declaration until the Layer-216 request-code generator emits typed request classes.
+     * schema declaration until the Layer-229 request-code generator emits typed request classes.
      */
     fun encodeNoArgumentRequest(methodName: String): ByteArray {
         val method = requireNotNull(method(methodName)) { "Unknown Layer-$LAYER method: $methodName" }
@@ -44,7 +44,7 @@ object RawTelegramApi {
     }
 
     /**
-     * Invokes an already TL-encoded Layer-216 request through grammers' sender pool.
+     * Invokes an already TL-encoded Layer-229 request through grammers' sender pool.
      *
      * The schema manifest is the version contract for generated codecs. This method does not
      * accept JSON because that would not preserve Telegram TL's binary constructors or flags.
@@ -52,7 +52,7 @@ object RawTelegramApi {
     fun invoke(client: TelegramClient, request: RawRequest): ByteArray =
         client.invokeRaw(request.body, request.dataCenterId)
 
-    /** Encodes, invokes and decodes a Layer-216 request in one call. */
+    /** Encodes, invokes and decodes a Layer-229 request in one call. */
     fun invoke(
         client: TelegramClient,
         methodName: String,
@@ -61,8 +61,8 @@ object RawTelegramApi {
     ): RawValue = decodeResponse(methodName, invoke(client, RawRequest(encodeRequest(methodName, fields), dataCenterId)))
 
     private val schema: RawSchema by lazy {
-        val resource = requireNotNull(RawTelegramApi::class.java.getResourceAsStream("/raw/telegram-layer-216.json")) {
-            "Bundled Layer-216 raw schema manifest is missing"
+        val resource = requireNotNull(RawTelegramApi::class.java.getResourceAsStream("/raw/telegram-layer-229.json")) {
+            "Bundled Layer-229 raw schema manifest is missing"
         }
         resource.bufferedReader().use { json.decodeFromString(it.readText()) }
     }

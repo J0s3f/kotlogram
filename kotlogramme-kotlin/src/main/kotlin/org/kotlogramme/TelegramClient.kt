@@ -86,7 +86,7 @@ class TelegramClient private constructor(
     }
 
     /**
-     * Sends one Layer-216 TL-encoded request body and returns the raw TL response body.
+     * Sends one Layer-229 TL-encoded request body and returns the raw TL response body.
      *
      * This is experimental. Callers are responsible for generating a request compatible with
      * [com.github.badoualy.telegram.api.Kotlogram.API_LAYER] and decoding the corresponding

@@ -69,7 +69,7 @@ reachable from Kotlin.
 
 ### Post-parity feature work
 
-- **Chat rights, full round-trip.** All Layer-216 admin and ban flags are projected and written; the
+- **Chat rights, full round-trip.** All Layer-229 admin and ban flags are projected and written; the
   rights the grammers builders cannot set go through raw `channels.EditBanned` / `channels.EditAdmin`
   (or the basic-group `messages.EditChatAdmin` / `DeleteChatUser`), merging the current rights via
   `channels.GetParticipant`.
@@ -91,6 +91,15 @@ reachable from Kotlin.
   operations grammers has no high-level API for — contacts and blocking, profile/username/status,
   authorizations, password settings and privacy rules, dialog filters, and sticker-set reads — as
   typed operations over the TL layer.
+
+### Fixes
+
+- The raw-API contract now matches the pinned grammers revision: the bundled
+  `kotlogram-raw-schema/v1` manifest is Layer 229, and `Kotlogram.API_LAYER` and
+  `RawTelegramApi.LAYER` report the same value. The CI schema-drift gate now locates `api.tl`
+  under the git checkout (the old `registry/src` path no longer applies) and the release job
+  submits the staged Maven Central repository by its staging key instead of the
+  `defaultRepository` endpoint, which answered HTTP 400.
 
 ### Notes and known limitations
 

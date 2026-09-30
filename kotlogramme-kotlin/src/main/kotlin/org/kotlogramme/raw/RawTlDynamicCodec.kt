@@ -1,7 +1,7 @@
 package org.kotlogramme.raw
 
 /**
- * A value accepted by the experimental dynamic Layer-216 raw API.
+ * A value accepted by the experimental dynamic Layer-229 raw API.
  *
  * The sealed model makes every TL wire value explicit. [Object] is named after a constructor in
  * the bundled schema and may itself contain vectors and nested objects.

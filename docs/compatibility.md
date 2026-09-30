@@ -7,7 +7,7 @@ import com.github.badoualy.telegram.api.Kotlogram
 import com.github.badoualy.telegram.api.TelegramApp
 ```
 
-The bridge uses grammers' Telegram TL layer 216 schema. The following operations are mapped to
+The bridge uses grammers' Telegram TL layer 229 schema. The following operations are mapped to
 its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 
 | Kotlogram-shaped method | grammers operation |
@@ -37,7 +37,7 @@ its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 | `channelsJoinChannel` / `channelsLeaveChannel` | `join_chat` / `delete_dialog` |
 | `channelsGetParticipants` / `channelsKickParticipant` | `iter_participants` / `kick_participant` |
 | `channelsGetParticipantPermissions` | `get_permissions` |
-| `channelsEditBanned` / `channelsEditAdmin` | `set_banned_rights` / `set_admin_rights` for the ten rights the builders expose; the remaining Layer-216 rights are written with raw `channels.EditBanned` / `channels.EditAdmin` (or `messages.EditChatAdmin` / `DeleteChatUser` in a basic group), merging the current rights via `channels.GetParticipant` |
+| `channelsEditBanned` / `channelsEditAdmin` | `set_banned_rights` / `set_admin_rights` for the ten rights the builders expose; the remaining Layer-229 rights are written with raw `channels.EditBanned` / `channels.EditAdmin` (or `messages.EditChatAdmin` / `DeleteChatUser` in a basic group), merging the current rights via `channels.GetParticipant` |
 | `messagesImportChatInvite` / `messagesParseInviteLink` | `accept_invite_link` / `parse_invite_link` (rebuilt on the same requests, see below) |
 | `channelsResolvePeer` | `resolve_peer` by Bot API dialog id |
 | `mediaSend` / `mediaSendUrl` / `mediaCopy` | `upload_file`/URL + `InputMessage::{photo,document,file,photo_url,document_url,copy_media}` with `html`/`markdown` captions, `media_ttl`, `mime_type`, spoiler and scheduling |
@@ -82,7 +82,7 @@ datacenter data and peer cache as one atomic session database. The old per-field
 cannot safely be retained.
 
 The generated `com.github.badoualy.telegram.tl.*` Layer-66 model is intentionally not shipped.
-Using it against the supported Layer-216 schema would silently serialize stale constructors. Add
+Using it against the supported Layer-229 schema would silently serialize stale constructors. Add
 missing capabilities through a versioned raw API that uses the grammers layer instead.
 
 ## Facade shape
@@ -106,7 +106,7 @@ that closed the post-parity gaps.
 ## Raw API contract
 
 `org.kotlogramme.raw.RawTelegramApi` bundles a generated `kotlogram-raw-schema/v1` manifest for
-Layer 216. Its experimental `invoke` method transmits an already TL-encoded request through the
+Layer 229. Its experimental `invoke` method transmits an already TL-encoded request through the
 grammers sender pool and returns the raw response bytes. The caller must use a codec generated for
 the same manifest version and layer.
 
@@ -121,7 +121,7 @@ Everything in `native/operations.txt` is reachable from Kotlin. What stays outsi
 
 - TL methods this layer has not added: chatlist folder creation, sticker install/archive,
   per-peer notification settings, the story and paid-media surfaces, and most `messages.*` utility
-  calls. `invokeRaw` reaches all of them with a Layer-216 codec.
+  calls. `invokeRaw` reaches all of them with a Layer-229 codec.
 - Formatting-entity projection on received messages and rendered `markdownText`/`htmlText`; the
   send and edit directions carry explicit entities, the read direction reports plain text.
 - The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` rather
