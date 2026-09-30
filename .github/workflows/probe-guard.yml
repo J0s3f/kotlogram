@@ -3,7 +3,7 @@ name: probe-guard
 # Throwaway: does a schedule trigger populate github.ref / github.ref_name for format()?
 on:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '*/5 * * * *'
   workflow_dispatch:
 
 jobs:
