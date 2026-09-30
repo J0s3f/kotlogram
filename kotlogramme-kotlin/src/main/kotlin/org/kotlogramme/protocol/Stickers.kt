@@ -29,6 +29,36 @@ internal data class GetRecentStickersPayload(
     val hash: Long = 0,
 )
 
+/**
+ * Payload of `sendSticker`.
+ *
+ * The peer fields sit at the top level, which is the flattened shape the native side reads. The set
+ * is named exactly as `messagesGetStickerSet` names it: a non-empty [shortName] wins over the
+ * [id]/[accessHash] pair. [index] is the zero-based position of the sticker in the set's document
+ * list, which is the order `messagesGetStickerSet` reports.
+ */
+@Serializable
+internal data class SendStickerPayload(
+    val peerHandle: Long? = null,
+    val username: String? = null,
+    val shortName: String? = null,
+    val id: Long? = null,
+    val accessHash: Long? = null,
+    val index: Int,
+    val replyToMessageId: Int? = null,
+    val silent: Boolean = false,
+) {
+    constructor(
+        peer: PeerTarget,
+        shortName: String?,
+        id: Long?,
+        accessHash: Long?,
+        index: Int,
+        replyToMessageId: Int?,
+        silent: Boolean,
+    ) : this(peer.peerHandle, peer.username, shortName, id, accessHash, index, replyToMessageId, silent)
+}
+
 /** One sticker pack: an emoticon and the ids of the documents it groups. */
 @Serializable
 internal data class StickerPack(val emoticon: String, val documents: List<Long> = emptyList())

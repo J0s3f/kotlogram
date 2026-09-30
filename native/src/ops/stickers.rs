@@ -5,16 +5,19 @@
 //! invokes it through the client and projects the result through [`crate::dto::stickers`]. Every
 //! operation here is get-only; installing, archiving and editing sets stay behind `invokeRaw`.
 
+use grammers_client::message::InputMessage;
 use grammers_client::tl;
 use serde::Deserialize;
 
 use super::Handler;
-use crate::client::NativeClient;
+use crate::client::{resolve_peer, NativeClient};
+use crate::dto::message::message_dto;
 use crate::dto::stickers::{
     all_stickers_dto, faved_stickers_dto, full_sticker_set_dto, recent_stickers_dto,
     StickerSetResultDto,
 };
 use crate::error::{invocation_error, json_string, parse_payload};
+use crate::payload::PeerTarget;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -49,12 +52,36 @@ struct GetRecentStickersPayload {
     hash: i64,
 }
 
+/// Payload of `sendSticker`: the sticker to send, named the same way `messagesGetStickerSet` is.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct SendStickerPayload {
+    #[serde(flatten)]
+    peer: PeerTarget,
+    /// The set's short name, which the layer resolves without an id.
+    #[serde(default)]
+    short_name: Option<String>,
+    /// The set's id, paired with `accessHash` when no short name is given.
+    #[serde(default)]
+    id: Option<i64>,
+    #[serde(default)]
+    access_hash: Option<i64>,
+    /// Zero-based position of the sticker in the set's document list, which is the order
+    /// `messagesGetStickerSet` reports.
+    index: usize,
+    #[serde(default)]
+    reply_to_message_id: Option<i32>,
+    #[serde(default)]
+    silent: bool,
+}
+
 /// Operation names routed by this module.
 pub(crate) const OPERATIONS: &[&str] = &[
     "messagesGetStickerSet",
     "messagesGetAllStickers",
     "messagesGetRecentStickers",
     "messagesGetFavedStickers",
+    "sendSticker",
 ];
 
 /// Routes [operation] to its handler, or returns `None` when the name is not this module's.
@@ -64,15 +91,80 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
         "messagesGetAllStickers" => get_all_stickers,
         "messagesGetRecentStickers" => get_recent_stickers,
         "messagesGetFavedStickers" => get_faved_stickers,
+        "sendSticker" => send_sticker,
         _ => return None,
     })
+}
+
+/// Sends one sticker of a set.
+///
+/// The set is fetched first, because sending a document needs its file reference and only the
+/// layer's answer carries one; that keeps the reference out of the JSON contract entirely, where it
+/// would go stale. The chosen document is turned into the layer's `inputMediaDocument` directly,
+/// exactly as grammers' own `Media::to_raw_input_media` does.
+fn send_sticker(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: SendStickerPayload = parse_payload(payload)?;
+    let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
+    let stickerset = input_sticker_set(data.short_name.as_deref(), data.id, data.access_hash)?;
+    let answer = native
+        .runtime
+        .block_on(
+            native
+                .client
+                .invoke(&tl::functions::messages::GetStickerSet {
+                    stickerset,
+                    hash: 0,
+                }),
+        )
+        .map_err(invocation_error)?;
+    let documents = match answer {
+        tl::enums::messages::StickerSet::Set(set) => set.documents,
+        tl::enums::messages::StickerSet::NotModified => {
+            return Err(
+                "STICKERSET_INVALID: the layer reported the set unchanged, so it carried no \
+                 sticker to send"
+                    .to_owned(),
+            )
+        }
+    };
+    let document = documents.get(data.index).ok_or_else(|| {
+        format!(
+            "index {} is out of range: the set carries {} stickers",
+            data.index,
+            documents.len()
+        )
+    })?;
+    let tl::enums::Document::Document(document) = document else {
+        return Err("STICKER_INVALID: the set carries a document the layer cannot send".to_owned());
+    };
+    let media = tl::types::InputMediaDocument {
+        spoiler: false,
+        id: tl::enums::InputDocument::Document(tl::types::InputDocument {
+            id: document.id,
+            access_hash: document.access_hash,
+            file_reference: document.file_reference.clone(),
+        }),
+        ttl_seconds: None,
+        query: None,
+        video_cover: None,
+        video_timestamp: None,
+    };
+    let message = InputMessage::new()
+        .media(media)
+        .reply_to(data.reply_to_message_id)
+        .silent(data.silent);
+    let message = native
+        .runtime
+        .block_on(native.client.send_message(peer, message))
+        .map_err(invocation_error)?;
+    json_string(message_dto(native, &message))
 }
 
 /// Reads one sticker set, answering the layer's `messagesStickerSetNotModified` as an empty
 /// result.
 fn get_sticker_set(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: GetStickerSetPayload = parse_payload(payload)?;
-    let stickerset = input_sticker_set(&data)?;
+    let stickerset = input_sticker_set(data.short_name.as_deref(), data.id, data.access_hash)?;
     let result = native
         .runtime
         .block_on(
@@ -139,19 +231,23 @@ fn get_faved_stickers(native: &NativeClient, payload: &str) -> Result<String, St
 }
 
 /// Maps the payload onto the layer's `InputStickerSet`, preferring a short name over the id pair.
-fn input_sticker_set(data: &GetStickerSetPayload) -> Result<tl::enums::InputStickerSet, String> {
-    if let Some(short_name) = data.short_name.as_deref().filter(|name| !name.is_empty()) {
+fn input_sticker_set(
+    short_name: Option<&str>,
+    id: Option<i64>,
+    access_hash: Option<i64>,
+) -> Result<tl::enums::InputStickerSet, String> {
+    if let Some(short_name) = short_name.filter(|name| !name.is_empty()) {
         return Ok(tl::enums::InputStickerSet::ShortName(
             tl::types::InputStickerSetShortName {
                 short_name: short_name.to_owned(),
             },
         ));
     }
-    match (data.id, data.access_hash) {
+    match (id, access_hash) {
         (Some(id), Some(access_hash)) => Ok(tl::enums::InputStickerSet::Id(
             tl::types::InputStickerSetId { id, access_hash },
         )),
-        _ => Err("messagesGetStickerSet needs a shortName, or both id and accessHash".to_owned()),
+        _ => Err("a sticker set needs a shortName, or both id and accessHash".to_owned()),
     }
 }
 
@@ -187,13 +283,7 @@ mod tests {
     #[test]
     fn a_short_name_maps_to_the_layer_input() {
         assert_eq!(
-            input_sticker_set(&GetStickerSetPayload {
-                id: Some(1),
-                access_hash: Some(2),
-                short_name: Some("somePack".to_owned()),
-                hash: 0,
-            })
-            .expect("a short name"),
+            input_sticker_set(Some("somePack"), Some(1), Some(2)).expect("a short name"),
             tl::enums::InputStickerSet::ShortName(tl::types::InputStickerSetShortName {
                 short_name: "somePack".to_owned(),
             })
@@ -203,13 +293,7 @@ mod tests {
     #[test]
     fn an_id_pair_maps_to_the_layer_input() {
         assert_eq!(
-            input_sticker_set(&GetStickerSetPayload {
-                id: Some(1_234_567_890),
-                access_hash: Some(-9_876_543_210),
-                short_name: None,
-                hash: 0,
-            })
-            .expect("an id pair"),
+            input_sticker_set(None, Some(1_234_567_890), Some(-9_876_543_210)).expect("an id pair"),
             tl::enums::InputStickerSet::Id(tl::types::InputStickerSetId {
                 id: 1_234_567_890,
                 access_hash: -9_876_543_210,
@@ -219,22 +303,10 @@ mod tests {
 
     #[test]
     fn an_empty_or_partial_sticker_set_payload_is_refused() {
-        let error = input_sticker_set(&GetStickerSetPayload {
-            id: None,
-            access_hash: None,
-            short_name: None,
-            hash: 0,
-        })
-        .expect_err("no set");
-        assert!(error.contains("messagesGetStickerSet needs a shortName"));
+        let error = input_sticker_set(None, None, None).expect_err("no set");
+        assert!(error.contains("a sticker set needs a shortName"));
 
-        let error = input_sticker_set(&GetStickerSetPayload {
-            id: Some(1),
-            access_hash: None,
-            short_name: None,
-            hash: 0,
-        })
-        .expect_err("an id alone is not enough");
+        let error = input_sticker_set(None, Some(1), None).expect_err("an id alone is not enough");
         assert!(error.contains("both id and accessHash"));
     }
 

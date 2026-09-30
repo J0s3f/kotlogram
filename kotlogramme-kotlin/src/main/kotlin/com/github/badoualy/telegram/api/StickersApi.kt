@@ -33,4 +33,28 @@ interface StickersApi : BridgeApi {
     /** Lists the stickers the account has favourited. */
     fun messagesGetFavedStickers(hash: Long = 0): FavedStickers =
         bridge.messagesGetFavedStickers(hash).toCompatibility()
+
+    /**
+     * Sends one sticker of a set.
+     *
+     * The set is named as in [messagesGetStickerSet] and [index] is the zero-based position of the
+     * sticker in the set's document list.
+     */
+    fun messagesSendSticker(
+        peer: TelegramPeer,
+        shortName: String? = null,
+        id: Long? = null,
+        accessHash: Long? = null,
+        index: Int,
+        replyToMsgId: Int? = null,
+        silent: Boolean = false,
+    ): Message = bridge.sendSticker(
+        peer.native,
+        shortName,
+        id,
+        accessHash,
+        index,
+        replyToMsgId,
+        silent,
+    ).toCompatibility()
 }

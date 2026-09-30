@@ -82,6 +82,7 @@ sendMedia
 sendMediaUrl
 sendMessage
 sendReaction
+sendSticker
 setAdminRights
 setBannedRights
 signIn
