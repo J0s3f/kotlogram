@@ -10,7 +10,6 @@ use serde::Serialize;
 
 use crate::client::NativeClient;
 use crate::dto::peer::{peer_dto, PeerDto};
-use crate::error::invocation_error;
 
 /// One dialog filter: its identity, its flag set and its resolved peers.
 ///
@@ -147,10 +146,15 @@ fn peers_dto(
         if matches!(peer, tl::enums::InputPeer::Empty) {
             continue;
         }
-        let resolved = native
+        let resolved = match native
             .runtime
             .block_on(native.client.resolve_peer(peer.clone()))
-            .map_err(invocation_error)?;
+        {
+            Ok(resolved) => resolved,
+            // A filter can hold a channel this account can no longer access; the layer answers
+            // CHANNEL_PRIVATE for it. Skipping the peer keeps the rest of the listing usable.
+            Err(_) => continue,
+        };
         rows.push(peer_dto(native, &resolved)?);
     }
     Ok(rows)
