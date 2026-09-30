@@ -16,7 +16,9 @@ use serde::Serialize;
 ///
 /// [Self::kind] is the grammers `Media` variant in lowerCamelCase, or `unknown` for a variant this
 /// bridge does not model yet. `unknown` still carries the object, so a media this build does not
-/// understand stays distinguishable from a message that has no media at all.
+/// understand stays distinguishable from a message that has no media at all. A document is the one
+/// exception: the layer reports `messageMediaDocument` for a video, a voice note and an animation
+/// too, so [Self::kind] there names what the document carries instead of the variant.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MediaDto {
@@ -244,9 +246,27 @@ pub(crate) fn media_dto(media: &ClientMedia) -> MediaDto {
     }
 }
 
+/// Names a document by what it carries, not by the layer variant.
+///
+/// The layer reports `messageMediaDocument` for a plain file, a video, a voice note and an
+/// animation alike, so its variant cannot name the kind a client renders by. The document's own
+/// `is_animated` flag and MIME type can: an animated document is an animation whatever its type,
+/// and the MIME type's prefix separates video and audio from a generic file.
+pub(crate) fn document_kind(is_animated: bool, mime_type: Option<&str>) -> &'static str {
+    if is_animated {
+        "animation"
+    } else if mime_type.is_some_and(|mime_type| mime_type.starts_with("video/")) {
+        "video"
+    } else if mime_type.is_some_and(|mime_type| mime_type.starts_with("audio/")) {
+        "audio"
+    } else {
+        "document"
+    }
+}
+
 /// The fields shared by a document and the document behind a sticker.
 fn document_dto(document: &grammers_client::media::Document) -> MediaDto {
-    let mut dto = MediaDto::empty("document");
+    let mut dto = MediaDto::empty(document_kind(document.is_animated(), document.mime_type()));
     // `Document::id` and `Document::name` unwrap the inner document, which the layer may leave
     // unset behind the `document` flag; the other accessors already cope with its absence.
     if document.raw.document.is_some() {

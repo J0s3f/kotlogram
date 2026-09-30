@@ -193,6 +193,9 @@ data class ChatRestrictions(
  * flat shape the bridge sends: [kind] names the variant and says which of the other fields are
  * populated, the rest being `null`. [kind] is `unknown` for a variant this build cannot name, and
  * it still carries the object, so such an attachment stays distinguishable from no attachment.
+ * The layer reports the `messageMediaDocument` variant for a video, a voice note and an animation
+ * alike, so a document is instead named by what it carries: `video`, `audio` or `animation`, and
+ * `document` for a plain file.
  */
 data class Media(
     val kind: String,

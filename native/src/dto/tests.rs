@@ -12,7 +12,7 @@ use serde_json::json;
 use crate::dto::action::MessageActionDto;
 use crate::dto::dialog::DialogDto;
 use crate::dto::markup::{ButtonDto, ReplyMarkupDto};
-use crate::dto::media::MediaDto;
+use crate::dto::media::{document_kind, MediaDto};
 use crate::dto::message::{ForwardHeaderDto, MessageDto, ReplyHeaderDto};
 use crate::dto::participant::ParticipantDto;
 use crate::dto::peer::PeerDto;
@@ -540,6 +540,7 @@ fn participant_encodes_every_projected_field() {
 
 #[test]
 fn media_encodes_the_fields_of_its_kind() {
+    // `full_media` is a `application/pdf` document: no other kind names it.
     let encoded = serde_json::to_value(full_media()).expect("media encodes");
     assert_eq!(encoded["kind"], json!("document"));
 
@@ -564,6 +565,20 @@ fn media_encodes_the_fields_of_its_kind() {
             "isAnimated": false,
         })
     );
+}
+
+#[test]
+fn a_document_is_named_by_what_it_carries() {
+    // The layer calls all of these `messageMediaDocument`; the MIME type and the animation flag
+    // are what tell them apart.
+    assert_eq!(document_kind(false, Some("video/mp4")), "video");
+    assert_eq!(document_kind(false, Some("audio/ogg")), "audio");
+    assert_eq!(document_kind(true, Some("video/mp4")), "animation");
+    // An animation is named by its flag, whatever its MIME type says.
+    assert_eq!(document_kind(true, Some("image/gif")), "animation");
+    // A plain file, and a document with no MIME type at all, stay documents.
+    assert_eq!(document_kind(false, Some("application/pdf")), "document");
+    assert_eq!(document_kind(false, None), "document");
 }
 
 #[test]
