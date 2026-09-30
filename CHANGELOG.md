@@ -7,7 +7,17 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
-## 0.4.0 — unreleased
+## 0.5.0 — unreleased
+
+### Added
+
+- `MediaKind.VIDEO` on `MediaApi.mediaSend` — sends a local file as a **streamable video**. Telegram
+  plays a video in place only when the document carries a `DocumentAttributeVideo` with
+  `supports_streaming`, and grammers' `photo`/`document`/`file` builders cannot add attributes, so
+  the video document is always built raw. `durationSeconds`, `width` and `height` describe it, and
+  default to 0 when the caller does not know them.
+
+## 0.4.0 — 2026-09-30
 
 ### Added
 
