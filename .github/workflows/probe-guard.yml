@@ -1,0 +1,22 @@
+name: probe-guard
+
+# Throwaway: does a schedule trigger populate github.ref / github.ref_name for format()?
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: surfaced ref values
+        run: |
+          echo "ref=[${{ github.ref }}]"
+          echo "ref_name=[${{ github.ref_name }}]"
+          echo "event=[${{ github.event_name }}]"
+          echo "format-ref=[${{ format('refs/heads/{0}', github.ref_name) }}]"
+          echo "format-compare=[${{ format('refs/heads/{0}', github.ref_name) }}] vs [${{ github.ref }}]"
+      - name: the condition that would gate the nightly
+        run: |
+          echo "equality test result: ${{ format('refs/heads/{0}', github.ref_name) == github.ref }}"
