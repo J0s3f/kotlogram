@@ -10,9 +10,15 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Release version to publish, without the v prefix
-        required: true
+        description: Version to build; publishing uses the tag, so this only names the artifacts
+        required: false
+        default: '0.0.0-dev'
         type: string
+      publish:
+        description: Publish to Maven Central and create the GitHub Release
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -28,6 +34,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      # grammers is a git dependency on codeberg, and a failed release is normally retried on the
+      # same tag. Caching the cargo home means a retry reuses the clone it already made instead of
+      # going back to codeberg, which is the part that keeps failing.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native
+          key: raw-schema
+          cache-targets: false
       - name: Fetch the pinned grammers schema
         run: cargo fetch --manifest-path native/Cargo.toml
       - name: Generate and verify the Layer manifest
@@ -76,6 +90,13 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.targets }}
+      # Six platforms recompiling grammers from source is the bulk of a release, and the retry after
+      # a codeberg failure re-runs the same tag ref, so it can reuse whatever the first attempt built.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native
+          key: ${{ matrix.platform }}
+          cache-on-failure: true
       - name: Build native library
         shell: bash
         run: |
@@ -124,6 +145,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10'
+          # Nothing runs on main any more, so a tag build has no warmed cache to read; letting it
+          # write one means the retry of a failed release reuses what the first attempt downloaded.
+          cache-read-only: false
       - name: Determine the release version
         id: release
         shell: bash
@@ -145,7 +169,7 @@ jobs:
           path: kotlogramme-kotlin/build/libs/*.jar
 
   publish-central:
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish)
     needs: [native, raw-schema, package]
     runs-on: ubuntu-24.04
     permissions:
@@ -162,6 +186,8 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
       - name: Publish the signed release to the Central staging API
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
@@ -193,7 +219,7 @@ jobs:
             "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.github.j0s3f?publishing_type=automatic"
 
   github-release:
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || github.event_name == 'workflow_dispatch'
+    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish)
     needs: [native, raw-schema, package, publish-central]
     runs-on: ubuntu-24.04
     permissions:
