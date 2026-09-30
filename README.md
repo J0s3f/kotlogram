@@ -27,7 +27,8 @@ each reachable from Kotlin through a 242-test Rust suite and a 251-test JVM suit
 - native-library loading from the JAR and CI builds for Linux/macOS/Windows on x86_64/ARM64
 
 Notable gaps: the historical generated TL API is not recreated (only the versioned raw API exposed);
-formatting entities are writable but not projected on received messages; a message's inline-bot
+a message's own formatting entities and its rendered markdown/HTML are projected, but the entities
+on a reply's quoted text are not yet; a message's inline-bot
 origin is projected as a bare `viaBotId` with no user-by-id lookup to turn it into a username
 (`contactsResolveUsername` resolves the other direction, and grammers exposes no `via_bot()` peer);
 sticker install/archive, per-peer notification settings and the story/paid-media surfaces stay behind

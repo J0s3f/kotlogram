@@ -22,7 +22,7 @@ unchanged.
 | --- | --- |
 | `types/peer/user.rs` | phone, bot/verified/scam/restricted/support flags, `status`, lang, contact flags, restriction reasons, alternate usernames |
 | `types/peer/{group,channel}.rs` | title, alternate usernames, photo, megagroup flag, admin rights |
-| `types/message.rs` | date, edit date, media, sender, peer, view/forward/reply/reaction counts, pinned, mentioned, silent, post, `grouped_id`, `via_bot_id`, post author, reply markup, entities, forward header, action, `html_text`/`markdown_text` |
+| `types/message.rs` | date, edit date, media, sender, peer, view/forward/reply/reaction counts, pinned, mentioned, silent, post, `grouped_id`, `via_bot_id`, post author, reply markup, forward header, action |
 | `types/media.rs`, `types/photo_sizes.rs` | all `Media` variants (photo, document, sticker, contact, poll, geo, dice, venue, geo-live, web page) with sizes, duration, resolution, spoiler, ttl |
 | `types/dialog.rs` | unread count, pinned, top message, draft, folder (readable from `Dialog.raw`) |
 | `types/participant.rs`, `types/permissions.rs` | role detail, date, rank, permissions, restrictions, inviter |

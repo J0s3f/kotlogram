@@ -654,6 +654,9 @@ mod tests {
                 reply_markup: None,
                 peer: None,
                 sender: None,
+                entities: Vec::new(),
+                html_text: "hello".to_owned(),
+                markdown_text: "hello".to_owned(),
             }),
             state: Some(update_state_dto(&State {
                 date: 1_700_000_000,

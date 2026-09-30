@@ -139,8 +139,8 @@ pub(crate) enum MarkupSpec {
 ///
 /// `entityType` names the layer's entity constructor without its `messageEntity` prefix, for
 /// example `bold`, `pre` or `textUrl`, and the variant-specific fields are absent on the types
-/// that cannot answer them. This is the same shape a projection of the received entities would
-/// serialize, so a message read back can be sent again once projection lands.
+/// that cannot answer them. This is the same shape the received entities project to, so a message
+/// read back can be sent again.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct EntitySpec {

@@ -13,7 +13,7 @@ use crate::dto::action::MessageActionDto;
 use crate::dto::dialog::DialogDto;
 use crate::dto::markup::{ButtonDto, ReplyMarkupDto};
 use crate::dto::media::{document_kind, MediaDto};
-use crate::dto::message::{ForwardHeaderDto, MessageDto, ReplyHeaderDto};
+use crate::dto::message::{ForwardHeaderDto, MessageDto, MessageEntityDto, ReplyHeaderDto};
 use crate::dto::participant::ParticipantDto;
 use crate::dto::peer::PeerDto;
 use crate::dto::permissions::{ChatPermissionsDto, ChatRestrictionsDto};
@@ -192,6 +192,20 @@ fn full_message(media: Option<MediaDto>) -> MessageDto {
         }),
         peer: Some(full_peer()),
         sender: Some(full_user()),
+        entities: vec![
+            MessageEntityDto::plain("bold", 0, 5),
+            MessageEntityDto {
+                entity_type: "textUrl",
+                offset: 6,
+                length: 4,
+                url: Some("https://example.org".to_owned()),
+                user_id: None,
+                language: None,
+                custom_emoji_id: None,
+            },
+        ],
+        html_text: "<b>hello</b>".to_owned(),
+        markdown_text: "**hello**".to_owned(),
     }
 }
 
@@ -414,6 +428,28 @@ fn message_encodes_every_projected_field() {
         "replyCount": 3,
         "reactionCount": 2,
         "media": null,
+        "entities": [
+            {
+                "type": "bold",
+                "offset": 0,
+                "length": 5,
+                "url": null,
+                "userId": null,
+                "language": null,
+                "customEmojiId": null,
+            },
+            {
+                "type": "textUrl",
+                "offset": 6,
+                "length": 4,
+                "url": "https://example.org",
+                "userId": null,
+                "language": null,
+                "customEmojiId": null,
+            },
+        ],
+        "htmlText": "<b>hello</b>",
+        "markdownText": "**hello**",
     });
     let object = expected.as_object_mut().expect("an object");
     object.insert(
@@ -610,6 +646,121 @@ fn message_carries_its_media() {
         serde_json::to_value(full_message(Some(full_media()))).expect("a message encodes");
     assert_eq!(encoded["media"]["kind"], json!("document"));
     assert_eq!(encoded["media"]["mimeType"], json!("application/pdf"));
+}
+
+#[test]
+fn a_plain_entity_carries_every_field() {
+    // Every field is always present, so an entity is distinguished by which ones stop being null.
+    assert_json(
+        &MessageEntityDto::plain("bold", 1, 4),
+        json!({
+            "type": "bold",
+            "offset": 1,
+            "length": 4,
+            "url": null,
+            "userId": null,
+            "language": null,
+            "customEmojiId": null,
+        }),
+    );
+}
+
+#[test]
+fn an_entity_of_each_kind_carries_its_extra() {
+    assert_json(
+        &MessageEntityDto {
+            entity_type: "textUrl",
+            offset: 0,
+            length: 2,
+            url: Some("https://example.org".to_owned()),
+            user_id: None,
+            language: None,
+            custom_emoji_id: None,
+        },
+        json!({
+            "type": "textUrl",
+            "offset": 0,
+            "length": 2,
+            "url": "https://example.org",
+            "userId": null,
+            "language": null,
+            "customEmojiId": null,
+        }),
+    );
+    assert_json(
+        &MessageEntityDto {
+            entity_type: "mentionName",
+            offset: 3,
+            length: 4,
+            url: None,
+            user_id: Some(7),
+            language: None,
+            custom_emoji_id: None,
+        },
+        json!({
+            "type": "mentionName",
+            "offset": 3,
+            "length": 4,
+            "url": null,
+            "userId": 7,
+            "language": null,
+            "customEmojiId": null,
+        }),
+    );
+    assert_json(
+        &MessageEntityDto {
+            entity_type: "pre",
+            offset: 8,
+            length: 4,
+            url: None,
+            user_id: None,
+            language: Some("rust".to_owned()),
+            custom_emoji_id: None,
+        },
+        json!({
+            "type": "pre",
+            "offset": 8,
+            "length": 4,
+            "url": null,
+            "userId": null,
+            "language": "rust",
+            "customEmojiId": null,
+        }),
+    );
+    assert_json(
+        &MessageEntityDto {
+            entity_type: "customEmoji",
+            offset: 13,
+            length: 1,
+            url: None,
+            user_id: None,
+            language: None,
+            custom_emoji_id: Some(5_150),
+        },
+        json!({
+            "type": "customEmoji",
+            "offset": 13,
+            "length": 1,
+            "url": null,
+            "userId": null,
+            "language": null,
+            "customEmojiId": 5_150,
+        }),
+    );
+}
+
+#[test]
+fn a_message_without_entities_carries_an_empty_list() {
+    let mut message = full_message(None);
+    message.entities = Vec::new();
+    message.html_text = "hello".to_owned();
+    message.markdown_text = "hello".to_owned();
+
+    let encoded = serde_json::to_value(&message).expect("a message encodes");
+    // No entities is an empty list, never null; the rendered text is then the plain text.
+    assert_eq!(encoded["entities"], json!([]));
+    assert_eq!(encoded["htmlText"], json!("hello"));
+    assert_eq!(encoded["markdownText"], json!("hello"));
 }
 
 #[test]

@@ -128,6 +128,56 @@ class MessagesProtocolTest {
         assertEquals(2, decoded.reactionCount)
         assertEquals("document", decoded.media?.kind)
         assertNull(decoded.editDate)
+        assertEquals("<b>hello</b>", decoded.htmlText)
+        assertEquals("**hello**", decoded.markdownText)
+        assertEquals(4, decoded.entities.size)
+    }
+
+    @Test
+    fun `a message document decodes an entity of each kind that carries an extra`() {
+        val decoded = json.decodeFromString<Message>(MESSAGE)
+
+        // Every field travels for every kind; only the extra a kind carries stops being null.
+        val pre = decoded.entities[0]
+        assertEquals("pre", pre.type)
+        assertEquals(0, pre.offset)
+        assertEquals(4, pre.length)
+        assertEquals("rust", pre.language)
+        assertNull(pre.url)
+        assertNull(pre.userId)
+        assertNull(pre.customEmojiId)
+
+        val textUrl = decoded.entities[1]
+        assertEquals("textUrl", textUrl.type)
+        assertEquals("https://example.org", textUrl.url)
+        assertNull(textUrl.language)
+        assertNull(textUrl.userId)
+        assertNull(textUrl.customEmojiId)
+
+        val mentionName = decoded.entities[2]
+        assertEquals("mentionName", mentionName.type)
+        assertEquals(42L, mentionName.userId)
+        assertNull(mentionName.url)
+        assertNull(mentionName.language)
+        assertNull(mentionName.customEmojiId)
+
+        val customEmoji = decoded.entities[3]
+        assertEquals("customEmoji", customEmoji.type)
+        assertEquals(5_150L, customEmoji.customEmojiId)
+        assertNull(customEmoji.url)
+        assertNull(customEmoji.userId)
+        assertNull(customEmoji.language)
+    }
+
+    @Test
+    fun `a message without entities decodes an empty list, not null`() {
+        val decoded = json.decodeFromString<Message>(
+            """{"id": 1, "text": "hi", "outgoing": false, "replyToMessageId": null}""",
+        )
+
+        assertEquals(0, decoded.entities.size)
+        assertEquals("", decoded.htmlText)
+        assertEquals("", decoded.markdownText)
     }
 
     @Test
@@ -337,6 +387,17 @@ class MessagesProtocolTest {
              "postAuthor": "Author", "groupedId": 88, "viewCount": 5, "forwardCount": 4,
              "replyCount": 3, "reactionCount": 2,
              "media": {"kind": "document", "id": 5150, "name": "report.pdf"},
+             "entities": [
+                 {"type": "pre", "offset": 0, "length": 4, "url": null, "userId": null,
+                  "language": "rust", "customEmojiId": null},
+                 {"type": "textUrl", "offset": 5, "length": 4, "url": "https://example.org",
+                  "userId": null, "language": null, "customEmojiId": null},
+                 {"type": "mentionName", "offset": 10, "length": 3, "url": null, "userId": 42,
+                  "language": null, "customEmojiId": null},
+                 {"type": "customEmoji", "offset": 14, "length": 1, "url": null, "userId": null,
+                  "language": null, "customEmojiId": 5150}],
+             "htmlText": "<b>hello</b>",
+             "markdownText": "**hello**",
              "forwardHeader": {
                  "imported": true, "savedOut": true, "fromId": 7, "fromName": "Some One",
                  "date": 1700000000000, "channelPost": 42, "postAuthor": "Author",

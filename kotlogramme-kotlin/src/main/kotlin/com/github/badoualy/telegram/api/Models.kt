@@ -47,6 +47,7 @@ import org.kotlogramme.protocol.Media as BridgeMedia
 import org.kotlogramme.protocol.MediaChunk as BridgeMediaChunk
 import org.kotlogramme.protocol.Message as BridgeMessage
 import org.kotlogramme.protocol.MessageAction
+import org.kotlogramme.protocol.MessageEntity as BridgeMessageEntity
 import org.kotlogramme.protocol.Participant as BridgeParticipant
 import org.kotlogramme.protocol.ParticipantPermissions as BridgeParticipantPermissions
 import org.kotlogramme.protocol.ParticipantsResult as BridgeParticipantsResult
@@ -297,10 +298,11 @@ data class ReplyHeader(
 /**
  * A Telegram message, as far as grammers projects one.
  *
- * The raw-layer-only accessors — the format entities and the rendered markdown/html text — are
- * left for a later phase. grammers has no caption accessor, so the text of a captioned attachment
- * is [text]. [date] and [editDate] are epoch milliseconds, and [peerId] and [senderId] are `null`
- * for a message grammers could not place.
+ * [entities] are the formatting entities on [text], empty when it is unformatted, and [htmlText]
+ * and [markdownText] are the same text rendered from those entities by grammers. grammers has no
+ * caption accessor, so the text of a captioned attachment is [text]. [date] and [editDate] are
+ * epoch milliseconds, and [peerId] and [senderId] are `null` for a message grammers could not
+ * place.
  *
  * [peer] and [sender] are the full objects for [peerId] and [senderId]. [sender] is `null` when
  * the sender is not a user (a group or channel posting anonymously).
@@ -345,6 +347,12 @@ data class Message(
     val peer: TelegramPeer? = null,
     /** The full sender object for [senderId], when the sender is a user. */
     val sender: User? = null,
+    /** The formatting entities on [text], empty when the text is unformatted. */
+    val entities: List<MessageEntity> = emptyList(),
+    /** [text] rendered as HTML from [entities], as grammers computes it. */
+    val htmlText: String = "",
+    /** [text] rendered as CommonMark from [entities], as grammers computes it. */
+    val markdownText: String = "",
 )
 
 /** A current-layer Telegram update delivered by grammers' ordered update stream. */
@@ -367,10 +375,11 @@ data class OutgoingMedia(
 )
 
 /**
- * One formatting entity an outgoing message carries.
+ * One formatting entity a message carries, in either direction.
  *
  * [type] is the layer's entity constructor without its `messageEntity` prefix, for example `bold`,
- * `pre` or `textUrl`. The variant-specific fields default to null and are only meaningful on the
+ * `pre` or `textUrl`. A received entity carries the same name and fields, so it can be handed back
+ * to a send unchanged. The variant-specific fields default to null and are only meaningful on the
  * types that accept them; a type whose required field is missing makes the native side refuse the
  * request rather than guess.
  */
@@ -784,6 +793,11 @@ internal fun BridgeMessage.toCompatibility() = Message(
     forwardHeader?.toCompatibility(), replyHeader?.toCompatibility(),
     restrictionReasons.map { it.toCompatibility() }, action,
     replyMarkup?.toCompatibility(), peer?.toCompatibility(), sender?.toCompatibility(),
+    entities.map { it.toCompatibility() }, htmlText, markdownText,
+)
+
+internal fun BridgeMessageEntity.toCompatibility() = MessageEntity(
+    type, offset, length, url, userId, language, customEmojiId,
 )
 
 internal fun BridgeForwardHeader.toCompatibility() = ForwardHeader(

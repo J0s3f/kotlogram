@@ -16,10 +16,10 @@ use crate::dto::user::{restriction_reason_dto, user_dto, RestrictionReasonDto, U
 
 /// A Telegram message, mirroring the accessors grammers exposes on [`ClientMessage`].
 ///
-/// The raw-layer-only accessors — the format entities and the rendered markdown/html text — are
-/// left for a later phase: they hand out `grammers-tl-values`, which the bridge does not yet have
-/// a JSON shape for. The reply markup, the service action, the forward and reply headers and the
-/// restriction reasons are projected here.
+/// The formatting entities grammers reports for the text are projected as [MessageEntityDto] and
+/// the rendered text grammers derives from them as [Self::html_text] and [Self::markdown_text].
+/// The reply markup, the service action, the forward and reply headers and the restriction reasons
+/// are projected here too.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct MessageDto {
@@ -65,6 +65,53 @@ pub(crate) struct MessageDto {
     pub(crate) peer: Option<PeerDto>,
     /// The full sender object for [Self::sender_id], when the sender is a user.
     pub(crate) sender: Option<UserDto>,
+    /// The formatting entities on [Self::text], empty when the text is unformatted.
+    pub(crate) entities: Vec<MessageEntityDto>,
+    /// [Self::text] rendered as HTML from [Self::entities], as grammers computes it.
+    pub(crate) html_text: String,
+    /// [Self::text] rendered as CommonMark from [Self::entities], as grammers computes it.
+    pub(crate) markdown_text: String,
+}
+
+/// One formatting entity on a message's text, flattened like [MediaDto].
+///
+/// [Self::entity_type] is the layer's entity constructor without its `messageEntity` prefix, in
+/// lowerCamelCase — `bold`, `pre`, `textUrl`, `mentionName`, `customEmoji` — which is the name an
+/// [EntitySpec](crate::payload::EntitySpec) reads back, so a received entity can be sent again.
+/// The extra fields are always present in the JSON and `null` on the kinds that do not carry them.
+/// [Self::custom_emoji_id] is the layer's `document_id` for a custom-emoji entity.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct MessageEntityDto {
+    /// The layer's entity type without its `messageEntity` prefix, in lowerCamelCase.
+    #[serde(rename = "type")]
+    pub(crate) entity_type: &'static str,
+    pub(crate) offset: i32,
+    pub(crate) length: i32,
+    /// The target of a `textUrl` entity.
+    pub(crate) url: Option<String>,
+    /// The target of a `mentionName` entity, as a Bot API dialog id.
+    pub(crate) user_id: Option<i64>,
+    /// The language tag of a `pre` entity, empty when the layer carries none.
+    pub(crate) language: Option<String>,
+    /// The document behind a `customEmoji` entity.
+    pub(crate) custom_emoji_id: Option<i64>,
+}
+
+impl MessageEntityDto {
+    /// A projection with nothing but the kind and its span. Every arm starts here and fills in the
+    /// fields its kind actually carries, which keeps the field list in one place.
+    pub(crate) fn plain(entity_type: &'static str, offset: i32, length: i32) -> Self {
+        Self {
+            entity_type,
+            offset,
+            length,
+            url: None,
+            user_id: None,
+            language: None,
+            custom_emoji_id: None,
+        }
+    }
 }
 
 /// The header of a forwarded message, mirroring grammers' `MessageFwdHeader`.
@@ -110,8 +157,8 @@ pub(crate) struct ForwardHeaderDto {
 /// which of the other fields are populated, the rest being the defaults. Every field is always
 /// present in the JSON.
 ///
-/// `quote_entities` is absent: formatting entities are left for a later phase, as they are on the
-/// message itself.
+/// `quote_entities` is absent: the message's own entities are projected, but the entities on the
+/// quoted text are not yet.
 ///
 /// [MediaDto]: crate::dto::media::MediaDto
 #[derive(Serialize)]
@@ -225,6 +272,84 @@ pub(crate) fn message_dto(native: &NativeClient, message: &ClientMessage) -> Mes
             Peer::User(user) => Some(user_dto(user)),
             _ => None,
         }),
+        // `fmt_entities` is `None` for an empty or service message and `Some` for a text message
+        // with no formatting, so the absence is folded to the empty list a Kotlin caller reads.
+        entities: message
+            .fmt_entities()
+            .map(|entities| entities.iter().map(message_entity_dto).collect())
+            .unwrap_or_default(),
+        html_text: message.html_text(),
+        markdown_text: message.markdown_text(),
+    }
+}
+
+/// Projects one formatting entity of a message's text.
+///
+/// The variants without an extra share [`MessageEntityDto::plain`]; the four that carry one fill
+/// in exactly that field, and the rest of the layer's variants (a blockquote, a formatted date and
+/// the diff markers) are named but carry no extra this bridge projects.
+pub(crate) fn message_entity_dto(entity: &tl::enums::MessageEntity) -> MessageEntityDto {
+    use tl::enums::MessageEntity as Entity;
+    match entity {
+        Entity::Unknown(entity) => MessageEntityDto::plain("unknown", entity.offset, entity.length),
+        Entity::Mention(entity) => MessageEntityDto::plain("mention", entity.offset, entity.length),
+        Entity::Hashtag(entity) => MessageEntityDto::plain("hashtag", entity.offset, entity.length),
+        Entity::BotCommand(entity) => {
+            MessageEntityDto::plain("botCommand", entity.offset, entity.length)
+        }
+        Entity::Url(entity) => MessageEntityDto::plain("url", entity.offset, entity.length),
+        Entity::Email(entity) => MessageEntityDto::plain("email", entity.offset, entity.length),
+        Entity::Bold(entity) => MessageEntityDto::plain("bold", entity.offset, entity.length),
+        Entity::Italic(entity) => MessageEntityDto::plain("italic", entity.offset, entity.length),
+        Entity::Code(entity) => MessageEntityDto::plain("code", entity.offset, entity.length),
+        Entity::Pre(entity) => MessageEntityDto {
+            language: Some(entity.language.clone()),
+            ..MessageEntityDto::plain("pre", entity.offset, entity.length)
+        },
+        Entity::TextUrl(entity) => MessageEntityDto {
+            url: Some(entity.url.clone()),
+            ..MessageEntityDto::plain("textUrl", entity.offset, entity.length)
+        },
+        Entity::MentionName(entity) => MessageEntityDto {
+            user_id: Some(entity.user_id),
+            ..MessageEntityDto::plain("mentionName", entity.offset, entity.length)
+        },
+        // The input-only mention carries a full `InputUser`, which has no Bot API id to project,
+        // so only its kind and span travel. The layer would not send one on a received message.
+        Entity::InputMessageEntityMentionName(entity) => MessageEntityDto::plain(
+            "inputMessageEntityMentionName",
+            entity.offset,
+            entity.length,
+        ),
+        Entity::Phone(entity) => MessageEntityDto::plain("phone", entity.offset, entity.length),
+        Entity::Cashtag(entity) => MessageEntityDto::plain("cashtag", entity.offset, entity.length),
+        Entity::Underline(entity) => {
+            MessageEntityDto::plain("underline", entity.offset, entity.length)
+        }
+        Entity::Strike(entity) => MessageEntityDto::plain("strike", entity.offset, entity.length),
+        Entity::BankCard(entity) => {
+            MessageEntityDto::plain("bankCard", entity.offset, entity.length)
+        }
+        Entity::Spoiler(entity) => MessageEntityDto::plain("spoiler", entity.offset, entity.length),
+        Entity::CustomEmoji(entity) => MessageEntityDto {
+            custom_emoji_id: Some(entity.document_id),
+            ..MessageEntityDto::plain("customEmoji", entity.offset, entity.length)
+        },
+        Entity::Blockquote(entity) => {
+            MessageEntityDto::plain("blockquote", entity.offset, entity.length)
+        }
+        Entity::FormattedDate(entity) => {
+            MessageEntityDto::plain("formattedDate", entity.offset, entity.length)
+        }
+        Entity::DiffInsert(entity) => {
+            MessageEntityDto::plain("diffInsert", entity.offset, entity.length)
+        }
+        Entity::DiffReplace(entity) => {
+            MessageEntityDto::plain("diffReplace", entity.offset, entity.length)
+        }
+        Entity::DiffDelete(entity) => {
+            MessageEntityDto::plain("diffDelete", entity.offset, entity.length)
+        }
     }
 }
 

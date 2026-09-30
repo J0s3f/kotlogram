@@ -7,6 +7,16 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
+## 0.7.0 - unreleased
+
+### Added
+
+- received messages now carry their formatting entities and their rendered text: `Message.entities`
+  exposes each entity's `type`, `offset`, `length` and the extra its kind carries (`url`, `userId`,
+  `language` or `customEmojiId`), and `Message.htmlText` / `Message.markdownText` are the same text
+  rendered by grammers. A terminal client can now tell bold from plain, and an entity read back can
+  be handed straight to a send or edit.
+
 ## 0.6.0 - 2026-09-30
 
 ### Changed

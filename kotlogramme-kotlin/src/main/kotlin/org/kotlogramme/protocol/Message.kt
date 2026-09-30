@@ -5,10 +5,10 @@ import kotlinx.serialization.Serializable
 /**
  * A Telegram message, mirroring the accessors grammers exposes on a message.
  *
- * The raw-layer-only accessors — the format entities and the rendered markdown/html text — are
- * left for a later phase: they hand out raw layer values, which the bridge does not yet have a JSON
- * shape for. A media caption is not among them; grammers has no caption accessor at all, and the
- * text of a captioned attachment is [text].
+ * [entities] are the formatting entities on [text], empty when it is unformatted, and [htmlText]
+ * and [markdownText] are the same text rendered from those entities by grammers. A media caption
+ * is not among them; grammers has no caption accessor at all, and the text of a captioned
+ * attachment is [text].
  *
  * [date] and [editDate] are epoch milliseconds. [peerId] and [senderId] are `null` for a message
  * grammers could not place, which happens for an empty message with no chat behind it.
@@ -58,6 +58,35 @@ data class Message(
     val peer: Peer? = null,
     /** The full sender object for [senderId], when the sender is a user. */
     val sender: User? = null,
+    /** The formatting entities on [text], empty when the text is unformatted. */
+    val entities: List<MessageEntity> = emptyList(),
+    /** [text] rendered as HTML from [entities], as grammers computes it. */
+    val htmlText: String = "",
+    /** [text] rendered as CommonMark from [entities], as grammers computes it. */
+    val markdownText: String = "",
+)
+
+/**
+ * One formatting entity on a message's text.
+ *
+ * [type] is the layer's entity constructor without its `messageEntity` prefix, in lowerCamelCase:
+ * `bold`, `pre`, `textUrl`, `mentionName`, `customEmoji`. It is also the name an [EntitySpec]
+ * reads, so a received entity can be handed back to a send. The extra fields are `null` on the
+ * kinds that do not carry them, and every field travels for every kind.
+ */
+@Serializable
+data class MessageEntity(
+    val type: String,
+    val offset: Int,
+    val length: Int,
+    /** The target of a `textUrl` entity. */
+    val url: String? = null,
+    /** The target of a `mentionName` entity, as a Bot API dialog id. */
+    val userId: Long? = null,
+    /** The language tag of a `pre` entity, empty when the layer carries none. */
+    val language: String? = null,
+    /** The document behind a `customEmoji` entity. */
+    val customEmojiId: Long? = null,
 )
 
 /**
@@ -94,8 +123,9 @@ data class ForwardHeader(
  * which of the other fields are populated, the rest being the defaults. Every field is always
  * present in the JSON.
  *
- * `quoteEntities` is absent: formatting entities are left for a later phase, as they are on the
- * message itself. [pollOption] is the poll option bytes, base64 because JSON has no byte string.
+ * `quoteEntities` is absent: the message's own entities are projected, but the entities on the
+ * quoted text are not yet. [pollOption] is the poll option bytes, base64 because JSON has no byte
+ * string.
  */
 @Serializable
 data class ReplyHeader(

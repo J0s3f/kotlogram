@@ -42,6 +42,56 @@ class MessagesCompatibilityTest {
         assertEquals(2, message.reactionCount)
         assertEquals("document", message.media?.kind)
         assertEquals("report.pdf", message.media?.name)
+        assertEquals("<b>hello</b>", message.htmlText)
+        assertEquals("**hello**", message.markdownText)
+        assertEquals(4, message.entities.size)
+    }
+
+    @Test
+    fun `an entity of each kind carries its extra through the facade`() {
+        val message = json.decodeFromString<BridgeMessage>(MESSAGE).toCompatibility()
+
+        // Every field travels for every kind; only the extra a kind carries stops being null.
+        val pre = message.entities[0]
+        assertEquals("pre", pre.type)
+        assertEquals(0, pre.offset)
+        assertEquals(4, pre.length)
+        assertEquals("rust", pre.language)
+        assertNull(pre.url)
+        assertNull(pre.userId)
+        assertNull(pre.customEmojiId)
+
+        val textUrl = message.entities[1]
+        assertEquals("textUrl", textUrl.type)
+        assertEquals("https://example.org", textUrl.url)
+        assertNull(textUrl.language)
+        assertNull(textUrl.userId)
+        assertNull(textUrl.customEmojiId)
+
+        val mentionName = message.entities[2]
+        assertEquals("mentionName", mentionName.type)
+        assertEquals(42L, mentionName.userId)
+        assertNull(mentionName.url)
+        assertNull(mentionName.language)
+        assertNull(mentionName.customEmojiId)
+
+        val customEmoji = message.entities[3]
+        assertEquals("customEmoji", customEmoji.type)
+        assertEquals(5_150L, customEmoji.customEmojiId)
+        assertNull(customEmoji.url)
+        assertNull(customEmoji.userId)
+        assertNull(customEmoji.language)
+    }
+
+    @Test
+    fun `a message without entities keeps an empty list, not null`() {
+        val message = json.decodeFromString<BridgeMessage>(
+            """{"id": 1, "text": "hi", "outgoing": false, "replyToMessageId": null}""",
+        ).toCompatibility()
+
+        assertTrue(message.entities.isEmpty())
+        assertEquals("", message.htmlText)
+        assertEquals("", message.markdownText)
     }
 
     @Test
@@ -152,6 +202,17 @@ class MessagesCompatibilityTest {
              "postAuthor": "Author", "groupedId": 88, "viewCount": 5, "forwardCount": 4,
              "replyCount": 3, "reactionCount": 2,
              "media": {"kind": "document", "id": 5150, "name": "report.pdf"},
+             "entities": [
+                 {"type": "pre", "offset": 0, "length": 4, "url": null, "userId": null,
+                  "language": "rust", "customEmojiId": null},
+                 {"type": "textUrl", "offset": 5, "length": 4, "url": "https://example.org",
+                  "userId": null, "language": null, "customEmojiId": null},
+                 {"type": "mentionName", "offset": 10, "length": 3, "url": null, "userId": 42,
+                  "language": null, "customEmojiId": null},
+                 {"type": "customEmoji", "offset": 14, "length": 1, "url": null, "userId": null,
+                  "language": null, "customEmojiId": 5150}],
+             "htmlText": "<b>hello</b>",
+             "markdownText": "**hello**",
              "forwardHeader": {
                  "imported": true, "savedOut": true, "fromId": 7, "fromName": "Some One",
                  "date": 1700000000000, "channelPost": 42, "postAuthor": "Author",
