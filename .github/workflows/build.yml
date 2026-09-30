@@ -173,22 +173,6 @@ jobs:
         shell: bash
         run: |
           authorization="$(printf '%s:%s' "$CENTRAL_USERNAME" "$CENTRAL_PASSWORD" | base64 --wrap=0)"
-
-          # Resolve the open staging repository the Gradle publish step just created, then submit
-          # that repository by key. The old `manual/upload/defaultRepository/<namespace>` endpoint
-          # answers 400; the same search-and-submit flow as recover-central works.
-          curl --fail-with-body --silent --show-error \
-            --header "Authorization: Bearer $authorization" \
-            "https://ossrh-staging-api.central.sonatype.com/manual/search/repositories?ip=any&profile_id=io.github.j0s3f" > repositories.json
-
-          repository_key="$(jq --exit-status --raw-output '
-            [.repositories[] | select(.state == "open" and ((.portal_deployment_id // "") == ""))]
-            | if length == 1 then .[0].key
-              else error("Expected exactly one open repository without a Portal deployment; found \(length).")
-              end
-          ' repositories.json)"
-          test -n "$repository_key"
-          echo "Submitting the staged repository: $repository_key"
           curl --fail-with-body --silent --show-error --request POST --data '' \
             --header "Authorization: Bearer $authorization" \
-            "https://ossrh-staging-api.central.sonatype.com/manual/upload/repository/$repository_key?publishing_type=automatic"
+            "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.github.j0s3f?publishing_type=automatic"

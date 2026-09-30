@@ -97,9 +97,8 @@ reachable from Kotlin.
 - The raw-API contract now matches the pinned grammers revision: the bundled
   `kotlogram-raw-schema/v1` manifest is Layer 229, and `Kotlogram.API_LAYER` and
   `RawTelegramApi.LAYER` report the same value. The CI schema-drift gate now locates `api.tl`
-  under the git checkout (the old `registry/src` path no longer applies) and the release job
-  submits the staged Maven Central repository by its staging key instead of the
-  `defaultRepository` endpoint, which answered HTTP 400.
+  under the git checkout, because the old `registry/src` path no longer applies now that
+  grammers is a git dependency.
 
 ### Notes and known limitations
 
