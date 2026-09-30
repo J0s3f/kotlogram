@@ -1,8 +1,8 @@
 //! Update projection.
 //!
 //! grammers splits its ordered update stream into a handful of typed payloads under
-//! `grammers_client::types::update` and reports everything Telegram sends that it does not model
-//! as [`Raw`](grammers_client::types::update::Raw). The typed payloads share almost no accessors:
+//! `grammers_client::update` and reports everything Telegram sends that it does not model
+//! as [`Raw`](grammers_client::update::Raw). The typed payloads share almost no accessors:
 //! only the two message updates carry a message, only a deletion carries message ids, only a
 //! callback query carries button data. So this is the same flat shape [`MediaDto`] uses — one
 //! object whose `kind` names the variant and whose other fields are filled in for that variant and
@@ -16,12 +16,13 @@
 
 use std::panic::{catch_unwind, AssertUnwindSafe};
 
-use grammers_client::client::updates::State;
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::grammers_tl_types::Serializable;
-use grammers_client::types::update::{CallbackQuery, InlineQuery, InlineSend};
-use grammers_client::types::{Peer, Update, User as ClientUser};
+use grammers_client::peer::{Peer, User as ClientUser};
+use grammers_client::tl;
+use grammers_client::tl::Serializable;
+use grammers_client::update::Update;
+use grammers_client::update::{CallbackQuery, InlineQuery, InlineSend};
 use grammers_session::updates::MessageBox;
+use grammers_session::updates::State;
 use serde::Serialize;
 
 use crate::client::NativeClient;
@@ -278,14 +279,19 @@ fn callback_query_dto(
         query_id,
         message_id,
         inline_message_id,
-        peer: peer_dto(native, resolved(|| query.peer()).ok_or_else(missing_peer)?)?,
-        sender: peer_sender_dto(resolved(|| query.sender()))?,
+        peer: peer_dto(
+            native,
+            resolved(|| query.peer())
+                .flatten()
+                .ok_or_else(missing_peer)?,
+        )?,
+        sender: peer_sender_dto(resolved(|| query.sender()).flatten())?,
     })
 }
 
 fn inline_query_dto(query: &InlineQuery) -> Result<InlineQueryDto, String> {
     Ok(InlineQueryDto {
-        sender: sender_dto(resolved(|| query.sender()))?,
+        sender: sender_dto(resolved(|| query.sender()).flatten())?,
         text: query.text().to_owned(),
         offset: query.offset().to_owned(),
         query_id: query.query_id(),
@@ -295,7 +301,7 @@ fn inline_query_dto(query: &InlineQuery) -> Result<InlineQueryDto, String> {
 
 fn inline_send_dto(send: &InlineSend) -> Result<InlineSendDto, String> {
     Ok(InlineSendDto {
-        sender: sender_dto(resolved(|| send.sender()))?,
+        sender: sender_dto(resolved(|| send.sender()).flatten())?,
         text: send.text().to_owned(),
         result_id: send.result_id().to_owned(),
         message_id: send.message_id().as_ref().map(inline_message_id_dto),

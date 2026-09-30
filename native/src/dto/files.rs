@@ -6,10 +6,10 @@
 //! `java.util.Base64.getDecoder()` reads back on the other side of the JNI boundary, and the bridge
 //! may not take a dependency to get it, so it is written out here.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::media::Uploaded;
-use grammers_client::types::photo_sizes::{PhotoSize, VecExt};
-use grammers_client::types::Photo;
+use grammers_client::media::Photo;
+use grammers_client::media::PhotoSize;
+use grammers_client::media::Uploaded;
+use grammers_client::tl;
 use serde::Serialize;
 
 /// Where a `downloadMedia` wrote the file, and how many bytes it holds.
@@ -94,11 +94,12 @@ pub(crate) fn uploaded_dto(uploaded: &Uploaded, size: i64) -> Result<UploadedFil
 
 /// Projects a profile photo, which `iter_profile_photos` yields.
 pub(crate) fn profile_photo_dto(photo: &Photo) -> ProfilePhotoDto {
-    let (width, height) = dimensions(photo.thumbs().largest());
+    // grammers has no "largest thumb" helper, so the largest is the one with the most bytes.
+    let (width, height) = dimensions(photo.thumbs().iter().max_by_key(|thumb| thumb.size()));
     ProfilePhotoDto {
         id: photo.id(),
         dc_id: photo_dc_id(photo),
-        size: photo.size(),
+        size: photo.size().unwrap_or(0) as i64,
         width,
         height,
         spoiler: photo.is_spoiler(),

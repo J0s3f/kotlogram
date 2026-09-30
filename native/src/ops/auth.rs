@@ -6,11 +6,11 @@ use serde::Deserialize;
 use serde_json::json;
 
 use super::Handler;
-use crate::client::{resolve_peer, AuthenticationState, NativeClient};
+use crate::client::{resolve_peer_projected, AuthenticationState, NativeClient};
 use crate::dto::auth::{data_centre_dto, me_dto};
 use crate::dto::peer::peer_dto;
 use crate::dto::user_dto;
-use crate::error::{invocation_error, json_string, parse_payload};
+use crate::error::{error, invocation_error, json_string, parse_payload};
 use crate::payload::PeerTarget;
 
 #[derive(Deserialize)]
@@ -155,17 +155,20 @@ fn get_me(native: &NativeClient, _payload: &str) -> Result<String, String> {
         .runtime
         .block_on(native.client.get_me())
         .map_err(invocation_error)?;
-    json_string(me_dto(&user, native.session.home_dc_id()))
+    let data_centre_id = native.session.home_dc_id().map_err(error)?;
+    json_string(me_dto(&user, data_centre_id))
 }
 
 /// Reports the home data centre of the session, which is what a raw call defaults to.
 fn get_data_centre_id(native: &NativeClient, _payload: &str) -> Result<String, String> {
-    json_string(data_centre_dto(native.session.home_dc_id()))
+    json_string(data_centre_dto(native.session.home_dc_id().map_err(error)?))
 }
 
 fn resolve_username(native: &NativeClient, payload: &str) -> Result<String, String> {
     let target: PeerTarget = parse_payload(payload)?;
-    let peer = native.runtime.block_on(resolve_peer(native, &target))?;
+    let peer = native
+        .runtime
+        .block_on(resolve_peer_projected(native, &target))?;
     json_string(peer_dto(native, &peer)?)
 }
 

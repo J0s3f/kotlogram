@@ -1,7 +1,7 @@
 # Changelog
 
-All notable changes to kotlogramme, the Kotlin/JVM facade for Telegram built on [grammers
-0.8.1](https://codeberg.org/Lonami/grammers).
+All notable changes to kotlogramme, the Kotlin/JVM facade for Telegram built on
+[grammers](https://codeberg.org/Lonami/grammers) (tracked from its codeberg repository).
 
 The release process is tag-driven: publishing a `v<version>` tag builds the bundled native
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
@@ -68,11 +68,13 @@ typed client API. Sixty-six native operations, each reachable from Kotlin.
 
 ### Notes and known limitations
 
+- The bridge tracks grammers' codeberg repository rather than a crates.io version, because grammers
+  is developed there and releases are cut rarely.
 - The historical generated Layer-66 TL API is not recreated; a versioned raw API
   (`RawTelegramApi`) is the escape hatch for methods the facade does not map.
-- grammers 0.8.1 exposes no typed contacts or account API, so those families stay behind
+- grammers exposes no typed contacts or account API, so those families stay behind
   `invokeRaw`.
 - `UpdateCallback` is delivered on demand by the caller's loop; there is no background dispatcher.
-- `accept_invite_link`/`parse_invite_link` are rebuilt on the same requests because the grammers
-  feature is not enabled; date-bounded search invokes `messages.Search` directly because grammers
-  does not re-export the `chrono` type its iterator filters want.
+- `accept_invite_link`/`parse_invite_link` and `Client::edit_inline_message` are rebuilt on the
+  same layer requests because the grammers feature is crate-private or not enabled; date-bounded
+  search is back on grammers' own `SearchIter` via a `jiff::Timestamp`.

@@ -7,7 +7,7 @@
 //! The data-centre identifier is the number grammers executes the session's main queries against.
 //! It is not a chat id and has no access hash, so it travels as a plain integer.
 
-use grammers_client::types::User as ClientUser;
+use grammers_client::peer::User as ClientUser;
 use serde::Serialize;
 
 use crate::dto::user::{user_dto, UserDto};

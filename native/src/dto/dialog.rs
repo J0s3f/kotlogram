@@ -1,7 +1,7 @@
 //! Dialog projection.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::Dialog as ClientDialog;
+use grammers_client::peer::Dialog as ClientDialog;
+use grammers_client::tl;
 use serde::Serialize;
 
 use crate::client::NativeClient;
@@ -54,6 +54,8 @@ pub(crate) fn dialog_dto(
                 raw.folder_id,
             ),
             tl::enums::Dialog::Folder(raw) => (raw.pinned, raw.top_message, None, None, None, None),
+            // A community is a folder-like row: it carries a pinned flag and nothing else.
+            tl::enums::Dialog::Community(raw) => (raw.pinned, 0, None, None, None, None),
         };
 
     Ok(DialogDto {

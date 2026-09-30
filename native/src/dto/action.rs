@@ -11,8 +11,8 @@
 //! message it belongs to and who caused it, so that is what this projection sends. Every variant of
 //! the layer enum is named; none is reported as unknown.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::Message as ClientMessage;
+use grammers_client::message::Message as ClientMessage;
+use grammers_client::tl;
 use serde::Serialize;
 
 /// The service action of a message, as far as grammers exposes it in a usable form.
@@ -43,7 +43,8 @@ pub(crate) fn message_action_dto(message: &ClientMessage) -> Option<MessageActio
         sender_id: (!matches!(message.raw, tl::enums::Message::Empty(_)))
             .then(|| message.sender())
             .flatten()
-            .map(|sender| sender.id().bot_api_dialog_id()),
+            .map(|sender| sender.id().bot_api_dialog_id())
+            .flatten(),
         kind: action_kind(action),
     })
 }
@@ -109,6 +110,9 @@ fn action_kind(action: &tl::enums::MessageAction) -> &'static str {
         tl::enums::MessageAction::SuggestedPostRefund(_) => "suggestedPostRefund",
         tl::enums::MessageAction::GiftTon(_) => "giftTon",
         tl::enums::MessageAction::SuggestBirthday(_) => "suggestBirthday",
+        // `MessageAction` is `#[non_exhaustive]`, so a variant added by a later layer reports
+        // `unknown` rather than failing the build.
+        _ => "unknown",
     }
 }
 

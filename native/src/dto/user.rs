@@ -1,7 +1,7 @@
 //! User projection.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::{Platform, User as ClientUser};
+use grammers_client::peer::{Platform, User as ClientUser};
+use grammers_client::tl;
 use serde::Serialize;
 
 /// A Telegram account, mirroring the accessors grammers exposes on [`ClientUser`].
@@ -61,7 +61,7 @@ pub(crate) struct RestrictionReasonDto {
 pub(crate) fn user_dto(user: &ClientUser) -> UserDto {
     let (status, status_expires, last_seen, status_by_me) = status_dto(user.status());
     UserDto {
-        id: user.bare_id(),
+        id: user.id().bare_id().unwrap_or(0),
         username: user.username().map(ToOwned::to_owned),
         first_name: user.first_name().map(ToOwned::to_owned),
         last_name: user.last_name().map(ToOwned::to_owned),

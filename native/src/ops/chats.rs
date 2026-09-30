@@ -11,9 +11,9 @@
 //! a URL parse and `messages.ImportChatInvite`. They cannot drift from grammers' semantics because
 //! the parsing is a pure function pinned by the tests below.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::Peer;
-use grammers_session::defs::{PeerAuth, PeerId, PeerRef};
+use grammers_client::peer::Peer;
+use grammers_client::tl;
+use grammers_session::types::{PeerAuth, PeerId, PeerRef};
 use serde::Deserialize;
 use serde_json::json;
 
@@ -267,7 +267,7 @@ fn set_admin_rights(native: &NativeClient, payload: &str) -> Result<String, Stri
 fn accept_invite_link(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: InviteLinkPayload = parse_payload(payload)?;
     let hash = invite_hash(&data.invite_link).ok_or_else(|| "INVITE_HASH_INVALID".to_owned())?;
-    let updates = native
+    let result = native
         .runtime
         .block_on(
             native
@@ -275,7 +275,12 @@ fn accept_invite_link(native: &NativeClient, payload: &str) -> Result<String, St
                 .invoke(&tl::functions::messages::ImportChatInvite { hash }),
         )
         .map_err(invocation_error)?;
-    match updates_to_chat(None, updates) {
+    // `ImportChatInvite` answers `ChatInviteJoinResult`, whose `Ok` carries the updates bundle.
+    let updates = match result {
+        tl::enums::messages::ChatInviteJoinResult::Ok(result) => result.updates,
+        _ => return Ok(json_string(json!({ "joined": false }))?),
+    };
+    match updates_to_chat(native, None, updates) {
         Some(peer) => json_string(peer_dto(native, &peer)?),
         None => json_string(json!({ "joined": false })),
     }
@@ -357,16 +362,17 @@ fn resolve_peer_by_id(native: &NativeClient, payload: &str) -> Result<String, St
 /// peer id at all.
 fn peer_id_from_bot_api_id(id: i64) -> Result<PeerId, String> {
     if (1..=0xff_ffff_ffff).contains(&id) {
-        return Ok(PeerId::user(id));
+        return Ok(PeerId::user(id).ok_or_else(|| format!("not a bot API peer id: {id}"))?);
     }
     if (-999_999_999_999..=-1).contains(&id) {
-        return Ok(PeerId::chat(-id));
+        return Ok(PeerId::chat(-id).ok_or_else(|| format!("not a bot API peer id: {id}"))?);
     }
     // `PeerId::channel` takes the bare id, which is the encoded id minus the `-100` marker.
     if (-1_997_852_516_352..=-1_000_000_000_001).contains(&id)
         || (-2_002_147_483_649..=-4_000_000_000_000).contains(&id)
     {
-        return Ok(PeerId::channel(-id - 1_000_000_000_000));
+        return Ok(PeerId::channel(-id - 1_000_000_000_000)
+            .ok_or_else(|| format!("not a bot API peer id: {id}"))?);
     }
     Err(format!("not a bot API peer id: {id}"))
 }
@@ -412,7 +418,11 @@ fn participants_result(
 }
 
 /// Finds the chat an update bundle reports, mirroring grammers' own `updates_to_chat`.
-fn updates_to_chat(id: Option<i64>, updates: tl::enums::Updates) -> Option<Peer> {
+fn updates_to_chat(
+    native: &NativeClient,
+    id: Option<i64>,
+    updates: tl::enums::Updates,
+) -> Option<Peer> {
     let chats = match updates {
         tl::enums::Updates::Combined(updates) => updates.chats,
         tl::enums::Updates::Updates(updates) => updates.chats,
@@ -422,7 +432,7 @@ fn updates_to_chat(id: Option<i64>, updates: tl::enums::Updates) -> Option<Peer>
         Some(id) => chats.into_iter().find(|chat| chat.id() == id),
         None => chats.into_iter().next(),
     };
-    chat.map(Peer::from_raw)
+    chat.map(|chat| Peer::from_raw(&native.client, chat))
 }
 
 #[cfg(test)]
@@ -570,14 +580,17 @@ mod tests {
 
     #[test]
     fn bot_api_peer_ids_decode_into_the_layer_kinds() {
-        assert_eq!(peer_id_from_bot_api_id(7).expect("a user"), PeerId::user(7));
+        assert_eq!(
+            peer_id_from_bot_api_id(7).expect("a user"),
+            PeerId::user(7).unwrap()
+        );
         assert_eq!(
             peer_id_from_bot_api_id(-5).expect("a small group"),
-            PeerId::chat(5)
+            PeerId::chat(5).unwrap()
         );
         assert_eq!(
             peer_id_from_bot_api_id(-1_000_000_000_042).expect("a channel"),
-            PeerId::channel(42)
+            PeerId::channel(42).unwrap()
         );
     }
 

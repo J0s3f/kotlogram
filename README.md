@@ -64,7 +64,7 @@ Your API ID and API hash come from `my.telegram.org`; bot tokens come from BotFa
 
 ## Architecture
 
-`kotlogramme-kotlin` contains the public JVM API and native-library loader. The drop-in-oriented facade lives under `com.github.badoualy.telegram.api`; `org.kotlogramme` is the smaller direct bridge. `native` owns a Tokio runtime and invokes the grammers client API. GitHub Actions build native libraries for Windows, Linux and macOS on both x86_64 and ARM64. The packaging job bundles all six variants as resources in the Maven JAR; at startup, the loader extracts and loads only the variant matching the current operating system and architecture. The bridge currently pins grammers to 0.8.1 because newer crates.io releases do not build reproducibly with their current dependency state (0.9 references a yanked dependency and 0.10 has an incompatible transitive dependency graph).
+`kotlogramme-kotlin` contains the public JVM API and native-library loader. The drop-in-oriented facade lives under `com.github.badoualy.telegram.api`; `org.kotlogramme` is the smaller direct bridge. `native` owns a Tokio runtime and invokes the grammers client API. GitHub Actions build native libraries for Windows, Linux and macOS on both x86_64 and ARM64. The packaging job bundles all six variants as resources in the Maven JAR; at startup, the loader extracts and loads only the variant matching the current operating system and architecture. The bridge tracks grammers' codeberg repository rather than a crates.io version, because grammers is developed there and releases are cut rarely; the three grammers crates it depends on are the same workspace, which keeps their versions unified.
 
 ### Module layout
 

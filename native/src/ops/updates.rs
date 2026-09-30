@@ -3,7 +3,7 @@
 use std::sync::MutexGuard;
 use std::time::Duration;
 
-use grammers_client::client::updates::UpdateStream;
+use grammers_client::client::UpdateStream;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -99,7 +99,10 @@ fn sync_update_state(native: &NativeClient, _payload: &str) -> Result<String, St
     let updates = stream(native)?;
     // grammers writes the state again when the stream is dropped; doing it on demand lets a client
     // persist it before the session is closed, or without closing at all.
-    updates.sync_update_state();
+    native
+        .runtime
+        .block_on(updates.sync_update_state())
+        .map_err(|error| error.to_string())?;
     json_string(json!({ "ok": true }))
 }
 

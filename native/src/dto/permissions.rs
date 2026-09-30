@@ -12,8 +12,8 @@
 //! polarity, so a caller reading a restriction back sees exactly what it sent; the negation to the
 //! "can do" spelling of the builder methods happens at the grammers call, not here.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::{Permissions, Restrictions};
+use grammers_client::peer::{Permissions, Restrictions};
+use grammers_client::tl;
 use serde::{Deserialize, Serialize};
 
 /// The admin rights of a chat member, mirroring grammers' [`Permissions`] (TL `chatAdminRights`).
@@ -132,7 +132,7 @@ impl From<&Restrictions> for ChatRestrictionsDto {
             change_info: restrictions.change_info(),
             invite_users: restrictions.invite_users(),
             pin_messages: restrictions.pin_messages(),
-            until_date: restrictions.due().timestamp_millis(),
+            until_date: restrictions.due().as_millisecond(),
         }
     }
 }
@@ -160,6 +160,9 @@ impl From<&ChatPermissionsDto> for tl::types::ChatAdminRights {
             edit_stories: false,
             delete_stories: false,
             manage_direct_messages: false,
+            manage_ranks: false,
+            manage_linked_peers: false,
+            manage_welcome_messages: false,
         }
     }
 }
@@ -192,6 +195,9 @@ impl From<&ChatRestrictionsDto> for tl::types::ChatBannedRights {
             send_voices: false,
             send_docs: false,
             send_plain: false,
+            edit_rank: false,
+            send_reactions: false,
+            manage_linked_peers: false,
             until_date: (rights.until_date / 1_000) as i32,
         }
     }
@@ -201,7 +207,7 @@ impl From<&ChatRestrictionsDto> for tl::types::ChatBannedRights {
 mod tests {
     //! Wire-contract tests for the two request directions of the rights projections.
 
-    use grammers_client::grammers_tl_types as tl;
+    use grammers_client::tl;
     use serde_json::json;
 
     use super::{ChatPermissionsDto, ChatRestrictionsDto};

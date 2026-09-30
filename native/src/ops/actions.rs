@@ -6,8 +6,8 @@
 //! grammers exposes a service action at all. The `repeat` loop of the same sender is left out: it
 //! drives a Rust future, which a request/response bridge has no way to supply.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::ActionSender;
+use grammers_client::peer::ActionSender;
+use grammers_client::tl;
 use serde::Deserialize;
 use serde_json::json;
 
@@ -67,7 +67,7 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
 fn send_chat_action(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: SendChatActionPayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
-    let mut sender: ActionSender = native.client.action(peer);
+    let mut sender: ActionSender = native.client.action(peer.clone());
     // grammers carries the forum topic on the sender rather than on the action, and leaves it
     // unset when no topic is asked for, which is how it targets the whole chat.
     if let Some(topic_id) = data.topic_id {

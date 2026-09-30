@@ -13,9 +13,9 @@
 //! request. The page itself carries the query id and the offset that asks for the next page, both
 //! of which a caller needs to page and to answer.
 //!
-//! [`BotInlineResult`]: grammers_client::grammers_tl_types::enums::BotInlineResult
+//! [`BotInlineResult`]: grammers_client::tl::enums::BotInlineResult
 
-use grammers_client::grammers_tl_types as tl;
+use grammers_client::tl;
 use serde::Serialize;
 
 /// One page of results an inline bot answered a query with.
@@ -124,7 +124,7 @@ mod tests {
     //! here, a variant dropped from the match, or a web document left unprojected breaks a test
     //! rather than a live session.
 
-    use grammers_client::grammers_tl_types as tl;
+    use grammers_client::tl;
     use serde_json::json;
 
     use super::{inline_query_results_dto, InlineResultDto, WebDocumentDto};

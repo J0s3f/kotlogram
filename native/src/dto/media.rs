@@ -7,9 +7,9 @@
 //! one flat object whose `kind` says which of the optional fields are populated. Every field is
 //! always present in the JSON; the ones that do not apply to a kind are `null`.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::photo_sizes::{PhotoSize, VecExt};
-use grammers_client::types::Media as ClientMedia;
+use grammers_client::media::Media as ClientMedia;
+use grammers_client::media::PhotoSize;
+use grammers_client::tl;
 use serde::Serialize;
 
 /// The media attached to a message, flattened as described in the module docs.
@@ -144,9 +144,10 @@ pub(crate) fn media_dto(media: &ClientMedia) -> MediaDto {
             // unset behind the `photo` flag; `thumbs` copes with the same absence.
             if photo.raw.photo.is_some() {
                 dto.id = Some(photo.id());
-                dto.size = Some(photo.size());
+                dto.size = photo.size().map(|size| size as i64);
             }
-            let (width, height) = dimensions(photo.thumbs().largest());
+            let (width, height) =
+                dimensions(photo.thumbs().iter().max_by_key(|thumb| thumb.size()));
             dto.width = width;
             dto.height = height;
             dto.spoiler = Some(photo.is_spoiler());
@@ -244,34 +245,34 @@ pub(crate) fn media_dto(media: &ClientMedia) -> MediaDto {
 }
 
 /// The fields shared by a document and the document behind a sticker.
-fn document_dto(document: &grammers_client::types::media::Document) -> MediaDto {
+fn document_dto(document: &grammers_client::media::Document) -> MediaDto {
     let mut dto = MediaDto::empty("document");
     // `Document::id` and `Document::name` unwrap the inner document, which the layer may leave
     // unset behind the `document` flag; the other accessors already cope with its absence.
     if document.raw.document.is_some() {
         dto.id = Some(document.id());
-        dto.name = non_empty(document.name());
+        dto.name = non_empty(document.name().unwrap_or_default());
     }
-    let (width, height) = dimensions(document.thumbs().largest());
+    let (width, height) = dimensions(document.thumbs().iter().max_by_key(|thumb| thumb.size()));
     dto.width = width;
     dto.height = height;
     dto.spoiler = Some(document.is_spoiler());
     dto.mime_type = document.mime_type().map(ToOwned::to_owned);
-    dto.creation_date = document.creation_date().map(|date| date.timestamp_millis());
-    dto.size = Some(document.size());
+    dto.creation_date = document.creation_date().map(|date| date.as_millisecond());
+    dto.size = document.size().map(|size| size as i64);
     dto.duration = document.duration();
     if let Some((width, height)) = document.resolution() {
         dto.resolution_width = Some(width);
         dto.resolution_height = Some(height);
     }
-    dto.audio_title = document.audio_title();
-    dto.performer = document.performer();
+    dto.audio_title = document.audio_title().map(ToOwned::to_owned);
+    dto.performer = document.performer().map(ToOwned::to_owned);
     dto.is_animated = Some(document.is_animated());
     dto
 }
 
 /// Copies a grammers point of interest onto the shared location fields.
-fn fill_geo(dto: &mut MediaDto, geo: &grammers_client::types::media::Geo) {
+fn fill_geo(dto: &mut MediaDto, geo: &grammers_client::media::Geo) {
     // grammers spells the latitude accessor `latitue`; the field is spelled correctly here.
     dto.latitude = Some(geo.latitue());
     dto.longitude = Some(geo.longitude());

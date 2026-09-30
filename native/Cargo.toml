@@ -10,10 +10,15 @@ repository = "https://codeberg.org/kotlogramme/kotlogramme"
 crate-type = ["cdylib"]
 
 [dependencies]
-grammers-client = { version = "=0.8.1", features = ["html", "markdown"] }
+# grammers is developed on its codeberg repository and releases are rare, so the bridge
+# tracks the repository's master branch rather than a crates.io version. The three crates below
+# are the same workspace, which keeps their versions unified.
+grammers-client = { git = "https://codeberg.org/Lonami/grammers.git", features = ["html", "markdown"] }
+grammers-mtsender = { git = "https://codeberg.org/Lonami/grammers.git" }
+grammers-session = { git = "https://codeberg.org/Lonami/grammers.git" }
+# grammers' search date bounds take a `jiff::Timestamp`, so the bridge carries jiff to build one.
+jiff = "0.2"
 mime_guess = "2"
-grammers-mtsender = "=0.8.1"
-grammers-session = "=0.8.0"
 jni = "0.21.1"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

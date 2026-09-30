@@ -15,9 +15,9 @@
 use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::media::Uploaded;
-use grammers_client::InputMessage;
+use grammers_client::media::Uploaded;
+use grammers_client::message::InputMessage;
+use grammers_client::tl;
 use serde::Deserialize;
 
 use super::Handler;
@@ -321,9 +321,11 @@ fn raw_uploaded_media(
     match kind {
         MediaKind::Photo => tl::types::InputMediaUploadedPhoto {
             spoiler,
+            live_photo: false,
             file: uploaded.raw,
             stickers: None,
             ttl_seconds,
+            video: None,
         }
         .into(),
         MediaKind::Document | MediaKind::File => tl::types::InputMediaUploadedDocument {
@@ -394,8 +396,8 @@ mod tests {
     use std::path::PathBuf;
     use std::time::{Duration, UNIX_EPOCH};
 
-    use grammers_client::grammers_tl_types as tl;
-    use grammers_client::types::media::Uploaded;
+    use grammers_client::media::Uploaded;
+    use grammers_client::tl;
     use serde_json::json;
 
     use crate::error::parse_payload;

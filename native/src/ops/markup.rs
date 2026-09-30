@@ -5,8 +5,7 @@
 //! the message operations own; the operations here build the markup itself and hand the projection
 //! back, so a caller can read a markup off one message and build the same one on another.
 
-use grammers_client::reply_markup::ReplyMarkup as _;
-use grammers_client::{button, reply_markup};
+use grammers_client::message::{Button, Key, ReplyMarkup};
 use serde::Deserialize;
 
 use super::Handler;
@@ -35,7 +34,7 @@ struct InlineMarkupPayload {
 /// A button an inline markup may carry, one variant per grammers `button` function usable there.
 ///
 /// grammers' `button::Inline` covers `inline` (the callback button), `switch_inline`,
-/// `switch_inline_elsewhere`, `url` and `webview`, and nothing else: `button::text` returns a
+/// `switch_inline_elsewhere`, `url` and `webview`, and nothing else: `Key::text` returns a
 /// `button::Keyboard`, so a plain label cannot go in an inline markup at all.
 #[derive(Deserialize)]
 #[serde(
@@ -161,42 +160,37 @@ fn get_reply_markup(native: &NativeClient, payload: &str) -> Result<String, Stri
     json_string(message.reply_markup().as_ref().map(reply_markup_dto))
 }
 
-/// Builds the markup grammers' `reply_markup::inline` builds: buttons attached to the message.
+/// Builds the markup grammers' `ReplyMarkup::from_buttons` builds: buttons attached to the message.
 fn build_inline_markup(_native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: InlineMarkupPayload = parse_payload(payload)?;
     let rows = inline_rows(&data.rows)?;
-    json_string(markup_dto(&reply_markup::inline(rows).to_reply_markup()))
+    json_string(markup_dto(&ReplyMarkup::from_buttons(&rows)))
 }
 
-/// Builds the markup grammers' `reply_markup::keyboard` builds, with the options its inherent
+/// Builds the markup grammers' `ReplyMarkup::from_keys` builds, with the options its inherent
 /// methods offer.
 fn build_reply_keyboard(_native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: ReplyKeyboardPayload = parse_payload(payload)?;
     let rows = keyboard_rows(&data.rows)?;
-    json_string(markup_dto(
-        &reply_keyboard_markup(&data, rows).to_reply_markup(),
-    ))
+    json_string(markup_dto(&reply_keyboard_markup(&data, rows)))
 }
 
-/// Builds the markup grammers' `reply_markup::force_reply` builds.
+/// Builds the markup grammers' `ReplyMarkup::force_reply` builds.
 fn build_force_reply(_native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: ForceReplyPayload = parse_payload(payload)?;
-    json_string(markup_dto(&force_reply_markup(&data).to_reply_markup()))
+    json_string(markup_dto(&force_reply_markup(&data)))
 }
 
-/// Builds the markup grammers' `reply_markup::hide` builds, which removes a keyboard this bot sent
+/// Builds the markup grammers' `ReplyMarkup::hide` builds, which removes a keyboard this bot sent
 /// earlier.
 fn build_hide_keyboard(_native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: HideKeyboardPayload = parse_payload(payload)?;
-    json_string(markup_dto(&hide_keyboard_markup(&data).to_reply_markup()))
+    json_string(markup_dto(&hide_keyboard_markup(&data)))
 }
 
-/// Applies the requested options to grammers' `reply_markup::keyboard`.
-fn reply_keyboard_markup(
-    data: &ReplyKeyboardPayload,
-    rows: Vec<Vec<button::Keyboard>>,
-) -> reply_markup::Keyboard {
-    let mut markup = reply_markup::keyboard(rows);
+/// Applies the requested options to grammers' `ReplyMarkup::from_keys`.
+fn reply_keyboard_markup(data: &ReplyKeyboardPayload, rows: Vec<Vec<Key>>) -> ReplyMarkup {
+    let mut markup = ReplyMarkup::from_keys(&rows);
     if data.fit_size {
         markup = markup.fit_size();
     }
@@ -209,9 +203,9 @@ fn reply_keyboard_markup(
     markup
 }
 
-/// Applies the requested options to grammers' `reply_markup::force_reply`.
-fn force_reply_markup(data: &ForceReplyPayload) -> reply_markup::ForceReply {
-    let mut markup = reply_markup::force_reply();
+/// Applies the requested options to grammers' `ReplyMarkup::force_reply`.
+fn force_reply_markup(data: &ForceReplyPayload) -> ReplyMarkup {
+    let mut markup = ReplyMarkup::force_reply();
     if data.single_use {
         markup = markup.single_use();
     }
@@ -221,9 +215,9 @@ fn force_reply_markup(data: &ForceReplyPayload) -> reply_markup::ForceReply {
     markup
 }
 
-/// Applies the requested options to grammers' `reply_markup::hide`.
-fn hide_keyboard_markup(data: &HideKeyboardPayload) -> reply_markup::Hide {
-    let mut markup = reply_markup::hide();
+/// Applies the requested options to grammers' `ReplyMarkup::hide`.
+fn hide_keyboard_markup(data: &HideKeyboardPayload) -> ReplyMarkup {
+    let mut markup = ReplyMarkup::hide();
     if data.selective {
         markup = markup.selective();
     }
@@ -231,22 +225,22 @@ fn hide_keyboard_markup(data: &HideKeyboardPayload) -> reply_markup::Hide {
 }
 
 /// Builds the rows of an inline markup out of the requested buttons.
-fn inline_rows(specs: &[Vec<InlineButtonSpec>]) -> Result<Vec<Vec<button::Inline>>, String> {
+fn inline_rows(specs: &[Vec<InlineButtonSpec>]) -> Result<Vec<Vec<Button>>, String> {
     build_rows(specs, inline_button)
 }
 
 /// Builds the rows of a custom keyboard out of the requested buttons.
-fn keyboard_rows(specs: &[Vec<KeyboardButtonSpec>]) -> Result<Vec<Vec<button::Keyboard>>, String> {
+fn keyboard_rows(specs: &[Vec<KeyboardButtonSpec>]) -> Result<Vec<Vec<Key>>, String> {
     build_rows(specs, keyboard_button)
 }
 
 /// Turns one requested button into the grammers button it names.
-fn inline_button(spec: &InlineButtonSpec) -> Result<button::Inline, String> {
+fn inline_button(spec: &InlineButtonSpec) -> Result<Button, String> {
     Ok(match spec {
-        InlineButtonSpec::Url { text, url } => button::url(label(text)?, url.as_str()),
-        InlineButtonSpec::WebView { text, url } => button::webview(label(text)?, url.as_str()),
+        InlineButtonSpec::Url { text, url } => Button::url(label(text)?, url.as_str()),
+        InlineButtonSpec::WebView { text, url } => Button::webview(label(text)?, url.as_str()),
         InlineButtonSpec::Callback { text, data } => {
-            button::inline(label(text)?, callback_data(data)?)
+            Button::data(label(text)?, callback_data(data)?)
         }
         InlineButtonSpec::SwitchInline {
             text,
@@ -254,28 +248,28 @@ fn inline_button(spec: &InlineButtonSpec) -> Result<button::Inline, String> {
             same_peer,
         } => {
             let text = label(text)?;
-            // Absent is grammers' `switch_inline`, the one that keeps the current peer.
+            // Absent is grammers' `switch`, the one that keeps the current peer.
             if same_peer.unwrap_or(true) {
-                button::switch_inline(text, query.as_str())
+                Button::switch(text, query.as_str())
             } else {
-                button::switch_inline_elsewhere(text, query.as_str())
+                Button::switch_elsewhere(text, query.as_str())
             }
         }
     })
 }
 
 /// Turns one requested button into the grammers keyboard button it names.
-fn keyboard_button(spec: &KeyboardButtonSpec) -> Result<button::Keyboard, String> {
+fn keyboard_button(spec: &KeyboardButtonSpec) -> Result<Key, String> {
     Ok(match spec {
-        KeyboardButtonSpec::Text { text } => button::text(label(text)?),
-        KeyboardButtonSpec::RequestPhone { text } => button::request_phone(label(text)?),
-        KeyboardButtonSpec::RequestGeo { text } => button::request_geo(label(text)?),
+        KeyboardButtonSpec::Text { text } => Key::text(label(text)?),
+        KeyboardButtonSpec::RequestPhone { text } => Key::request_phone(label(text)?),
+        KeyboardButtonSpec::RequestGeo { text } => Key::request_geo(label(text)?),
         KeyboardButtonSpec::RequestPoll { text, quiz } => {
             let text = label(text)?;
             if *quiz {
-                button::request_quiz(text)
+                Key::request_quiz(text)
             } else {
-                button::request_poll(text)
+                Key::request_poll(text)
             }
         }
     })
@@ -334,10 +328,10 @@ mod tests {
     //! The handlers themselves need a live Telegram session, so what is asserted here is everything
     //! between the payload and the grammers call.
 
-    use grammers_client::reply_markup::ReplyMarkup as _;
+    use grammers_client::message::ReplyMarkup;
     use serde_json::json;
 
-    use crate::dto::markup::markup_dto;
+    use crate::dto::markup::{inline_button_dto, keyboard_button_dto, markup_dto};
     use crate::error::{json_string, parse_payload};
 
     use super::{
@@ -351,30 +345,26 @@ mod tests {
     fn build_inline(rows: serde_json::Value) -> Result<String, String> {
         let data: InlineMarkupPayload = parse_payload(&json!({ "rows": rows }).to_string())?;
         let rows = inline_rows(&data.rows)?;
-        json_string(markup_dto(
-            &grammers_client::reply_markup::inline(rows).to_reply_markup(),
-        ))
+        json_string(markup_dto(&ReplyMarkup::from_buttons(&rows)))
     }
 
     /// Builds a keyboard the way `buildReplyKeyboard` does.
     fn build_keyboard(payload: serde_json::Value) -> Result<String, String> {
         let data: ReplyKeyboardPayload = parse_payload(&payload.to_string())?;
         let rows = keyboard_rows(&data.rows)?;
-        json_string(markup_dto(
-            &reply_keyboard_markup(&data, rows).to_reply_markup(),
-        ))
+        json_string(markup_dto(&reply_keyboard_markup(&data, rows)))
     }
 
     /// Builds a force reply the way `buildForceReply` does.
     fn build_force_reply(payload: serde_json::Value) -> Result<String, String> {
         let data: ForceReplyPayload = parse_payload(&payload.to_string())?;
-        json_string(markup_dto(&force_reply_markup(&data).to_reply_markup()))
+        json_string(markup_dto(&force_reply_markup(&data)))
     }
 
     /// Builds a hide markup the way `buildHideKeyboard` does.
     fn build_hide(payload: serde_json::Value) -> Result<String, String> {
         let data: HideKeyboardPayload = parse_payload(&payload.to_string())?;
-        json_string(markup_dto(&hide_keyboard_markup(&data).to_reply_markup()))
+        json_string(markup_dto(&hide_keyboard_markup(&data)))
     }
 
     #[test]
@@ -531,7 +521,7 @@ mod tests {
 
     #[test]
     fn an_inline_markup_refuses_the_buttons_grammers_excludes_there() {
-        // `button::text` and the request buttons are `button::Keyboard`, which
+        // `Key::text` and the request buttons are `button::Keyboard`, which
         // `reply_markup::inline` cannot hold, so the payload does not even decode.
         for spec in [
             json!({ "type": "text", "text": "Accept" }),
@@ -582,23 +572,20 @@ mod tests {
         let spec: InlineButtonSpec =
             parse_payload(r#"{"type":"callback","text":"Vote","data":"v"}"#).expect("a button");
         let built = inline_button(&spec).expect("a button");
-        assert_eq!(built.raw.text(), "Vote");
-        // `KeyboardButtonCallback` is the only grammers button that carries a payload, and the
-        // only one with a `requires_password` flag, which `button::inline` always clears.
-        match built.raw {
-            grammers_client::grammers_tl_types::enums::KeyboardButton::Callback(button) => {
-                assert_eq!(button.data, b"v".to_vec());
-                assert!(!button.requires_password);
-            }
-            other => panic!("expected a callback button, got {other:?}"),
-        }
+        // `Button::data` is the only grammers button that carries a payload, and the only one
+        // with a `requires_password` flag, which it always clears.
+        let dto = inline_button_dto(&built.raw);
+        assert_eq!(dto.kind, "callback");
+        assert_eq!(dto.text, "Vote");
+        assert_eq!(dto.data, Some("v".to_owned()));
+        assert_eq!(dto.requires_password, Some(false));
 
         let spec: KeyboardButtonSpec =
             parse_payload(r#"{"type":"text","text":"Accept"}"#).expect("a button");
-        assert_eq!(
-            keyboard_button(&spec).expect("a button").raw.text(),
-            "Accept"
-        );
+        let built = keyboard_button(&spec).expect("a button");
+        let dto = keyboard_button_dto(&built.raw);
+        assert_eq!(dto.kind, "text");
+        assert_eq!(dto.text, "Accept");
     }
 
     #[test]

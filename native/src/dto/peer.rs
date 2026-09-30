@@ -1,6 +1,6 @@
 //! Peer projection.
 
-use grammers_client::types::Peer;
+use grammers_client::peer::Peer;
 use serde::Serialize;
 
 use crate::client::{register_peer, NativeClient};
@@ -34,15 +34,17 @@ pub(crate) fn peer_dto(native: &NativeClient, peer: &Peer) -> Result<PeerDto, St
         Peer::User(_) => "user",
         Peer::Group(_) => "group",
         Peer::Channel(_) => "channel",
+        Peer::Community(_) => "community",
     };
     let (is_megagroup, permissions) = match peer {
         Peer::User(_) => (None, None),
         Peer::Group(group) => (Some(group.is_megagroup()), None),
         Peer::Channel(channel) => (None, channel.admin_rights().map(ChatPermissionsDto::from)),
+        Peer::Community(_) => (None, None),
     };
     Ok(PeerDto {
         native_handle,
-        id: peer.id().bot_api_dialog_id(),
+        id: peer.id().bot_api_dialog_id().unwrap_or(0),
         kind,
         username: peer.username().map(ToOwned::to_owned),
         name: peer.name().map(ToOwned::to_owned),
@@ -52,7 +54,12 @@ pub(crate) fn peer_dto(native: &NativeClient, peer: &Peer) -> Result<PeerDto, St
             .map(ToOwned::to_owned)
             .collect(),
         is_megagroup,
-        has_photo: peer.photo(false).is_some(),
+        has_photo: match peer {
+            Peer::User(user) => user.photo().is_some(),
+            Peer::Group(group) => group.photo().is_some(),
+            Peer::Channel(channel) => channel.photo().is_some(),
+            Peer::Community(community) => community.photo().is_some(),
+        },
         permissions,
     })
 }

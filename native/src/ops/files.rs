@@ -2,7 +2,8 @@
 
 use std::path::PathBuf;
 
-use grammers_client::types::{Media as ClientMedia, Peer};
+use grammers_client::media::Media as ClientMedia;
+use grammers_session::types::PeerRef;
 use serde::Deserialize;
 use serde_json::json;
 
@@ -155,7 +156,7 @@ fn iter_profile_photos(native: &NativeClient, payload: &str) -> Result<String, S
 /// Loads the message a download names and takes its media, which is what a downloader consumes.
 fn message_media(
     native: &NativeClient,
-    peer: Peer,
+    peer: PeerRef,
     message_id: i32,
 ) -> Result<ClientMedia, String> {
     let messages = native

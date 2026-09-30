@@ -1,7 +1,7 @@
 //! Message projection.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::Message as ClientMessage;
+use grammers_client::message::Message as ClientMessage;
+use grammers_client::tl;
 use serde::Serialize;
 
 use crate::dto::media::{media_dto, MediaDto};
@@ -66,13 +66,16 @@ pub(crate) fn message_dto(message: &ClientMessage) -> MessageDto {
         text: message.text().to_owned(),
         outgoing: message.outgoing(),
         reply_to_message_id: message.reply_to_message_id(),
-        peer_id: placed.then(|| message.peer_id().bot_api_dialog_id()),
+        peer_id: placed
+            .then(|| message.peer_id().bot_api_dialog_id())
+            .flatten(),
         sender_id: placed
             .then(|| message.sender())
             .flatten()
-            .map(|sender| sender.id().bot_api_dialog_id()),
-        date: message.date().timestamp_millis(),
-        edit_date: message.edit_date().map(|date| date.timestamp_millis()),
+            .map(|sender| sender.id().bot_api_dialog_id())
+            .flatten(),
+        date: message.date().as_millisecond(),
+        edit_date: message.edit_date().map(|date| date.as_millisecond()),
         mentioned: message.mentioned(),
         media_unread: message.media_unread(),
         silent: message.silent(),

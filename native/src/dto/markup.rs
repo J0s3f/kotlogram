@@ -1,24 +1,27 @@
 //! Reply-markup projection.
 //!
-//! grammers builds a markup through `reply_markup::{inline, keyboard, force_reply, hide}` and
-//! hands back an opaque `Markup`; it reads one off a message through `Message::reply_markup`, which
-//! returns the raw `grammers-tl-types` value. Both sides are the same four shapes, so this module
-//! projects them as one nested document rather than a flattened union: a markup carries its rows,
-//! each row its buttons, in the order Telegram renders them.
+//! grammers builds a markup through `ReplyMarkup::{from_buttons, from_keys, force_reply, hide}` and
+//! hands back the raw `grammers-tl-types` value; it reads one off a message through
+//! `Message::reply_markup`, which returns the same value. Both sides are the same four shapes, so
+//! this module projects them as one nested document rather than a flattened union: a markup carries
+//! its rows, each row its buttons, in the order Telegram renders them.
 //!
 //! A markup is one object with a `kind` plus the union of the fields its shape can carry. The
 //! fields a shape cannot answer are `false` or `null` rather than absent, so a decoder never has to
 //! distinguish "not set" from "not modelled". A button is the same idea one level down.
 //!
-//! [kind] is the grammers `reply_markup` function for the four kinds grammers can build (`inline`,
+//! [kind] is the grammers `ReplyMarkup` builder for the four kinds grammers can build (`inline`,
 //! `keyboard`, `forceReply`, `hide`), and the Bot API name for the button kinds it cannot
 //! (`game`, `pay`, `urlAuth`, `userProfile`, `copy`, `requestPeer`, ...).
+//!
+//! The layer unified its many button constructors into a single `KeyboardButton` /
+//! `KeyboardInlineButton` carrying a `type` field, so a button's kind is read off that field here.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::reply_markup;
+use grammers_client::message::ReplyMarkup;
+use grammers_client::tl;
 use serde::Serialize;
 
-/// A reply markup, mirroring the four shapes grammers' `reply_markup` module builds.
+/// A reply markup, mirroring the four shapes grammers' `ReplyMarkup` builds.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ReplyMarkupDto {
@@ -28,11 +31,11 @@ pub(crate) struct ReplyMarkupDto {
     ///
     /// Empty for [Self::kind] `forceReply` and `hide`, which carry no buttons.
     pub(crate) rows: Vec<Vec<ButtonDto>>,
-    /// grammers' `Keyboard::fit_size`, the layer's `resize` flag. Keyboard only.
+    /// grammers' `ReplyMarkup::fit_size`, the layer's `resize` flag. Keyboard only.
     pub(crate) fit_size: bool,
-    /// grammers' `Keyboard::single_use` and `ForceReply::single_use`.
+    /// grammers' `ReplyMarkup::single_use` for a keyboard or a force-reply.
     pub(crate) single_use: bool,
-    /// grammers' `Keyboard::selective`, `Hide::selective` and `ForceReply::selective`.
+    /// grammers' `ReplyMarkup::selective` for a keyboard, force-reply or hide.
     pub(crate) selective: bool,
     /// The layer's `persistent` flag, which keeps a custom keyboard after the bot is gone.
     ///
@@ -53,8 +56,8 @@ pub(crate) struct ReplyMarkupDto {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct ButtonDto {
-    /// The button kind, named after the grammers `button` function that builds it where there is
-    /// one, and after the Bot API button name otherwise.
+    /// The button kind, named after the grammers `Button`/`Key` function that builds it where
+    /// there is one, and after the Bot API button name otherwise.
     pub(crate) kind: &'static str,
     /// The label. grammers requires it to be non-empty on every button it builds.
     pub(crate) text: String,
@@ -62,7 +65,7 @@ pub(crate) struct ButtonDto {
     pub(crate) url: Option<String>,
     /// A `callback` button's payload.
     ///
-    /// grammers' `button::inline` accepts arbitrary bytes, but the wire is JSON, so a payload that
+    /// grammers' `Button::data` accepts arbitrary bytes, but the wire is JSON, so a payload that
     /// is not valid UTF-8 projects as `null`: a bot that put binary data in a callback button
     /// cannot read it back through this bridge. A text payload always survives unchanged.
     pub(crate) data: Option<String>,
@@ -74,13 +77,14 @@ pub(crate) struct ButtonDto {
     pub(crate) button_id: Option<i32>,
     /// The pre-filled query of a `switchInline` button.
     pub(crate) query: Option<String>,
-    /// grammers' `switch_inline` sets this, `switch_inline_elsewhere` clears it, asking the user
-    /// to pick a peer first.
+    /// grammers' `Button::switch` sets this, `Button::switch_elsewhere` clears it, asking the
+    /// user to pick a peer first.
     pub(crate) same_peer: Option<bool>,
     /// The peer types a `switchInline` button accepts, in lowerCamelCase.
     pub(crate) peer_types: Option<Vec<&'static str>>,
-    /// A `requestPoll` button: `Some(true)` is grammers' `request_quiz`, `Some(false)` its
-    /// `request_poll`, and `None` a poll of unspecified kind, which only a received markup carries.
+    /// A `requestPoll` button: `Some(true)` is grammers' `Key::request_quiz`, `Some(false)` its
+    /// `Key::request_poll`, and `None` a poll of unspecified kind, which only a received markup
+    /// carries.
     pub(crate) quiz: Option<bool>,
     /// A `userProfile` button.
     pub(crate) user_id: Option<i64>,
@@ -111,7 +115,7 @@ impl ReplyMarkupDto {
 
 impl ButtonDto {
     /// A button of [kind] carrying nothing but its label, which every button shape has. Each
-    /// variant arm of [`button_dto`] starts here.
+    /// variant arm of the button projections starts here.
     pub(crate) fn of(kind: &'static str, text: &str) -> Self {
         Self {
             kind,
@@ -133,9 +137,9 @@ impl ButtonDto {
     }
 }
 
-/// Projects a markup this crate has just built with the grammers `reply_markup` builders, so the
+/// Projects a markup this crate has just built with the grammers `ReplyMarkup` builders, so the
 /// caller sees exactly the document Telegram will be sent.
-pub(crate) fn markup_dto(markup: &reply_markup::Markup) -> ReplyMarkupDto {
+pub(crate) fn markup_dto(markup: &ReplyMarkup) -> ReplyMarkupDto {
     reply_markup_dto(&markup.raw)
 }
 
@@ -143,11 +147,11 @@ pub(crate) fn markup_dto(markup: &reply_markup::Markup) -> ReplyMarkupDto {
 pub(crate) fn reply_markup_dto(markup: &tl::enums::ReplyMarkup) -> ReplyMarkupDto {
     match markup {
         tl::enums::ReplyMarkup::ReplyInlineMarkup(markup) => ReplyMarkupDto {
-            rows: rows_dto(&markup.rows),
+            rows: inline_rows_dto(&markup.rows),
             ..ReplyMarkupDto::empty("inline")
         },
         tl::enums::ReplyMarkup::ReplyKeyboardMarkup(markup) => ReplyMarkupDto {
-            rows: rows_dto(&markup.rows),
+            rows: keyboard_rows_dto(&markup.rows),
             fit_size: markup.resize,
             single_use: markup.single_use,
             selective: markup.selective,
@@ -168,104 +172,128 @@ pub(crate) fn reply_markup_dto(markup: &tl::enums::ReplyMarkup) -> ReplyMarkupDt
     }
 }
 
-/// Projects a row matrix, keeping the order Telegram renders it in.
-fn rows_dto(rows: &[tl::enums::KeyboardButtonRow]) -> Vec<Vec<ButtonDto>> {
+/// Projects the rows of an inline markup, whose buttons are `KeyboardInlineButton`.
+fn inline_rows_dto(rows: &[tl::enums::KeyboardInlineButtonRow]) -> Vec<Vec<ButtonDto>> {
     rows.iter()
         .map(|row| match row {
-            tl::enums::KeyboardButtonRow::Row(row) => row.buttons.iter().map(button_dto).collect(),
+            tl::enums::KeyboardInlineButtonRow::Row(row) => {
+                row.buttons.iter().map(inline_button_dto).collect()
+            }
         })
         .collect()
 }
 
-/// Projects one button.
+/// Projects the rows of a custom keyboard, whose buttons are `KeyboardButton`.
+fn keyboard_rows_dto(rows: &[tl::enums::KeyboardButtonRow]) -> Vec<Vec<ButtonDto>> {
+    rows.iter()
+        .map(|row| match row {
+            tl::enums::KeyboardButtonRow::Row(row) => {
+                row.buttons.iter().map(keyboard_button_dto).collect()
+            }
+        })
+        .collect()
+}
+
+/// Projects one inline button, whose kind is the `InlineButtonType` the layer carries.
 ///
-/// `KeyboardButton` is a plain enum, so every variant grammers 0.8.1 generated is handled here and
-/// a variant added by a later layer fails the build rather than projecting as nothing.
-pub(crate) fn button_dto(button: &tl::enums::KeyboardButton) -> ButtonDto {
-    match button {
-        // grammers: `button::text`
-        tl::enums::KeyboardButton::Button(button) => ButtonDto::of("text", &button.text),
-        // grammers: `button::url`
-        tl::enums::KeyboardButton::Url(button) => ButtonDto {
+/// Every variant the layer generates is handled here, so a button type added by a later layer fails
+/// the build rather than projecting as nothing.
+pub(crate) fn inline_button_dto(button: &tl::enums::KeyboardInlineButton) -> ButtonDto {
+    let tl::enums::KeyboardInlineButton::Button(button) = button;
+    let text = &button.text;
+    match &button.r#type {
+        // grammers: `Button::url`
+        tl::enums::InlineButtonType::Url(button) => ButtonDto {
             url: Some(button.url.clone()),
-            ..ButtonDto::of("url", &button.text)
+            ..ButtonDto::of("url", text)
         },
-        // grammers: `button::inline`
-        tl::enums::KeyboardButton::Callback(button) => ButtonDto {
+        // grammers: `Button::webview`
+        tl::enums::InlineButtonType::WebView(button) => ButtonDto {
+            url: Some(button.url.clone()),
+            ..ButtonDto::of("webView", text)
+        },
+        // grammers: `Button::data`
+        tl::enums::InlineButtonType::Callback(button) => ButtonDto {
             data: String::from_utf8(button.data.clone()).ok(),
             requires_password: Some(button.requires_password),
-            ..ButtonDto::of("callback", &button.text)
+            ..ButtonDto::of("callback", text)
         },
-        // grammers: `button::request_phone`
-        tl::enums::KeyboardButton::RequestPhone(button) => {
-            ButtonDto::of("requestPhone", &button.text)
-        }
-        // grammers: `button::request_geo`
-        tl::enums::KeyboardButton::RequestGeoLocation(button) => {
-            ButtonDto::of("requestGeo", &button.text)
-        }
-        // grammers: `button::switch_inline` and `button::switch_inline_elsewhere`
-        tl::enums::KeyboardButton::SwitchInline(button) => ButtonDto {
+        // grammers: `Button::switch` and `Button::switch_elsewhere`
+        tl::enums::InlineButtonType::SwitchInline(button) => ButtonDto {
             query: Some(button.query.clone()),
             same_peer: Some(button.same_peer),
             peer_types: button
                 .peer_types
                 .as_ref()
                 .map(|types| types.iter().map(peer_type_name).collect::<Vec<_>>()),
-            ..ButtonDto::of("switchInline", &button.text)
+            ..ButtonDto::of("switchInline", text)
         },
         // No grammers builder: Telegram places this one itself for a game shortcut.
-        tl::enums::KeyboardButton::Game(button) => ButtonDto::of("game", &button.text),
+        tl::enums::InlineButtonType::Game => ButtonDto::of("game", text),
         // No grammers builder: the Bot API's pay button.
-        tl::enums::KeyboardButton::Buy(button) => ButtonDto::of("pay", &button.text),
-        tl::enums::KeyboardButton::UrlAuth(button) => ButtonDto {
+        tl::enums::InlineButtonType::Buy => ButtonDto::of("pay", text),
+        tl::enums::InlineButtonType::UrlAuth(button) => ButtonDto {
             fwd_text: button.fwd_text.clone(),
             url: Some(button.url.clone()),
             button_id: Some(button.button_id),
-            ..ButtonDto::of("urlAuth", &button.text)
+            ..ButtonDto::of("urlAuth", text)
         },
         // The same button as the one above, as a bot would send it: it also names the bot asking
         // for authorization, which grammers exposes no accessor for.
-        tl::enums::KeyboardButton::InputKeyboardButtonUrlAuth(button) => ButtonDto {
+        tl::enums::InlineButtonType::InputInlineButtonTypeUrlAuth(button) => ButtonDto {
             fwd_text: button.fwd_text.clone(),
             url: Some(button.url.clone()),
             request_write_access: Some(button.request_write_access),
-            ..ButtonDto::of("inputUrlAuth", &button.text)
+            ..ButtonDto::of("inputUrlAuth", text)
         },
-        // grammers: `button::request_poll` and `button::request_quiz`
-        tl::enums::KeyboardButton::RequestPoll(button) => ButtonDto {
-            quiz: button.quiz,
-            ..ButtonDto::of("requestPoll", &button.text)
-        },
-        tl::enums::KeyboardButton::InputKeyboardButtonUserProfile(button) => {
-            ButtonDto::of("inputUserProfile", &button.text)
-        }
-        tl::enums::KeyboardButton::UserProfile(button) => ButtonDto {
+        tl::enums::InlineButtonType::UserProfile(button) => ButtonDto {
             user_id: Some(button.user_id),
-            ..ButtonDto::of("userProfile", &button.text)
+            ..ButtonDto::of("userProfile", text)
         },
-        // grammers: `button::webview`
-        tl::enums::KeyboardButton::WebView(button) => ButtonDto {
-            url: Some(button.url.clone()),
-            ..ButtonDto::of("webView", &button.text)
-        },
-        tl::enums::KeyboardButton::SimpleWebView(button) => ButtonDto {
-            url: Some(button.url.clone()),
-            ..ButtonDto::of("simpleWebView", &button.text)
-        },
-        tl::enums::KeyboardButton::RequestPeer(button) => ButtonDto {
-            button_id: Some(button.button_id),
-            max_quantity: Some(button.max_quantity),
-            ..ButtonDto::of("requestPeer", &button.text)
-        },
-        tl::enums::KeyboardButton::InputKeyboardButtonRequestPeer(button) => ButtonDto {
-            button_id: Some(button.button_id),
-            max_quantity: Some(button.max_quantity),
-            ..ButtonDto::of("inputRequestPeer", &button.text)
-        },
-        tl::enums::KeyboardButton::Copy(button) => ButtonDto {
+        tl::enums::InlineButtonType::InputInlineButtonTypeUserProfile(_) => {
+            ButtonDto::of("inputUserProfile", text)
+        }
+        tl::enums::InlineButtonType::Copy(button) => ButtonDto {
             copy_text: Some(button.copy_text.clone()),
-            ..ButtonDto::of("copy", &button.text)
+            ..ButtonDto::of("copy", text)
+        },
+        tl::enums::InlineButtonType::Disabled => ButtonDto::of("disabled", text),
+    }
+}
+
+/// Projects one keyboard button, whose kind is the `ButtonType` the layer carries.
+///
+/// Every variant the layer generates is handled here, so a button type added by a later layer fails
+/// the build rather than projecting as nothing.
+pub(crate) fn keyboard_button_dto(button: &tl::enums::KeyboardButton) -> ButtonDto {
+    let tl::enums::KeyboardButton::Button(button) = button;
+    let text = &button.text;
+    match &button.r#type {
+        // grammers: `Key::text`
+        tl::enums::ButtonType::Default => ButtonDto::of("text", text),
+        // grammers: `Key::request_phone`
+        tl::enums::ButtonType::RequestPhone => ButtonDto::of("requestPhone", text),
+        // grammers: `Key::request_geo`
+        tl::enums::ButtonType::RequestGeoLocation => ButtonDto::of("requestGeo", text),
+        // grammers: `Key::request_poll` and `Key::request_quiz`
+        tl::enums::ButtonType::RequestPoll(button) => ButtonDto {
+            quiz: button.quiz,
+            ..ButtonDto::of("requestPoll", text)
+        },
+        tl::enums::ButtonType::RequestPeer(button) => ButtonDto {
+            button_id: Some(button.button_id),
+            max_quantity: Some(button.max_quantity),
+            ..ButtonDto::of("requestPeer", text)
+        },
+        tl::enums::ButtonType::InputButtonTypeRequestPeer(button) => ButtonDto {
+            button_id: Some(button.button_id),
+            max_quantity: Some(button.max_quantity),
+            ..ButtonDto::of("inputRequestPeer", text)
+        },
+        // grammers: the simple in-app-browser button.
+        tl::enums::ButtonType::SimpleWebView(button) => ButtonDto {
+            url: Some(button.url.clone()),
+            ..ButtonDto::of("simpleWebView", text)
         },
     }
 }
@@ -291,11 +319,14 @@ mod tests {
     //! or a flag dropped breaks a test here rather than a Kotlin decoder. The Kotlin mirror of
     //! these documents is `MarkupProtocolTest`.
 
-    use grammers_client::grammers_tl_types as tl;
+    use grammers_client::message::{Button, Key, ReplyMarkup};
+    use grammers_client::tl;
     use serde::Serialize;
     use serde_json::json;
 
-    use crate::dto::markup::{button_dto, reply_markup_dto, ButtonDto, ReplyMarkupDto};
+    use crate::dto::markup::{
+        inline_button_dto, keyboard_button_dto, reply_markup_dto, ButtonDto, ReplyMarkupDto,
+    };
 
     /// Asserts that [dto] encodes to exactly [expected].
     fn assert_json(dto: &impl Serialize, expected: serde_json::Value) {
@@ -336,60 +367,54 @@ mod tests {
         button
     }
 
-    /// Asserts that [button] projects to [expected], which starts from [`bare`].
-    fn assert_button(button: &tl::enums::KeyboardButton, expected: serde_json::Value) {
-        assert_json(&button_dto(button), expected);
+    /// Asserts that an inline button projects to [expected], which starts from [`bare`].
+    fn assert_inline_button(button: &Button, expected: serde_json::Value) {
+        assert_json(&inline_button_dto(&button.raw), expected);
     }
 
-    /// A row of buttons, in the order Telegram renders it in.
-    fn row(buttons: Vec<tl::enums::KeyboardButton>) -> tl::enums::KeyboardButtonRow {
-        tl::types::KeyboardButtonRow { buttons }.into()
+    /// Asserts that a keyboard button projects to [expected], which starts from [`bare`].
+    fn assert_keyboard_button(key: &Key, expected: serde_json::Value) {
+        assert_json(&keyboard_button_dto(&key.raw), expected);
+    }
+
+    /// Builds an inline button from its layer type, for the shapes grammers' builder cannot make.
+    fn inline(
+        button_type: tl::enums::InlineButtonType,
+        text: &str,
+    ) -> tl::enums::KeyboardInlineButton {
+        tl::enums::KeyboardInlineButton::Button(tl::types::KeyboardInlineButton {
+            text: text.to_owned(),
+            r#type: button_type,
+            style: None,
+        })
+    }
+
+    /// Builds a keyboard button from its layer type.
+    fn keyboard(button_type: tl::enums::ButtonType, text: &str) -> tl::enums::KeyboardButton {
+        tl::enums::KeyboardButton::Button(tl::types::KeyboardButton {
+            text: text.to_owned(),
+            r#type: button_type,
+            style: None,
+        })
     }
 
     #[test]
-    fn an_inline_markup_projects_its_rows_and_answers_no_keyboard_option() {
-        let markup = tl::enums::ReplyMarkup::ReplyInlineMarkup(tl::types::ReplyInlineMarkup {
-            rows: vec![
-                row(vec![tl::enums::KeyboardButton::Url(
-                    tl::types::KeyboardButtonUrl {
-                        text: "Open docs".to_owned(),
-                        url: "https://example.org/docs".to_owned(),
-                    }
-                    .into(),
-                )]),
-                row(vec![
-                    tl::enums::KeyboardButton::Callback(
-                        tl::types::KeyboardButtonCallback {
-                            requires_password: false,
-                            text: "Vote yes".to_owned(),
-                            data: b"vote:yes".to_vec(),
-                        }
-                        .into(),
-                    ),
-                    tl::enums::KeyboardButton::Button(
-                        tl::types::KeyboardButton {
-                            text: "Vote no".to_owned(),
-                        }
-                        .into(),
-                    ),
-                ]),
-            ],
-        });
-
+    fn an_inline_markup_projects_its_rows() {
+        let markup = ReplyMarkup::from_buttons(&[
+            vec![Button::url("Open docs", "https://example.org/docs")],
+            vec![Button::data("Vote yes", b"vote:yes".to_vec())],
+        ]);
         assert_json(
-            &reply_markup_dto(&markup),
+            &reply_markup_dto(&markup.raw),
             json!({
                 "kind": "inline",
                 "rows": [
                     [with(bare("url", "Open docs"), "url", json!("https://example.org/docs"))],
-                    [
-                        with(
-                            with(bare("callback", "Vote yes"), "data", json!("vote:yes")),
-                            "requiresPassword",
-                            json!(false),
-                        ),
-                        bare("text", "Vote no"),
-                    ],
+                    [with(
+                        with(bare("callback", "Vote yes"), "data", json!("vote:yes")),
+                        "requiresPassword",
+                        json!(false),
+                    )],
                 ],
                 "fitSize": false,
                 "singleUse": false,
@@ -401,32 +426,21 @@ mod tests {
     }
 
     #[test]
-    fn a_reply_keyboard_projects_every_flag_grammers_cannot_set() {
-        let markup = tl::enums::ReplyMarkup::ReplyKeyboardMarkup(tl::types::ReplyKeyboardMarkup {
-            resize: true,
-            single_use: true,
-            selective: true,
-            persistent: true,
-            rows: vec![row(vec![tl::enums::KeyboardButton::RequestPoll(
-                tl::types::KeyboardButtonRequestPoll {
-                    quiz: Some(true),
-                    text: "Quiz".to_owned(),
-                }
-                .into(),
-            )])],
-            placeholder: Some("Pick one".to_owned()),
-        });
-
+    fn a_reply_keyboard_projects_the_flags_its_builder_offers() {
+        let markup = ReplyMarkup::from_keys(&[vec![Key::request_quiz("Quiz")]])
+            .fit_size()
+            .single_use()
+            .selective();
         assert_json(
-            &reply_markup_dto(&markup),
+            &reply_markup_dto(&markup.raw),
             json!({
                 "kind": "keyboard",
                 "rows": [[with(bare("requestPoll", "Quiz"), "quiz", json!(true))]],
                 "fitSize": true,
                 "singleUse": true,
                 "selective": true,
-                "persistent": true,
-                "placeholder": "Pick one",
+                "persistent": false,
+                "placeholder": null,
             }),
         );
     }
@@ -434,14 +448,7 @@ mod tests {
     #[test]
     fn a_force_reply_and_a_hide_carry_no_rows() {
         assert_json(
-            &reply_markup_dto(&tl::enums::ReplyMarkup::ReplyKeyboardForceReply(
-                tl::types::ReplyKeyboardForceReply {
-                    single_use: true,
-                    selective: true,
-                    placeholder: Some("Type here".to_owned()),
-                }
-                .into(),
-            )),
+            &reply_markup_dto(&ReplyMarkup::force_reply().single_use().selective().raw),
             json!({
                 "kind": "forceReply",
                 "rows": [],
@@ -449,14 +456,12 @@ mod tests {
                 "singleUse": true,
                 "selective": true,
                 "persistent": false,
-                "placeholder": "Type here",
+                "placeholder": null,
             }),
         );
 
         assert_json(
-            &reply_markup_dto(&tl::enums::ReplyMarkup::ReplyKeyboardHide(
-                tl::types::ReplyKeyboardHide { selective: false }.into(),
-            )),
+            &reply_markup_dto(&ReplyMarkup::hide().raw),
             json!({
                 "kind": "hide",
                 "rows": [],
@@ -483,118 +488,82 @@ mod tests {
 
     #[test]
     fn a_switch_inline_button_projects_its_query_and_peer_types() {
-        assert_button(
-            &tl::enums::KeyboardButton::SwitchInline(
-                tl::types::KeyboardButtonSwitchInline {
-                    same_peer: true,
-                    text: "Search here".to_owned(),
-                    query: "cats ".to_owned(),
-                    peer_types: None,
-                }
-                .into(),
-            ),
-            {
-                let expected = bare("switchInline", "Search here");
-                with(
-                    with(expected, "query", json!("cats ")),
-                    "samePeer",
-                    json!(true),
-                )
-            },
-        );
+        assert_inline_button(&Button::switch("Search here", "cats "), {
+            let expected = bare("switchInline", "Search here");
+            with(
+                with(expected, "query", json!("cats ")),
+                "samePeer",
+                json!(true),
+            )
+        });
 
-        assert_button(
-            &tl::enums::KeyboardButton::SwitchInline(
-                tl::types::KeyboardButtonSwitchInline {
-                    same_peer: false,
-                    text: "Search anywhere".to_owned(),
-                    query: String::new(),
-                    peer_types: Some(vec![
-                        tl::enums::InlineQueryPeerType::SameBotPm,
-                        tl::enums::InlineQueryPeerType::Megagroup,
-                        tl::enums::InlineQueryPeerType::BotPm,
-                    ]),
-                }
-                .into(),
-            ),
-            {
-                let expected = bare("switchInline", "Search anywhere");
-                with(
-                    with(with(expected, "query", json!("")), "samePeer", json!(false)),
-                    "peerTypes",
-                    json!(["sameBotPm", "megagroup", "botPm"]),
-                )
-            },
+        // A button with peer types and no fixed peer, which only a received markup carries.
+        let button = inline(
+            tl::enums::InlineButtonType::SwitchInline(tl::types::InlineButtonTypeSwitchInline {
+                query: String::new(),
+                same_peer: false,
+                peer_types: Some(vec![
+                    tl::enums::InlineQueryPeerType::SameBotPm,
+                    tl::enums::InlineQueryPeerType::Megagroup,
+                    tl::enums::InlineQueryPeerType::BotPm,
+                ]),
+            }),
+            "Search anywhere",
         );
+        assert_json(&inline_button_dto(&button), {
+            let expected = bare("switchInline", "Search anywhere");
+            with(
+                with(with(expected, "query", json!("")), "samePeer", json!(false)),
+                "peerTypes",
+                json!(["sameBotPm", "megagroup", "botPm"]),
+            )
+        });
     }
 
     #[test]
     fn a_callback_button_projects_its_payload_and_password_flag() {
-        assert_button(
-            &tl::enums::KeyboardButton::Callback(
-                tl::types::KeyboardButtonCallback {
-                    requires_password: true,
-                    text: "Confirm".to_owned(),
-                    data: b"{\"id\":7}".to_vec(),
-                }
-                .into(),
-            ),
+        assert_inline_button(
+            &Button::data("Confirm", b"{\"id\":7}".to_vec()),
             with(
                 with(bare("callback", "Confirm"), "data", json!("{\"id\":7}")),
                 "requiresPassword",
-                json!(true),
+                json!(false),
             ),
         );
     }
 
     #[test]
     fn callback_data_that_is_not_text_projects_as_null() {
-        assert_button(
-            &tl::enums::KeyboardButton::Callback(
-                tl::types::KeyboardButtonCallback {
-                    requires_password: false,
-                    text: "Binary".to_owned(),
-                    // grammers' `button::inline` takes any bytes, including a lone continuation byte.
-                    data: vec![0xff, 0xfe],
-                }
-                .into(),
-            ),
+        assert_inline_button(
+            &Button::data("Binary", vec![0xff, 0xfe]),
             with(bare("callback", "Binary"), "requiresPassword", json!(false)),
         );
     }
 
     #[test]
-    fn the_game_pay_and_auth_buttons_project_what_they_carry() {
-        assert_button(
-            &tl::enums::KeyboardButton::Game(
-                tl::types::KeyboardButtonGame {
-                    text: "Play".to_owned(),
-                }
-                .into(),
-            ),
+    fn the_game_and_pay_buttons_project_what_they_carry() {
+        // `game` and `pay` are inline button types the layer has but grammers builds no button for.
+        assert_json(
+            &inline_button_dto(&inline(tl::enums::InlineButtonType::Game, "Play")),
             bare("game", "Play"),
         );
-
-        assert_button(
-            &tl::enums::KeyboardButton::Buy(
-                tl::types::KeyboardButtonBuy {
-                    text: "Pay".to_owned(),
-                }
-                .into(),
-            ),
+        assert_json(
+            &inline_button_dto(&inline(tl::enums::InlineButtonType::Buy, "Pay")),
             bare("pay", "Pay"),
         );
+    }
 
-        assert_button(
-            &tl::enums::KeyboardButton::UrlAuth(
-                tl::types::KeyboardButtonUrlAuth {
-                    text: "Authorize".to_owned(),
+    #[test]
+    fn the_auth_buttons_project_their_label_url_and_identifier() {
+        assert_json(
+            &inline_button_dto(&inline(
+                tl::enums::InlineButtonType::UrlAuth(tl::types::InlineButtonTypeUrlAuth {
                     fwd_text: Some("Allow the bot?".to_owned()),
                     url: "https://example.org/auth".to_owned(),
                     button_id: 42,
-                }
-                .into(),
-            ),
+                }),
+                "Authorize",
+            )),
             with(
                 with(
                     with(
@@ -610,96 +579,88 @@ mod tests {
             ),
         );
 
-        assert_button(
-            &tl::enums::KeyboardButton::InputKeyboardButtonUrlAuth(
-                tl::types::InputKeyboardButtonUrlAuth {
-                    request_write_access: true,
-                    text: "Authorize".to_owned(),
-                    fwd_text: None,
-                    url: "https://example.org/auth".to_owned(),
-                    // The requesting bot is an `InputUser`, which carries an access hash this
-                    // bridge deliberately does not project.
-                    bot: tl::enums::InputUser::UserSelf,
-                }
-                .into(),
-            ),
-            {
-                let expected = with(
+        // The input variant also names the bot asking, which this bridge does not project.
+        assert_json(
+            &inline_button_dto(&inline(
+                tl::enums::InlineButtonType::InputInlineButtonTypeUrlAuth(
+                    tl::types::InputInlineButtonTypeUrlAuth {
+                        request_write_access: true,
+                        fwd_text: None,
+                        url: "https://example.org/auth".to_owned(),
+                        bot: Some(tl::enums::InputUser::UserSelf),
+                    },
+                ),
+                "Authorize",
+            )),
+            with(
+                with(
                     bare("inputUrlAuth", "Authorize"),
                     "url",
                     json!("https://example.org/auth"),
-                );
-                with(expected, "requestWriteAccess", json!(true))
-            },
+                ),
+                "requestWriteAccess",
+                json!(true),
+            ),
         );
     }
 
     #[test]
     fn the_request_buttons_grammers_cannot_build_still_project() {
-        assert_button(
-            &tl::enums::KeyboardButton::RequestPhone(
-                tl::types::KeyboardButtonRequestPhone {
-                    text: "Share my number".to_owned(),
-                }
-                .into(),
-            ),
+        assert_keyboard_button(
+            &Key::request_phone("Share my number"),
             bare("requestPhone", "Share my number"),
         );
-
-        assert_button(
-            &tl::enums::KeyboardButton::RequestGeoLocation(
-                tl::types::KeyboardButtonRequestGeoLocation {
-                    text: "Share my location".to_owned(),
-                }
-                .into(),
-            ),
+        assert_keyboard_button(
+            &Key::request_geo("Share my location"),
             bare("requestGeo", "Share my location"),
         );
-
-        assert_button(
-            &tl::enums::KeyboardButton::RequestPoll(
-                tl::types::KeyboardButtonRequestPoll {
-                    quiz: None,
-                    text: "Poll".to_owned(),
-                }
-                .into(),
-            ),
-            bare("requestPoll", "Poll"),
+        assert_keyboard_button(
+            &Key::request_poll("Poll"),
+            with(bare("requestPoll", "Poll"), "quiz", json!(null)),
         );
+    }
 
-        assert_button(
-            &tl::enums::KeyboardButton::UserProfile(
-                tl::types::KeyboardButtonUserProfile {
-                    text: "Open profile".to_owned(),
+    #[test]
+    fn the_user_profile_and_copy_buttons_project_their_fields() {
+        assert_json(
+            &inline_button_dto(&inline(
+                tl::enums::InlineButtonType::UserProfile(tl::types::InlineButtonTypeUserProfile {
                     user_id: 99,
-                }
-                .into(),
-            ),
+                }),
+                "Open profile",
+            )),
             with(bare("userProfile", "Open profile"), "userId", json!(99)),
         );
 
-        assert_button(
-            &tl::enums::KeyboardButton::Copy(
-                tl::types::KeyboardButtonCopy {
-                    text: "Copy".to_owned(),
+        // The input variant names an account and an access hash, neither of which this bridge
+        // projects.
+        assert_json(
+            &inline_button_dto(&inline(
+                tl::enums::InlineButtonType::InputInlineButtonTypeUserProfile(
+                    tl::types::InputInlineButtonTypeUserProfile {
+                        user_id: tl::enums::InputUser::UserSelf,
+                    },
+                ),
+                "Open profile",
+            )),
+            bare("inputUserProfile", "Open profile"),
+        );
+
+        assert_json(
+            &inline_button_dto(&inline(
+                tl::enums::InlineButtonType::Copy(tl::types::InlineButtonTypeCopy {
                     copy_text: "kotlogramme".to_owned(),
-                }
-                .into(),
-            ),
+                }),
+                "Copy",
+            )),
             with(bare("copy", "Copy"), "copyText", json!("kotlogramme")),
         );
     }
 
     #[test]
     fn the_web_view_buttons_project_their_url() {
-        assert_button(
-            &tl::enums::KeyboardButton::WebView(
-                tl::types::KeyboardButtonWebView {
-                    text: "Play".to_owned(),
-                    url: "https://example.org/game".to_owned(),
-                }
-                .into(),
-            ),
+        assert_inline_button(
+            &Button::webview("Play", "https://example.org/game"),
             with(
                 bare("webView", "Play"),
                 "url",
@@ -707,14 +668,13 @@ mod tests {
             ),
         );
 
-        assert_button(
-            &tl::enums::KeyboardButton::SimpleWebView(
-                tl::types::KeyboardButtonSimpleWebView {
-                    text: "Read".to_owned(),
+        assert_json(
+            &keyboard_button_dto(&keyboard(
+                tl::enums::ButtonType::SimpleWebView(tl::types::ButtonTypeSimpleWebView {
                     url: "https://example.org/doc".to_owned(),
-                }
-                .into(),
-            ),
+                }),
+                "Read",
+            )),
             with(
                 bare("simpleWebView", "Read"),
                 "url",
@@ -734,16 +694,15 @@ mod tests {
             bot_admin_rights: None,
         });
 
-        assert_button(
-            &tl::enums::KeyboardButton::RequestPeer(
-                tl::types::KeyboardButtonRequestPeer {
-                    text: "Suggest".to_owned(),
+        assert_json(
+            &keyboard_button_dto(&keyboard(
+                tl::enums::ButtonType::RequestPeer(tl::types::ButtonTypeRequestPeer {
                     button_id: 5,
                     peer_type: peer_type.clone(),
                     max_quantity: 3,
-                }
-                .into(),
-            ),
+                }),
+                "Suggest",
+            )),
             with(
                 with(bare("requestPeer", "Suggest"), "buttonId", json!(5)),
                 "maxQuantity",
@@ -751,19 +710,20 @@ mod tests {
             ),
         );
 
-        assert_button(
-            &tl::enums::KeyboardButton::InputKeyboardButtonRequestPeer(
-                tl::types::InputKeyboardButtonRequestPeer {
-                    name_requested: true,
-                    username_requested: true,
-                    photo_requested: true,
-                    text: "Suggest".to_owned(),
-                    button_id: 6,
-                    peer_type,
-                    max_quantity: 1,
-                }
-                .into(),
-            ),
+        assert_json(
+            &keyboard_button_dto(&keyboard(
+                tl::enums::ButtonType::InputButtonTypeRequestPeer(
+                    tl::types::InputButtonTypeRequestPeer {
+                        name_requested: true,
+                        username_requested: true,
+                        photo_requested: true,
+                        button_id: 6,
+                        peer_type,
+                        max_quantity: 1,
+                    },
+                ),
+                "Suggest",
+            )),
             with(
                 with(bare("inputRequestPeer", "Suggest"), "buttonId", json!(6)),
                 "maxQuantity",
@@ -774,16 +734,15 @@ mod tests {
 
     #[test]
     fn a_user_profile_input_button_keeps_only_its_label() {
-        assert_button(
-            &tl::enums::KeyboardButton::InputKeyboardButtonUserProfile(
-                tl::types::InputKeyboardButtonUserProfile {
-                    text: "Open profile".to_owned(),
-                    // As with the authorization button, the `InputUser` names an account and an
-                    // access hash, neither of which this bridge projects.
-                    user_id: tl::enums::InputUser::UserSelf,
-                }
-                .into(),
-            ),
+        assert_json(
+            &inline_button_dto(&inline(
+                tl::enums::InlineButtonType::InputInlineButtonTypeUserProfile(
+                    tl::types::InputInlineButtonTypeUserProfile {
+                        user_id: tl::enums::InputUser::UserSelf,
+                    },
+                ),
+                "Open profile",
+            )),
             bare("inputUserProfile", "Open profile"),
         );
     }

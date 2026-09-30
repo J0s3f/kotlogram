@@ -10,8 +10,8 @@
 //! [`DialogMetaDto`] under `meta`. A dialog the listing produced without asking for the metadata
 //! simply carries no `meta`.
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::types::Dialog as ClientDialog;
+use grammers_client::peer::Dialog as ClientDialog;
+use grammers_client::tl;
 use serde::Serialize;
 
 use crate::client::NativeClient;
@@ -134,6 +134,25 @@ fn dialog_meta_dto(raw: &tl::enums::Dialog) -> DialogMetaDto {
                 unread_unmuted_messages_count: Some(folder.unread_unmuted_messages_count),
             }
         }
+        // A community is a new, folder-like row with no chat metadata of its own.
+        tl::enums::Dialog::Community(_) => DialogMetaDto {
+            unread_mark: None,
+            view_forum_as_messages: None,
+            read_inbox_max_id: None,
+            read_outbox_max_id: None,
+            unread_reactions_count: None,
+            notify_settings: None,
+            pts: None,
+            ttl_period: None,
+            folder_title: None,
+            autofill_new_broadcasts: None,
+            autofill_public_groups: None,
+            autofill_new_correspondents: None,
+            unread_muted_peers_count: None,
+            unread_unmuted_peers_count: None,
+            unread_muted_messages_count: None,
+            unread_unmuted_messages_count: None,
+        },
     }
 }
 
@@ -158,7 +177,7 @@ mod tests {
     //! through a live session, so the projection is built by hand straight off the layer types and
     //! pinned as an exact JSON document.
 
-    use grammers_client::grammers_tl_types as tl;
+    use grammers_client::tl;
     use serde_json::json;
 
     use crate::dto::dialog::DialogDto;
@@ -184,6 +203,7 @@ mod tests {
             unread_count: 2,
             unread_mentions_count: 1,
             unread_reactions_count: 3,
+            unread_poll_votes_count: 0,
             notify_settings: tl::enums::PeerNotifySettings::Settings(
                 tl::types::PeerNotifySettings {
                     show_previews: Some(false),

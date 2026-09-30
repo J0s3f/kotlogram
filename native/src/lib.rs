@@ -64,11 +64,11 @@ pub extern "system" fn Java_org_kotlogramme_TelegramClient_00024Native_invokeRaw
         let data_center_id = if data_center_id > 0 {
             data_center_id
         } else {
-            native.session.home_dc_id()
+            native.session.home_dc_id().map_err(error)?
         };
         native
             .runtime
-            .block_on(native.sender.invoke_in_dc(data_center_id, body))
+            .block_on(native.sender.raw_invoke_in_dc(data_center_id, body))
             .map_err(invocation_error)
     })();
     java_bytes(&mut env, result)

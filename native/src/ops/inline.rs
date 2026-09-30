@@ -23,9 +23,7 @@
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::session::defs::PeerRef;
-use grammers_client::InputMessage;
+use grammers_client::tl;
 use serde::Deserialize;
 use serde_json::json;
 
@@ -153,11 +151,11 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
 fn inline_query(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: InlineQueryPayload = parse_payload(payload)?;
     let bot = native.runtime.block_on(resolve_peer(native, &data.bot))?;
-    let bot = tl::enums::InputUser::from(PeerRef::from(&bot));
+    let bot = tl::enums::InputUser::from(bot);
     let peer = match &data.peer {
         Some(target) => {
             let peer = native.runtime.block_on(resolve_peer(native, target))?;
-            tl::enums::InputPeer::from(PeerRef::from(&peer))
+            tl::enums::InputPeer::from(peer)
         }
         None => tl::enums::InputPeer::Empty,
     };
@@ -275,21 +273,24 @@ fn article_result(spec: &InlineArticleSpec) -> Result<tl::enums::InputBotInlineR
 
 /// Edits the inline message a chosen result produced.
 ///
-/// The request is `Client::edit_inline_message`, which is the send behind `InlineSend::edit_message`
-/// and `CallbackQuery::Answer::edit`; only the text of the new message is configurable here.
+/// The request is `messages.EditInlineBotMessage`, which is the send behind `InlineSend::edit_message`
+/// and `CallbackQuery::Answer::edit`; only the text of the new message is configurable here. grammers'
+/// own `Client::edit_inline_message` is crate-private, so the layer request is invoked directly.
 fn edit_inline_message(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: EditInlineMessagePayload = parse_payload(payload)?;
-    let message = InputMessage::new()
-        .text(data.text)
-        .link_preview(data.link_preview.unwrap_or(true))
-        .invert_media(data.invert_media);
+    let request = tl::functions::messages::EditInlineBotMessage {
+        no_webpage: !data.link_preview.unwrap_or(true),
+        invert_media: data.invert_media,
+        id: inline_message_id(&data.message_id),
+        message: Some(data.text),
+        media: None,
+        reply_markup: None,
+        entities: None,
+        rich_message: None,
+    };
     let edited = native
         .runtime
-        .block_on(
-            native
-                .client
-                .edit_inline_message(inline_message_id(&data.message_id), message),
-        )
+        .block_on(native.client.invoke(&request))
         .map_err(invocation_error)?;
     json_string(json!({ "edited": edited }))
 }
@@ -338,7 +339,7 @@ mod tests {
     //! The handlers themselves need a live Telegram session, so what is asserted here is everything
     //! between the payload and the grammers request.
 
-    use grammers_client::grammers_tl_types as tl;
+    use grammers_client::tl;
     use serde_json::json;
 
     use crate::error::parse_payload;

@@ -5,7 +5,7 @@
 //! changing the millisecond timestamps to seconds, breaks a test here rather than a Kotlin
 //! decoder.
 
-use grammers_client::grammers_tl_types as tl;
+use grammers_client::tl;
 use serde::Serialize;
 use serde_json::json;
 
@@ -460,6 +460,9 @@ fn admin_rights_only_project_the_grammers_accessors() {
         edit_stories: true,
         delete_stories: true,
         manage_direct_messages: true,
+        manage_ranks: false,
+        manage_linked_peers: false,
+        manage_welcome_messages: false,
     };
     assert_json(
         &ChatPermissionsDto::from(&rights),
@@ -501,6 +504,9 @@ fn banned_rights_project_the_grammers_accessors() {
         send_voices: true,
         send_docs: true,
         send_plain: true,
+        edit_rank: false,
+        send_reactions: false,
+        manage_linked_peers: false,
         until_date: 1_700_000_000,
     };
     assert_json(

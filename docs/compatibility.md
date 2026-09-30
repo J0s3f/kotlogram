@@ -57,10 +57,11 @@ its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 Two of those rows deserve a note. `accept_invite_link` and `parse_invite_link` are behind a grammers
 optional feature this crate does not enable, so the bridge rebuilds the same surface: the
 `messages.ImportChatInvite` request for the invite and a URL parser that follows grammers' own
-host and path rules (verified against its source). Similarly, grammers' `SearchIter` date bounds
-need a `chrono` value the client does not re-export, so date-bounded peer search invokes the same
-`messages.Search` request the iterator builds and projects the response through the same
-`Message::from_raw` it uses.
+host and path rules (verified against its source). Similarly, grammers' `Client::edit_inline_message`
+is crate-private, so editing an inline message invokes the `messages.EditInlineBotMessage` request
+directly. Date-bounded peer search, on the other hand, is back on grammers' own `SearchIter`: its
+date bounds take a `jiff::Timestamp`, which the bridge carries `jiff` for, so no raw request is
+needed there.
 
 `TelegramApiStorage` now provides a SQLite session path because grammers stores the auth key,
 datacenter data and peer cache as one atomic session database. The old per-field storage contract

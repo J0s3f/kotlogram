@@ -3,10 +3,10 @@
 
 use std::path::PathBuf;
 
-use grammers_client::grammers_tl_types as tl;
-use grammers_client::session::defs::PeerRef;
-use grammers_client::types::{InputReactions, Message as ClientMessage};
-use grammers_client::{InputMedia, InputMessage, PeerMap};
+use grammers_client::media::InputMedia;
+use grammers_client::message::InputMessage;
+use grammers_client::message::InputReactions;
+use grammers_client::tl;
 use serde::Deserialize;
 use serde_json::json;
 
@@ -81,7 +81,7 @@ struct HistoryPayload {
     limit: Option<usize>,
     /// Paging cursor: return messages older than this ID. grammers' `MessageIter::offset_id`.
     offset_id: Option<i32>,
-    /// Epoch milliseconds. grammers' `MessageIter::max_date` takes an offset date in seconds, so
+    /// Epoch milliseconds. grammers' `MessageIter::offset_date` takes an offset date in seconds, so
     /// this is the newest message the page may contain.
     max_date: Option<i64>,
 }
@@ -314,7 +314,7 @@ fn get_history(native: &NativeClient, payload: &str) -> Result<String, String> {
             iterator = iterator.offset_id(offset_id);
         }
         if let Some(max_date) = max_date {
-            iterator = iterator.max_date(max_date);
+            iterator = iterator.offset_date(max_date);
         }
         let mut result = Vec::new();
         while let Some(message) = iterator.next().await.map_err(invocation_error)? {
@@ -419,46 +419,39 @@ fn search_messages(native: &NativeClient, payload: &str) -> Result<String, Strin
     let offset_id = data.offset_id;
     let filter = data.filter.as_deref().map(messages_filter).transpose()?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
-    // grammers takes the date bounds as `chrono::DateTime`, which the client does not re-export and
-    // this crate may not depend on, so a dated search goes through the same `messages.Search`
-    // request directly. The bounds cross as epoch seconds, exactly as the TL function wants them.
-    let messages = if data.min_date.is_some() || data.max_date.is_some() {
-        let min_date = data.min_date.map(epoch_seconds).transpose()?;
-        let max_date = data.max_date.map(epoch_seconds).transpose()?;
-        native.runtime.block_on(raw_search(
-            native,
-            peer,
-            &data.query,
-            sent_by_self,
-            filter,
-            offset_id,
-            min_date,
-            max_date,
-            limit,
-        ))?
-    } else {
-        native.runtime.block_on(async {
-            let mut iterator = native
-                .client
-                .search_messages(peer)
-                .query(&data.query)
-                .limit(limit);
-            if let Some(offset_id) = offset_id {
-                iterator = iterator.offset_id(offset_id);
-            }
-            if sent_by_self {
-                iterator = iterator.sent_by_self();
-            }
-            if let Some(filter) = filter {
-                iterator = iterator.filter(filter);
-            }
-            let mut result = Vec::new();
-            while let Some(message) = iterator.next().await.map_err(invocation_error)? {
-                result.push(message);
-            }
-            Ok::<_, String>(result)
-        })?
-    };
+    // grammers takes the search date bounds as a `jiff::Timestamp`, which the bridge carries jiff
+    // for; the bounds cross as epoch milliseconds.
+    let messages = native.runtime.block_on(async {
+        let mut iterator = native
+            .client
+            .search_messages(peer)
+            .query(&data.query)
+            .limit(limit);
+        if let Some(offset_id) = offset_id {
+            iterator = iterator.offset_id(offset_id);
+        }
+        if sent_by_self {
+            iterator = iterator.sent_by_self();
+        }
+        if let Some(filter) = filter {
+            iterator = iterator.filter(filter);
+        }
+        if let Some(min_date) = data.min_date {
+            let min_date =
+                jiff::Timestamp::from_millisecond(min_date).map_err(|e| e.to_string())?;
+            iterator = iterator.min_date(min_date);
+        }
+        if let Some(max_date) = data.max_date {
+            let max_date =
+                jiff::Timestamp::from_millisecond(max_date).map_err(|e| e.to_string())?;
+            iterator = iterator.max_date(max_date);
+        }
+        let mut result = Vec::new();
+        while let Some(message) = iterator.next().await.map_err(invocation_error)? {
+            result.push(message);
+        }
+        Ok::<_, String>(result)
+    })?;
     json_string(messages.iter().map(message_dto).collect::<Vec<_>>())
 }
 
@@ -561,62 +554,6 @@ fn messages_filter(name: &str) -> Result<tl::enums::MessagesFilter, String> {
 fn epoch_seconds(millis: i64) -> Result<i32, String> {
     i32::try_from(millis.div_euclid(1000))
         .map_err(|_| format!("date is outside the supported range: {millis}"))
-}
-
-/// Runs a peer search with date bounds, which [`SearchIter`](grammers_client::client::messages::SearchIter)
-/// cannot express without a `chrono` value.
-///
-/// This is the same `messages.Search` request the high-level iterator builds, so the response is
-/// projected through the same `Message::from_raw` the iterator uses.
-#[allow(clippy::too_many_arguments)]
-async fn raw_search(
-    native: &NativeClient,
-    peer: grammers_client::types::Peer,
-    query: &str,
-    sent_by_self: bool,
-    filter: Option<tl::enums::MessagesFilter>,
-    offset_id: Option<i32>,
-    min_date: Option<i32>,
-    max_date: Option<i32>,
-    limit: usize,
-) -> Result<Vec<ClientMessage>, String> {
-    let peer_ref = PeerRef::from(peer);
-    let request = tl::functions::messages::Search {
-        peer: peer_ref.clone().into(),
-        q: query.to_owned(),
-        from_id: sent_by_self.then_some(tl::enums::InputPeer::PeerSelf),
-        saved_peer_id: None,
-        saved_reaction: None,
-        top_msg_id: None,
-        filter: filter.unwrap_or(tl::enums::MessagesFilter::InputMessagesFilterEmpty),
-        min_date: min_date.unwrap_or(0),
-        max_date: max_date.unwrap_or(0),
-        offset_id: offset_id.unwrap_or(0),
-        add_offset: 0,
-        limit: limit as i32,
-        max_id: 0,
-        min_id: 0,
-        hash: 0,
-    };
-    let result = native
-        .client
-        .invoke(&request)
-        .await
-        .map_err(invocation_error)?;
-    use tl::enums::messages::Messages;
-    let (messages, users, chats) = match result {
-        Messages::Messages(page) => (page.messages, page.users, page.chats),
-        Messages::Slice(page) => (page.messages, page.users, page.chats),
-        Messages::ChannelMessages(page) => (page.messages, page.users, page.chats),
-        Messages::NotModified(_) => return Err("search returned no messages".to_owned()),
-    };
-    let peers = PeerMap::new(users, chats);
-    Ok(messages
-        .into_iter()
-        .map(|message| {
-            ClientMessage::from_raw(&native.client, message, Some(peer_ref.clone()), &peers)
-        })
-        .collect())
 }
 
 fn forward_messages(native: &NativeClient, payload: &str) -> Result<String, String> {

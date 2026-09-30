@@ -5,11 +5,14 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
-use grammers_client::client::updates::UpdateStream;
-use grammers_client::types::{LoginToken, PasswordToken, Peer};
-use grammers_client::{Client, UpdatesConfiguration};
+use grammers_client::client::UpdateStream;
+use grammers_client::client::{LoginToken, PasswordToken};
+use grammers_client::peer::Peer;
+use grammers_client::Client;
+use grammers_mtsender::UpdatesConfiguration;
 use grammers_mtsender::{SenderPool, SenderPoolHandle};
 use grammers_session::storages::SqliteSession;
+use grammers_session::types::PeerRef;
 use jni::sys::jlong;
 use tokio::runtime::Runtime;
 
@@ -62,11 +65,14 @@ pub(crate) fn create_client(
 ) -> Result<String, String> {
     let runtime = Runtime::new().map_err(error)?;
     let (client, sender, updates, session, runner) = runtime.block_on(async move {
-        let session = Arc::new(SqliteSession::open(session_path).map_err(error)?);
+        let session = Arc::new(SqliteSession::open(session_path).await.map_err(error)?);
         let pool = SenderPool::new(Arc::clone(&session), api_id);
-        let client = Client::new(&pool);
-        let updates = client.stream_updates(pool.updates, UpdatesConfiguration::default());
-        Ok::<_, String>((client, pool.handle, updates, session, pool.runner))
+        let client = Client::new(pool.handle.clone());
+        let updates = client
+            .stream_updates(pool.updates, UpdatesConfiguration::default())
+            .await
+            .map_err(|error| error.to_string())?;
+        Ok::<_, String>((client, pool.handle.thin, updates, session, pool.runner))
     })?;
     runtime.spawn(runner.run());
 
@@ -116,8 +122,25 @@ pub(crate) fn register_peer(native: &NativeClient, peer: &Peer) -> Result<i64, S
     Ok(native_handle)
 }
 
-/// Resolves a payload peer selector, either from the handle registry or by public username.
+/// Resolves a payload peer selector into a [PeerRef], which is what the grammers client methods
+/// take.
+///
+/// The peer is resolved to its full form first and then converted, because the conversion asks
+/// grammers whether the peer is usable on its own (it carries an access hash) and falls back to the
+/// session cache when it does not.
 pub(crate) async fn resolve_peer(
+    native: &NativeClient,
+    target: &PeerTarget,
+) -> Result<PeerRef, String> {
+    let peer = resolve_peer_projected(native, target).await?;
+    peer.to_ref()
+        .await
+        .map_err(|error| error.to_string())?
+        .ok_or_else(|| "the resolved peer is not usable on its own".to_owned())
+}
+
+/// Resolves a payload peer selector into the full peer, for projecting.
+pub(crate) async fn resolve_peer_projected(
     native: &NativeClient,
     target: &PeerTarget,
 ) -> Result<Peer, String> {
