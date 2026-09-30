@@ -68,6 +68,10 @@ The library is published to Maven Central as `io.github.j0s3f:kotlogramme`. The 
 native libraries and loads the one matching the host at startup, so no separate native setup is
 required. The current release is **0.6.0**.
 
+JitPack is not offered: it does build the repository, but the JAR it serves carries no native
+libraries and fails at runtime. [`docs/publishing.md`](docs/publishing.md) records what JitPack
+actually produced and why.
+
 ### Gradle (Kotlin DSL)
 
 ```kotlin
