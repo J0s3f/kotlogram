@@ -63,6 +63,24 @@ class MediaProtocolTest {
     }
 
     @Test
+    fun `a video send-media request encodes its streaming dimensions`() {
+        val payload = SendMediaPayload(
+            peerHandle = 12L,
+            path = "/tmp/movie.mp4",
+            kind = "video",
+            durationSeconds = 12.5,
+            width = 1920,
+            height = 1080,
+        )
+
+        assertEquals(
+            """{"peerHandle":12,"path":"/tmp/movie.mp4","kind":"video","durationSeconds":12.5,""" +
+                """"width":1920,"height":1080}""",
+            requests.encodeToString(payload),
+        )
+    }
+
+    @Test
     fun `a full url request encodes every option it carries`() {
         val payload = SendMediaUrlPayload(
             peerHandle = 1L,

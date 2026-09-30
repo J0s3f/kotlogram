@@ -111,7 +111,8 @@ internal data class EntitySpec(
  *
  * Exactly one of [path], [url] or [copyOf] is set: a local file is uploaded, a URL is handed to
  * Telegram to download, and `copyOf` reuses the media of an existing message without a re-upload.
- * [kind] is `photo`, `document` (the default) or `file`, as on the send side.
+ * [kind] is `photo`, `document` (the default), `file` or `video`, as on the send side; the video
+ * metadata only applies to a `video` upload.
  */
 @Serializable
 internal data class EditMediaSpec(
@@ -119,6 +120,12 @@ internal data class EditMediaSpec(
     val kind: String? = null,
     val url: String? = null,
     val copyOf: CopyOfSpec? = null,
+    /** Video duration in seconds; only meaningful for [kind] = `video`. */
+    val durationSeconds: Double? = null,
+    /** Video width in pixels; only meaningful for [kind] = `video`. */
+    val width: Int? = null,
+    /** Video height in pixels; only meaningful for [kind] = `video`. */
+    val height: Int? = null,
 )
 
 /** The message whose media an edit reuses. */

@@ -229,7 +229,14 @@ internal fun MessageEntity.asSpec(): EntitySpec =
 
 /** Converts this media source to the wire spec an edit payload carries. */
 internal fun EditMedia.asSpec(): EditMediaSpec = when (this) {
-    is EditMedia.File -> EditMediaSpec(path = path.toAbsolutePath().toString(), kind = kind.wireName)
+    is EditMedia.File ->
+        EditMediaSpec(
+            path = path.toAbsolutePath().toString(),
+            kind = kind.wireName,
+            durationSeconds = durationSeconds,
+            width = width,
+            height = height,
+        )
     is EditMedia.Url -> EditMediaSpec(url = url, kind = kind.wireName)
     is EditMedia.CopyOf ->
         EditMediaSpec(copyOf = CopyOfSpec(PeerTarget(peer.native.nativeHandle), messageId))

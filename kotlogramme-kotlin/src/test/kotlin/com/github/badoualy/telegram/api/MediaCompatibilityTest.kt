@@ -24,6 +24,7 @@ class MediaCompatibilityTest {
                 "photo" to MediaKind.PHOTO,
                 "document" to MediaKind.DOCUMENT,
                 "file" to MediaKind.FILE,
+                "video" to MediaKind.VIDEO,
             ),
             MediaKind.entries.associateBy { it.wireName },
         )

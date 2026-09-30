@@ -3,7 +3,7 @@ package com.github.badoualy.telegram.api
 import java.nio.file.Path
 
 /**
- * How a local file is attached to an outgoing message, which is the three ways grammers sends one.
+ * How a local file is attached to an outgoing message, which is the ways grammers sends one.
  *
  * [wireName] is what the native bridge sends.
  */
@@ -16,6 +16,9 @@ enum class MediaKind(val wireName: String) {
 
     /** The file is sent verbatim; grammers' `file`, which is `force_file`. */
     FILE("file"),
+
+    /** Telegram streams the video in place, playing it without a download. */
+    VIDEO("video"),
 }
 
 /**
@@ -43,7 +46,8 @@ interface MediaApi : BridgeApi {
      *
      * [ttlSeconds] makes the media self-destruct after that many seconds; [invertMedia] moves the
      * media below the caption; [scheduleDate] is epoch milliseconds and [scheduleOnceOnline] takes
-     * precedence over it.
+     * precedence over it. [durationSeconds], [width] and [height] describe [MediaKind.VIDEO] and
+     * are ignored for the other kinds.
      */
     fun mediaSend(
         peer: TelegramPeer,
@@ -53,6 +57,9 @@ interface MediaApi : BridgeApi {
         parseMode: CaptionParseMode = CaptionParseMode.NONE,
         spoiler: Boolean = false,
         mimeType: String? = null,
+        durationSeconds: Double? = null,
+        width: Int? = null,
+        height: Int? = null,
         ttlSeconds: Int? = null,
         invertMedia: Boolean = false,
         silent: Boolean = false,
@@ -68,6 +75,9 @@ interface MediaApi : BridgeApi {
         parseMode = parseMode.wireName,
         spoiler = spoiler,
         mimeType = mimeType,
+        durationSeconds = durationSeconds,
+        width = width,
+        height = height,
         ttlSeconds = ttlSeconds,
         invertMedia = invertMedia,
         silent = silent,
@@ -90,6 +100,9 @@ interface MediaApi : BridgeApi {
         parseMode: CaptionParseMode = CaptionParseMode.NONE,
         spoiler: Boolean = false,
         mimeType: String? = null,
+        durationSeconds: Double? = null,
+        width: Int? = null,
+        height: Int? = null,
         ttlSeconds: Int? = null,
         invertMedia: Boolean = false,
         silent: Boolean = false,
@@ -105,6 +118,9 @@ interface MediaApi : BridgeApi {
         parseMode = parseMode.wireName,
         spoiler = spoiler,
         mimeType = mimeType,
+        durationSeconds = durationSeconds,
+        width = width,
+        height = height,
         ttlSeconds = ttlSeconds,
         invertMedia = invertMedia,
         silent = silent,

@@ -34,13 +34,20 @@ struct SendMediaPayload {
     peer: PeerTarget,
     /// The local file to upload and attach, when the send names a path rather than a handle.
     path: Option<String>,
-    /// `photo`, `document` (the default) or `file`, which is grammers' `force_file` document.
+    /// `photo`, `document` (the default), `file`, which is grammers' `force_file` document, or
+    /// `video`, which Telegram streams in place.
     kind: Option<String>,
     caption: Option<String>,
     /// `html`, `markdown` or `none` (the default): how the caption is parsed into entities.
     parse_mode: Option<String>,
     spoiler: Option<bool>,
     mime_type: Option<String>,
+    /// Video duration in seconds; only meaningful when [Self::kind] is `video`.
+    duration_seconds: Option<f64>,
+    /// Video width in pixels; only meaningful when [Self::kind] is `video`.
+    width: Option<i32>,
+    /// Video height in pixels; only meaningful when [Self::kind] is `video`.
+    height: Option<i32>,
     ttl_seconds: Option<i32>,
     invert_media: Option<bool>,
     silent: Option<bool>,
@@ -93,7 +100,8 @@ struct CopyMediaPayload {
 ///
 /// Exactly one of [path], [url] or [copy_of] is set: a local file is uploaded, a URL is handed to
 /// Telegram to download, and `copyOf` reuses the media of an existing message without a
-/// re-upload. [kind] is `photo`, `document` (the default) or `file`, as on the send side.
+/// re-upload. [kind] is `photo`, `document` (the default), `file` or `video`, as on the send side;
+/// the video metadata applies to a `video` upload.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct EditMediaSpec {
@@ -101,6 +109,12 @@ pub(crate) struct EditMediaSpec {
     pub(crate) kind: Option<String>,
     pub(crate) url: Option<String>,
     pub(crate) copy_of: Option<CopyOfSpec>,
+    /// Video duration in seconds; only meaningful for a `video` upload.
+    pub(crate) duration_seconds: Option<f64>,
+    /// Video width in pixels; only meaningful for a `video` upload.
+    pub(crate) width: Option<i32>,
+    /// Video height in pixels; only meaningful for a `video` upload.
+    pub(crate) height: Option<i32>,
 }
 
 /// The message whose media an edit reuses, named the way the copy operation names its source.
@@ -144,10 +158,23 @@ pub(crate) async fn apply_edit_media(
                 .upload_file(PathBuf::from(path))
                 .await
                 .map_err(error)?;
+            let name = uploaded_name(&uploaded);
             Ok(match kind {
                 MediaKind::Photo => message.photo(uploaded),
                 MediaKind::File => message.file(uploaded),
                 MediaKind::Document => message.document(uploaded),
+                // grammers' builders cannot carry the video attributes, so this goes raw.
+                MediaKind::Video => message.media(raw_uploaded_media(
+                    kind,
+                    uploaded,
+                    &name,
+                    false,
+                    None,
+                    None,
+                    spec.duration_seconds.unwrap_or(0.0),
+                    spec.width.unwrap_or(0),
+                    spec.height.unwrap_or(0),
+                )),
             })
         }
         EditMediaSource::Url(url, kind) => {
@@ -233,21 +260,23 @@ fn send_media(native: &NativeClient, payload: &str) -> Result<String, String> {
         message = message.mime_type(mime_type);
     }
     // grammers' photo/document/file builders force `spoiler: false`; the raw constructors carry it.
-    let mut message = if data.spoiler.unwrap_or(false) {
-        message.media(raw_uploaded_media(
+    // A video always goes raw, since only the raw path can add `DocumentAttributeVideo`.
+    let spoiler = data.spoiler.unwrap_or(false);
+    let mut message = match kind {
+        MediaKind::Photo if !spoiler => message.photo(uploaded),
+        MediaKind::File if !spoiler => message.file(uploaded),
+        MediaKind::Document if !spoiler => message.document(uploaded),
+        _ => message.media(raw_uploaded_media(
             kind,
             uploaded,
             &name,
-            true,
+            spoiler,
             data.mime_type.as_deref(),
             data.ttl_seconds,
-        ))
-    } else {
-        match kind {
-            MediaKind::Photo => message.photo(uploaded),
-            MediaKind::File => message.file(uploaded),
-            MediaKind::Document => message.document(uploaded),
-        }
+            data.duration_seconds.unwrap_or(0.0),
+            data.width.unwrap_or(0),
+            data.height.unwrap_or(0),
+        )),
     };
     if let Some(markup) = &data.markup {
         message = message.reply_markup(reply_markup_from_spec(markup)?);
@@ -353,6 +382,8 @@ enum MediaKind {
     Document,
     /// The file is sent verbatim; grammers' `file`, which is `force_file`.
     File,
+    /// Telegram streams the video in place; a document carrying `DocumentAttributeVideo`.
+    Video,
 }
 
 /// The markup a caption is parsed with, or the plain text grammers' `text` sends.
@@ -368,6 +399,7 @@ fn media_kind(kind: Option<&str>) -> Result<MediaKind, String> {
         None | Some("") | Some("document") => Ok(MediaKind::Document),
         Some("photo") => Ok(MediaKind::Photo),
         Some("file") => Ok(MediaKind::File),
+        Some("video") => Ok(MediaKind::Video),
         Some(other) => Err(format!("unsupported media kind: {other}")),
     }
 }
@@ -428,7 +460,8 @@ fn uploaded_name(uploaded: &Uploaded) -> String {
 }
 
 /// Builds the raw uploaded media the `spoiler` flag requires, matching what grammers' own
-/// `photo`/`document`/`file` builders produce otherwise.
+/// `photo`/`document`/`file` builders produce otherwise. A video has no builder that adds
+/// `DocumentAttributeVideo`, so it is always built here.
 fn raw_uploaded_media(
     kind: MediaKind,
     uploaded: Uploaded,
@@ -436,6 +469,9 @@ fn raw_uploaded_media(
     spoiler: bool,
     mime_type: Option<&str>,
     ttl_seconds: Option<i32>,
+    duration_seconds: f64,
+    width: i32,
+    height: i32,
 ) -> tl::enums::InputMedia {
     match kind {
         MediaKind::Photo => tl::types::InputMediaUploadedPhoto {
@@ -445,6 +481,39 @@ fn raw_uploaded_media(
             stickers: None,
             ttl_seconds,
             video: None,
+        }
+        .into(),
+        MediaKind::Video => tl::types::InputMediaUploadedDocument {
+            nosound_video: false,
+            force_file: false,
+            spoiler,
+            file: uploaded.raw,
+            thumb: None,
+            mime_type: mime_type
+                .map(ToOwned::to_owned)
+                .unwrap_or_else(|| inferred_mime(file_name)),
+            attributes: vec![
+                tl::types::DocumentAttributeVideo {
+                    round_message: false,
+                    supports_streaming: true,
+                    nosound: false,
+                    duration: duration_seconds,
+                    w: width,
+                    h: height,
+                    preload_prefix_size: None,
+                    video_start_ts: None,
+                    video_codec: None,
+                }
+                .into(),
+                tl::types::DocumentAttributeFilename {
+                    file_name: file_name.to_owned(),
+                }
+                .into(),
+            ],
+            stickers: None,
+            ttl_seconds,
+            video_cover: None,
+            video_timestamp: None,
         }
         .into(),
         MediaKind::Document | MediaKind::File => tl::types::InputMediaUploadedDocument {
@@ -484,14 +553,16 @@ fn raw_external_media(
             ttl_seconds,
         }
         .into(),
-        MediaKind::Document | MediaKind::File => tl::types::InputMediaDocumentExternal {
-            spoiler,
-            url: url.to_owned(),
-            ttl_seconds,
-            video_cover: None,
-            video_timestamp: None,
+        MediaKind::Document | MediaKind::File | MediaKind::Video => {
+            tl::types::InputMediaDocumentExternal {
+                spoiler,
+                url: url.to_owned(),
+                ttl_seconds,
+                video_cover: None,
+                video_timestamp: None,
+            }
+            .into()
         }
-        .into(),
     }
 }
 
@@ -563,6 +634,18 @@ mod tests {
                         "kind": "filename",
                         "fileName": file.file_name,
                     }),
+                    tl::enums::DocumentAttribute::Video(video) => json!({
+                        "kind": "video",
+                        "roundMessage": video.round_message,
+                        "supportsStreaming": video.supports_streaming,
+                        "nosound": video.nosound,
+                        "duration": video.duration,
+                        "w": video.w,
+                        "h": video.h,
+                        "preloadPrefixSize": video.preload_prefix_size,
+                        "videoStartTs": video.video_start_ts,
+                        "videoCodec": video.video_codec,
+                    }),
                     other => json!({ "kind": format!("{other:?}") }),
                 })
                 .collect(),
@@ -605,12 +688,13 @@ mod tests {
     }
 
     #[test]
-    fn a_media_kind_names_exactly_the_three_grammers_builders() {
+    fn a_media_kind_names_every_grammers_builder() {
         assert_eq!(media_kind(None), Ok(MediaKind::Document));
         assert_eq!(media_kind(Some("")), Ok(MediaKind::Document));
         assert_eq!(media_kind(Some("document")), Ok(MediaKind::Document));
         assert_eq!(media_kind(Some("photo")), Ok(MediaKind::Photo));
         assert_eq!(media_kind(Some("file")), Ok(MediaKind::File));
+        assert_eq!(media_kind(Some("video")), Ok(MediaKind::Video));
         assert_eq!(
             media_kind(Some("sticker")),
             Err("unsupported media kind: sticker".to_owned())
@@ -638,6 +722,9 @@ mod tests {
             true,
             None,
             Some(60),
+            0.0,
+            0,
+            0,
         );
 
         assert_eq!(
@@ -687,6 +774,9 @@ mod tests {
             true,
             Some("application/x-custom"),
             None,
+            0.0,
+            0,
+            0,
         );
 
         assert_eq!(
@@ -705,8 +795,61 @@ mod tests {
     }
 
     #[test]
+    fn a_video_document_streams_in_place_with_its_dimensions() {
+        let media = raw_uploaded_media(
+            MediaKind::Video,
+            uploaded(),
+            "movie.mp4",
+            false,
+            None,
+            Some(120),
+            12.5,
+            1920,
+            1080,
+        );
+
+        assert_eq!(
+            media_json(&media),
+            json!({
+                "kind": "uploadedDocument",
+                "nosoundVideo": false,
+                "forceFile": false,
+                "spoiler": false,
+                "file": { "kind": "file", "id": 4242, "parts": 1, "name": "report.pdf" },
+                "mimeType": "video/mp4",
+                "attributes": [
+                    {
+                        "kind": "video",
+                        "roundMessage": false,
+                        "supportsStreaming": true,
+                        "nosound": false,
+                        "duration": 12.5,
+                        "w": 1920,
+                        "h": 1080,
+                        "preloadPrefixSize": null,
+                        "videoStartTs": null,
+                        "videoCodec": null,
+                    },
+                    { "kind": "filename", "fileName": "movie.mp4" },
+                ],
+                "ttlSeconds": 120,
+            })
+        );
+    }
+
+    #[test]
     fn a_spoiler_photo_carries_no_name_or_mime() {
-        let media = raw_uploaded_media(MediaKind::Photo, uploaded(), "x.png", true, None, Some(7));
+        let media = raw_uploaded_media(
+            MediaKind::Photo,
+            uploaded(),
+            "x.png",
+            true,
+            None,
+            Some(7),
+            0.0,
+            0,
+            0,
+        );
 
         assert_eq!(
             media_json(&media),
@@ -779,6 +922,9 @@ mod tests {
                 "parseMode": "html",
                 "spoiler": true,
                 "mimeType": "application/pdf",
+                "durationSeconds": 12.5,
+                "width": 1920,
+                "height": 1080,
                 "ttlSeconds": 30,
                 "invertMedia": true,
                 "silent": true,
@@ -797,6 +943,9 @@ mod tests {
         assert_eq!(data.parse_mode.as_deref(), Some("html"));
         assert_eq!(data.spoiler, Some(true));
         assert_eq!(data.mime_type.as_deref(), Some("application/pdf"));
+        assert_eq!(data.duration_seconds, Some(12.5));
+        assert_eq!(data.width, Some(1920));
+        assert_eq!(data.height, Some(1080));
         assert_eq!(data.ttl_seconds, Some(30));
         assert_eq!(data.invert_media, Some(true));
         assert_eq!(data.silent, Some(true));
@@ -817,6 +966,9 @@ mod tests {
         assert_eq!(data.parse_mode, None);
         assert_eq!(data.spoiler, None);
         assert_eq!(data.ttl_seconds, None);
+        assert_eq!(data.duration_seconds, None);
+        assert_eq!(data.width, None);
+        assert_eq!(data.height, None);
     }
 
     #[test]
@@ -919,6 +1071,22 @@ mod tests {
         let copy_of = copy.copy_of.expect("a source");
         assert_eq!(copy_of.peer.username.as_deref(), Some("channel"));
         assert_eq!(copy_of.message_id, 31);
+
+        let video: EditMediaSpec = parse_payload(
+            &json!({
+                "path": "/tmp/movie.mp4",
+                "kind": "video",
+                "durationSeconds": 12.5,
+                "width": 1920,
+                "height": 1080,
+            })
+            .to_string(),
+        )
+        .expect("a video media");
+        assert_eq!(video.kind.as_deref(), Some("video"));
+        assert_eq!(video.duration_seconds, Some(12.5));
+        assert_eq!(video.width, Some(1920));
+        assert_eq!(video.height, Some(1080));
     }
 
     #[test]

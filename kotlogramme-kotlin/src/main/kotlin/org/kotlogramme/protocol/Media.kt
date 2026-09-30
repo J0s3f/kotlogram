@@ -66,7 +66,8 @@ data class Media(
  * The peer fields are flattened into the payload rather than nested, matching the native
  * [PeerTarget] shape. A field left at its default is omitted, so the native side fills in
  * grammers' own default: `document`, a plain caption, no spoiler, no TTL and no schedule.
- * [kind] is `photo`, `document` or `file`; [parseMode] is `html`, `markdown` or absent.
+ * [kind] is `photo`, `document`, `file` or `video`; [parseMode] is `html`, `markdown` or absent.
+ * The video metadata ([durationSeconds], [width], [height]) only applies to a `video`.
  *
  * Exactly one of [path] and [fileHandle] is set: a path uploads the local file now, a handle
  * reuses an upload a `uploadBytes` or `uploadStreamFinish` already produced.
@@ -82,6 +83,12 @@ internal data class SendMediaPayload(
     val parseMode: String? = null,
     val spoiler: Boolean = false,
     val mimeType: String? = null,
+    /** Video duration in seconds; only meaningful for [kind] = `video`. */
+    val durationSeconds: Double? = null,
+    /** Video width in pixels; only meaningful for [kind] = `video`. */
+    val width: Int? = null,
+    /** Video height in pixels; only meaningful for [kind] = `video`. */
+    val height: Int? = null,
     val ttlSeconds: Int? = null,
     val invertMedia: Boolean = false,
     val silent: Boolean = false,

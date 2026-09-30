@@ -388,8 +388,17 @@ data class MessageEntity(
  * download and [CopyOf] reuses the media of an existing message without a re-upload.
  */
 sealed interface EditMedia {
-    /** A local file, uploaded and sent with the given [kind]. */
-    data class File(val path: Path, val kind: MediaKind = MediaKind.DOCUMENT) : EditMedia
+    /**
+     * A local file, uploaded and sent with the given [kind]. [durationSeconds], [width] and
+     * [height] describe a [MediaKind.VIDEO] and are ignored for the other kinds.
+     */
+    data class File(
+        val path: Path,
+        val kind: MediaKind = MediaKind.DOCUMENT,
+        val durationSeconds: Double? = null,
+        val width: Int? = null,
+        val height: Int? = null,
+    ) : EditMedia
 
     /** A URL Telegram downloads; only a photo or a document, never a verbatim file. */
     data class Url(val url: String, val kind: MediaKind = MediaKind.DOCUMENT) : EditMedia

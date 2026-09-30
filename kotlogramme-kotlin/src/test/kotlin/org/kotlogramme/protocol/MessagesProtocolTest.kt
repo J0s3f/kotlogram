@@ -301,6 +301,22 @@ class MessagesProtocolTest {
     }
 
     @Test
+    fun `an edit media carries the video streaming dimensions`() {
+        val payload = EditMediaSpec(
+            path = "/tmp/movie.mp4",
+            kind = "video",
+            durationSeconds = 12.5,
+            width = 1920,
+            height = 1080,
+        )
+
+        assertEquals(
+            """{"path":"/tmp/movie.mp4","kind":"video","durationSeconds":12.5,"width":1920,"height":1080}""",
+            requests.encodeToString(payload),
+        )
+    }
+
+    @Test
     fun `an edit media names a copy of another message`() {
         val payload = EditMediaSpec(
             copyOf = CopyOfSpec(peer = PeerTarget(peerHandle = 2L), messageId = 7),

@@ -26,10 +26,11 @@ internal interface MediaBridge {
     /**
      * Uploads [path] and sends it as a typed attachment.
      *
-     * [kind] is one of `document` (the default), `photo` or `file`; [parseMode] is `html`,
+     * [kind] is one of `document` (the default), `photo`, `file` or `video`; [parseMode] is `html`,
      * `markdown` or absent for a plain caption; [ttlSeconds] makes the media self-destruct;
      * [mimeType] overrides the type inferred from the extension. [scheduleOnceOnline] takes
-     * precedence over [scheduleDate].
+     * precedence over [scheduleDate]. [durationSeconds], [width] and [height] describe a `video`
+     * and are ignored for the other kinds.
      */
     @Operation("sendMedia")
     fun sendMedia(
@@ -40,6 +41,9 @@ internal interface MediaBridge {
         parseMode: String? = null,
         spoiler: Boolean = false,
         mimeType: String? = null,
+        durationSeconds: Double? = null,
+        width: Int? = null,
+        height: Int? = null,
         ttlSeconds: Int? = null,
         invertMedia: Boolean = false,
         silent: Boolean = false,
@@ -58,6 +62,9 @@ internal interface MediaBridge {
             parseMode = parseMode,
             spoiler = spoiler,
             mimeType = mimeType,
+            durationSeconds = durationSeconds,
+            width = width,
+            height = height,
             ttlSeconds = ttlSeconds,
             invertMedia = invertMedia,
             silent = silent,
