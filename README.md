@@ -62,7 +62,38 @@ Kotlogram.getDefaultClient(
 
 ## Maven Central
 
-Release artifacts are published as `io.github.j0s3f:kotlogramme:<version>`. The first public release is pending; see [the publishing guide](docs/publishing.md) for the release process.
+The library is published to Maven Central as `io.github.j0s3f:kotlogramme`. The JAR bundles all six
+native libraries and loads the one matching the host at startup, so no separate native setup is
+required. The current release is **0.2.0**.
+
+### Gradle (Kotlin DSL)
+
+```kotlin
+dependencies {
+    implementation("io.github.j0s3f:kotlogramme:0.2.0")
+}
+```
+
+### Gradle (Groovy)
+
+```groovy
+dependencies {
+    implementation 'io.github.j0s3f:kotlogramme:0.2.0'
+}
+```
+
+### Maven
+
+```xml
+<dependency>
+    <groupId>io.github.j0s3f</groupId>
+    <artifactId>kotlogramme</artifactId>
+    <version>0.2.0</version>
+</dependency>
+```
+
+Requires JDK 17 or newer. See [the publishing guide](docs/publishing.md) for the release process and
+[`CHANGELOG.md`](CHANGELOG.md) for what each release contains.
 
 Your API ID and API hash come from `my.telegram.org`; bot tokens come from BotFather. Sessions contain sensitive authentication data and must not be committed to Git.
 
