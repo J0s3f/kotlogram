@@ -64,13 +64,13 @@ Kotlogram.getDefaultClient(
 
 The library is published to Maven Central as `io.github.j0s3f:kotlogramme`. The JAR bundles all six
 native libraries and loads the one matching the host at startup, so no separate native setup is
-required. The current release is **0.3.0**.
+required. The current release is **0.4.0**.
 
 ### Gradle (Kotlin DSL)
 
 ```kotlin
 dependencies {
-    implementation("io.github.j0s3f:kotlogramme:0.3.0")
+    implementation("io.github.j0s3f:kotlogramme:0.4.0")
 }
 ```
 
@@ -78,7 +78,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'io.github.j0s3f:kotlogramme:0.3.0'
+    implementation 'io.github.j0s3f:kotlogramme:0.4.0'
 }
 ```
 
@@ -88,7 +88,7 @@ dependencies {
 <dependency>
     <groupId>io.github.j0s3f</groupId>
     <artifactId>kotlogramme</artifactId>
-    <version>0.3.0</version>
+    <version>0.4.0</version>
 </dependency>
 ```
 

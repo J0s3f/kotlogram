@@ -7,7 +7,16 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
-## 0.3.0 — unreleased
+## 0.4.0 — unreleased
+
+### Added
+
+- `StickersApi.messagesSendSticker(peer, shortName | id/accessHash, index, …)` — sends one sticker
+  of a set. The set is fetched first and the document at `index` becomes the layer's
+  `inputMediaDocument`, file reference and all, exactly as grammers' own `Media::to_raw_input_media`
+  does, so the reference never crosses the JSON boundary where it would go stale. 98 operations.
+
+## 0.3.0 — 2026-09-30
 
 ### Added
 
