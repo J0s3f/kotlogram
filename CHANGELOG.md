@@ -7,7 +7,7 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
-## 0.7.0 - unreleased
+## 0.7.0 - 2026-09-30
 
 ### Added
 
