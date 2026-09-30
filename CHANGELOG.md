@@ -7,7 +7,17 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
-## 0.5.0 — unreleased
+## 0.6.0 — unreleased
+
+### Changed
+
+- `Media.kind` now names a received document by what it carries: `animation` when it is animated,
+  `video` for a `video/*` MIME type, `audio` for `audio/*`, and `document` otherwise. The layer
+  reports `messageMediaDocument` for all of them, so a video used to arrive as `document` and a
+  terminal client could not tell a 43-minute video from a text file. The send-side kinds
+  (`photo`/`document`/`file`/`video`) are unchanged.
+
+## 0.5.0 — 2026-09-30
 
 ### Added
 
