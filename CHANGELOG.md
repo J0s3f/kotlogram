@@ -16,6 +16,12 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
   `language` or `customEmojiId`), and `Message.htmlText` / `Message.markdownText` are the same text
   rendered by grammers. A terminal client can now tell bold from plain, and an entity read back can
   be handed straight to a send or edit.
+- `UsersApi.usersGetUsers(ids)` - resolves numeric user ids to accounts, the missing half that turns
+  a message's bare `viaBotId` into the bot behind it. The answer reuses the contacts projection
+  (`User` plus a registered peer), deduplicates repeated ids and omits an id Telegram does not
+  resolve. grammers has no typed users-by-id helper, so the operation builds the layer's
+  `users.GetUsers` request directly, filling each id's access hash from the session cache. 99
+  operations.
 
 ## 0.6.0 - 2026-09-30
 

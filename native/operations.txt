@@ -47,6 +47,7 @@ getPermissions
 getPinnedMessage
 getReplyMarkup
 getReplyToMessage
+getUsers
 inlineQuery
 inviteToChannel
 invokeRaw

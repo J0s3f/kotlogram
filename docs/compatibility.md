@@ -62,6 +62,7 @@ its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 | `accountGetPrivacy` / `accountSetPrivacy` / `accountUpdateStatus` | raw `account.GetPrivacy` / `SetPrivacy` / `UpdateStatus` |
 | `contactsGetContacts` / `contactsImportContacts` / `contactsDeleteContacts` / `contactsSearch` | raw `contacts.GetContacts` / `ImportContacts` / `DeleteContacts` / `Search` |
 | `contactsBlock` / `contactsUnblock` / `contactsGetBlocked` | raw `contacts.Block` / `Unblock` / `GetBlocked` |
+| `usersGetUsers` | raw `users.GetUsers` (batched by id, reusing the contacts user/peer projection) |
 | `messagesGetDialogFilters` / `messagesUpdateDialogFilter` / `messagesUpdateDialogFiltersOrder` | raw `messages.GetDialogFilters` / `UpdateDialogFilter` / `UpdateDialogFiltersOrder` |
 | `messagesGetStickerSet` / `messagesGetAllStickers` / `messagesGetRecentStickers` / `messagesGetFavedStickers` | raw `messages.GetStickerSet` / `GetAllStickers` / `GetRecentStickers` / `GetFavedStickers` |
 | `uploadBytes` / `uploadStreamBegin` / `uploadStreamChunk` / `uploadStreamFinish` | `Client::upload_stream` with a client-side upload registry; a later send or album item references the upload by `fileHandle` instead of a path |
@@ -89,17 +90,17 @@ missing capabilities through a versioned raw API that uses the grammers layer in
 
 `TelegramClient` is composed of one interface per domain — `AuthApi`, `MessagesApi`, `ChatsApi`,
 `ContactsApi`, `AccountApi`, `DialogsApi`, `UpdatesApi`, `MediaApi`, `FilesApi`, `InlineApi`,
-`ActionsApi`, `MarkupApi`, `FoldersApi`, `StickersApi` and `RawApi` — each declaring its methods
-with default implementations that delegate to the grammers bridge. The typed contacts, account,
-folder and sticker families are hand-written operations over grammers' TL layer, because grammers
-exposes no high-level client API for them; `RawApi` remains the empty escape hatch for everything
-those do not cover. A new capability is one `*Api.kt` file plus one supertype, so domains can be
-developed and reviewed independently.
+`ActionsApi`, `MarkupApi`, `FoldersApi`, `StickersApi`, `UsersApi` and `RawApi` — each declaring its
+methods with default implementations that delegate to the grammers bridge. The typed contacts,
+account, folder, sticker and users families are hand-written operations over grammers' TL layer,
+because grammers exposes no high-level client API for them; `RawApi` remains the empty escape hatch
+for everything those do not cover. A new capability is one `*Api.kt` file plus one supertype, so
+domains can be developed and reviewed independently.
 
 `native/operations.txt` is the shared contract listing every operation the native crate answers.
 The Rust unit tests and `OperationParityTest` on the JVM both assert against it, so the bridge
 cannot declare a capability the native side does not implement, or the reverse. It currently
-lists 98 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
+lists 99 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
 analysis behind the layout, and [`docs/gap-closure-roadmap.md`](gap-closure-roadmap.md) the work
 that closed the post-parity gaps.
 

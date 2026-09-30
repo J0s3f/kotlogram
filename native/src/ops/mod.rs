@@ -19,6 +19,7 @@ pub(crate) mod messages;
 pub(crate) mod raw;
 pub(crate) mod stickers;
 pub(crate) mod updates;
+pub(crate) mod users;
 
 #[cfg(test)]
 mod tests;
@@ -46,6 +47,7 @@ const ROUTES: &[fn(&str) -> Option<Handler>] = &[
     actions::route,
     markup::route,
     raw::route,
+    users::route,
 ];
 
 /// Every module's [`OPERATIONS`], in the same order as [`ROUTES`].
@@ -65,6 +67,7 @@ const INVENTORY: &[&[&str]] = &[
     actions::OPERATIONS,
     markup::OPERATIONS,
     raw::OPERATIONS,
+    users::OPERATIONS,
 ];
 
 /// Runs one operation by name.

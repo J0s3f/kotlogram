@@ -30,6 +30,8 @@ import org.kotlogramme.bridge.StickersBridge
 import org.kotlogramme.bridge.StickersOperations
 import org.kotlogramme.bridge.UpdatesBridge
 import org.kotlogramme.bridge.UpdatesOperations
+import org.kotlogramme.bridge.UsersBridge
+import org.kotlogramme.bridge.UsersOperations
 import org.kotlogramme.protocol.Message
 import org.kotlogramme.protocol.User
 import java.nio.file.Path
@@ -64,7 +66,8 @@ class TelegramClient private constructor(
     ActionsBridge by ActionsOperations(transport),
     MarkupBridge by MarkupOperations(transport),
     StickersBridge by StickersOperations(transport),
-    RawBridge by RawOperations(transport) {
+    RawBridge by RawOperations(transport),
+    UsersBridge by UsersOperations(transport) {
 
     /** Returns whether this session is already authorized with Telegram. */
     @Operation("isAuthorized")
