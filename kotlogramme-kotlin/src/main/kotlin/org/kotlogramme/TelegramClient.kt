@@ -1,15 +1,21 @@
 package org.kotlogramme
 
+import org.kotlogramme.bridge.AccountBridge
+import org.kotlogramme.bridge.AccountOperations
 import org.kotlogramme.bridge.ActionsBridge
 import org.kotlogramme.bridge.ActionsOperations
 import org.kotlogramme.bridge.AuthBridge
 import org.kotlogramme.bridge.AuthOperations
 import org.kotlogramme.bridge.ChatsBridge
 import org.kotlogramme.bridge.ChatsOperations
+import org.kotlogramme.bridge.ContactsBridge
+import org.kotlogramme.bridge.ContactsOperations
 import org.kotlogramme.bridge.DialogsBridge
 import org.kotlogramme.bridge.DialogsOperations
 import org.kotlogramme.bridge.FilesBridge
 import org.kotlogramme.bridge.FilesOperations
+import org.kotlogramme.bridge.FoldersBridge
+import org.kotlogramme.bridge.FoldersOperations
 import org.kotlogramme.bridge.InlineBridge
 import org.kotlogramme.bridge.InlineOperations
 import org.kotlogramme.bridge.MarkupBridge
@@ -20,6 +26,8 @@ import org.kotlogramme.bridge.MessagesBridge
 import org.kotlogramme.bridge.MessagesOperations
 import org.kotlogramme.bridge.RawBridge
 import org.kotlogramme.bridge.RawOperations
+import org.kotlogramme.bridge.StickersBridge
+import org.kotlogramme.bridge.StickersOperations
 import org.kotlogramme.bridge.UpdatesBridge
 import org.kotlogramme.bridge.UpdatesOperations
 import org.kotlogramme.protocol.Message
@@ -42,16 +50,20 @@ import java.nio.file.Paths
 class TelegramClient private constructor(
     override val transport: Transport,
 ) : AutoCloseable,
+    AccountBridge by AccountOperations(transport),
     AuthBridge by AuthOperations(transport),
     MessagesBridge by MessagesOperations(transport),
     ChatsBridge by ChatsOperations(transport),
+    ContactsBridge by ContactsOperations(transport),
     DialogsBridge by DialogsOperations(transport),
     UpdatesBridge by UpdatesOperations(transport),
     MediaBridge by MediaOperations(transport),
     FilesBridge by FilesOperations(transport),
+    FoldersBridge by FoldersOperations(transport),
     InlineBridge by InlineOperations(transport),
     ActionsBridge by ActionsOperations(transport),
     MarkupBridge by MarkupOperations(transport),
+    StickersBridge by StickersOperations(transport),
     RawBridge by RawOperations(transport) {
 
     /** Returns whether this session is already authorized with Telegram. */

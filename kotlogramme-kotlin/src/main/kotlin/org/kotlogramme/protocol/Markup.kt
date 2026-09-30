@@ -1,7 +1,9 @@
 package org.kotlogramme.protocol
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonClassDiscriminator
 
 /** Wire models and payloads of the reply-markup operations. */
 
@@ -93,6 +95,100 @@ data class Button(
      */
     val requestWriteAccess: Boolean? = null,
 )
+
+/**
+ * A reply markup a send or edit payload may carry, tagged by the grammers `reply_markup` function
+ * that builds it.
+ *
+ * This is the request-side shape of the four markups the build operations project: the same
+ * fields the four build payloads accept, so a markup read off one message can be sent on another.
+ * The boolean options default to `false`, exactly as the build payloads do.
+ */
+@OptIn(ExperimentalSerializationApi::class)
+@Serializable
+@JsonClassDiscriminator("kind")
+internal sealed class MarkupSpec {
+    @Serializable
+    @SerialName("inline")
+    data class Inline(val rows: List<List<InlineButtonSpec>>) : MarkupSpec()
+
+    @Serializable
+    @SerialName("keyboard")
+    data class Keyboard(
+        val rows: List<List<KeyboardButtonSpec>>,
+        val fitSize: Boolean = false,
+        val singleUse: Boolean = false,
+        val selective: Boolean = false,
+    ) : MarkupSpec()
+
+    @Serializable
+    @SerialName("forceReply")
+    data class ForceReply(
+        val singleUse: Boolean = false,
+        val selective: Boolean = false,
+    ) : MarkupSpec()
+
+    @Serializable
+    @SerialName("hide")
+    data class Hide(val selective: Boolean = false) : MarkupSpec()
+}
+
+/**
+ * Converts this projection to the wire spec a send payload carries.
+ *
+ * The projection's button `kind` becomes the spec's button `type`, and the fields a spec cannot
+ * carry — [ReplyMarkup.persistent] and [ReplyMarkup.placeholder], which grammers' builder cannot
+ * set — are dropped, exactly as the build operations drop them.
+ */
+internal fun ReplyMarkup.asSpec(): MarkupSpec = when (kind) {
+    "inline" -> MarkupSpec.Inline(rows.map { row -> row.map { it.asInlineSpec() } })
+    "keyboard" -> MarkupSpec.Keyboard(
+        rows.map { row -> row.map { it.asKeyboardSpec() } },
+        fitSize = fitSize,
+        singleUse = singleUse,
+        selective = selective,
+    )
+    "forceReply" -> MarkupSpec.ForceReply(singleUse = singleUse, selective = selective)
+    "hide" -> MarkupSpec.Hide(selective = selective)
+    else -> throw IllegalArgumentException("grammers builds no markup of kind '$kind'")
+}
+
+/**
+ * The button a grammers inline markup can carry, which is one of the four the button constructors
+ * it takes cover.
+ *
+ * A read-only field the constructors have no parameter for — [Button.requiresPassword] and
+ * [Button.peerTypes] — is dropped here, exactly as the keyboard `persistent` flag is dropped from a
+ * built keyboard.
+ */
+internal fun Button.asInlineSpec(): InlineButtonSpec = when (kind) {
+    "url" -> InlineButtonSpec.Url(text, requireField(url, "url"))
+    "webView" -> InlineButtonSpec.WebView(text, requireField(url, "url"))
+    // `data` is null only for a payload that came back as binary, which cannot be rebuilt.
+    "callback" -> InlineButtonSpec.Callback(text, requireField(data, "data"))
+    // An absent `samePeer` is grammers' `switch_inline`, which keeps the current peer.
+    "switchInline" -> InlineButtonSpec.SwitchInline(text, requireField(query, "query"), samePeer)
+    else -> throw IllegalArgumentException("grammers builds no inline button of kind '$kind'")
+}
+
+/**
+ * The button a grammers custom keyboard can carry, which is one of the four the keyboard button
+ * constructors it takes cover.
+ *
+ * A received poll button reports `null` when the layer left the flag unset, which is the same
+ * request grammers' `request_poll` sends.
+ */
+internal fun Button.asKeyboardSpec(): KeyboardButtonSpec = when (kind) {
+    "text" -> KeyboardButtonSpec.Text(text)
+    "requestPhone" -> KeyboardButtonSpec.RequestPhone(text)
+    "requestGeo" -> KeyboardButtonSpec.RequestGeo(text)
+    "requestPoll" -> KeyboardButtonSpec.RequestPoll(text, quiz ?: false)
+    else -> throw IllegalArgumentException("grammers builds no keyboard button of kind '$kind'")
+}
+
+/** The [name] field this button needs to build, which a received button of that kind always has. */
+private fun Button.requireField(value: String?, name: String): String =
+    requireNotNull(value) { "a $kind button carries no $name" }
 
 /** Payload of `getReplyMarkup`. */
 @Serializable

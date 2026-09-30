@@ -53,6 +53,16 @@ class MediaProtocolTest {
     }
 
     @Test
+    fun `a send-media request can name an upload handle instead of a path`() {
+        assertEquals(
+            """{"peerHandle":12,"kind":"photo","fileHandle":7}""",
+            requests.encodeToString(
+                SendMediaPayload(peerHandle = 12L, path = null, kind = "photo", fileHandle = 7),
+            ),
+        )
+    }
+
+    @Test
     fun `a full url request encodes every option it carries`() {
         val payload = SendMediaUrlPayload(
             peerHandle = 1L,

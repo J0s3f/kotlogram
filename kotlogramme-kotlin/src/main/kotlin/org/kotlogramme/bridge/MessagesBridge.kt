@@ -4,11 +4,14 @@ import org.kotlogramme.Operation
 import org.kotlogramme.Transport
 import org.kotlogramme.protocol.AlbumItemPayload
 import org.kotlogramme.protocol.DeleteResult
+import org.kotlogramme.protocol.EditMediaSpec
 import org.kotlogramme.protocol.EditMessagePayload
+import org.kotlogramme.protocol.EntitySpec
 import org.kotlogramme.protocol.ForwardMessagesPayload
 import org.kotlogramme.protocol.GlobalSearchPayload
 import org.kotlogramme.protocol.GlobalSearchTotalPayload
 import org.kotlogramme.protocol.HistoryPayload
+import org.kotlogramme.protocol.MarkupSpec
 import org.kotlogramme.protocol.Message
 import org.kotlogramme.protocol.MessageCount
 import org.kotlogramme.protocol.MessageIdPayload
@@ -35,33 +38,54 @@ internal interface MessagesBridge {
         replyToMessageId: Int? = null,
         silent: Boolean = false,
         linkPreview: Boolean = true,
+        replyMarkup: MarkupSpec? = null,
+        parseMode: String? = null,
+        entities: List<EntitySpec>? = null,
     ): Message = transport.request(
         "sendMessage",
-        SendMessagePayload(PeerTarget(peer.nativeHandle), text, replyToMessageId, silent, linkPreview),
+        SendMessagePayload(
+            PeerTarget(peer.nativeHandle),
+            text,
+            replyToMessageId,
+            silent,
+            linkPreview,
+            replyMarkup,
+            parseMode,
+            entities,
+        ),
     )
 
-    /** Uploads a local file and sends it as a document, or as a Telegram photo when [asPhoto] is true. */
+    /**
+     * Sends a file as a document, or as a Telegram photo when [asPhoto] is true.
+     *
+     * Exactly one of [path] and [fileHandle] is set: a path uploads the local file now, a handle
+     * reuses an upload that already ran.
+     */
     @Operation("sendFile")
     fun sendFile(
         peer: Peer,
-        path: Path,
+        path: Path? = null,
         caption: String = "",
         asPhoto: Boolean = false,
         replyToMessageId: Int? = null,
         silent: Boolean = false,
+        replyMarkup: MarkupSpec? = null,
+        fileHandle: Long? = null,
     ): Message = transport.request(
         "sendFile",
         SendFilePayload(
             PeerTarget(peer.nativeHandle),
-            path.toAbsolutePath().toString(),
+            path?.toAbsolutePath()?.toString(),
             caption,
             asPhoto,
             replyToMessageId,
             silent,
+            replyMarkup,
+            fileHandle,
         ),
     )
 
-    /** Uploads one to ten files and sends them as a Telegram media album. */
+    /** Sends one to ten files as a Telegram media album; each item names a path or a handle. */
     @Operation("sendAlbum")
     fun sendAlbum(peer: Peer, items: List<OutgoingMedia>): List<Message?> {
         require(items.size in 1..10) { "An album must contain between 1 and 10 media items" }
@@ -69,16 +93,45 @@ internal interface MessagesBridge {
             "sendAlbum",
             SendAlbumPayload(
                 PeerTarget(peer.nativeHandle),
-                items.map { AlbumItemPayload(it.path.toAbsolutePath().toString(), it.caption, it.asPhoto) },
+                items.map {
+                    AlbumItemPayload(
+                        it.path?.toAbsolutePath()?.toString(),
+                        it.caption,
+                        it.asPhoto,
+                        it.fileHandle,
+                    )
+                },
             ),
         )
     }
 
     @Operation("editMessage")
-    fun editMessage(peer: Peer, messageId: Int, text: String, linkPreview: Boolean = true) {
+    fun editMessage(
+        peer: Peer,
+        messageId: Int,
+        text: String? = null,
+        linkPreview: Boolean = true,
+        parseMode: String? = null,
+        entities: List<EntitySpec>? = null,
+        invertMedia: Boolean = false,
+        ttlSeconds: Int? = null,
+        replyMarkup: MarkupSpec? = null,
+        media: EditMediaSpec? = null,
+    ) {
         transport.request<EditMessagePayload, OperationResult>(
             "editMessage",
-            EditMessagePayload(PeerTarget(peer.nativeHandle), messageId, text, linkPreview),
+            EditMessagePayload(
+                PeerTarget(peer.nativeHandle),
+                messageId,
+                text,
+                linkPreview,
+                parseMode,
+                entities,
+                invertMedia,
+                ttlSeconds,
+                replyMarkup,
+                media,
+            ),
         )
     }
 

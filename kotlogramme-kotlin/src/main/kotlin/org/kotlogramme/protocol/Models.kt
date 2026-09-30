@@ -13,11 +13,15 @@ import java.nio.file.Path
  * `Permissions` and `Update`.
  */
 
-/** A local file queued for upload. */
+/**
+ * A file queued for an album: either a local [path] to upload, or the [fileHandle] of an upload
+ * that already ran. Exactly one of the two is set.
+ */
 data class OutgoingMedia(
-    val path: Path,
+    val path: Path? = null,
     val caption: String = "",
     val asPhoto: Boolean = false,
+    val fileHandle: Long? = null,
 )
 
 /** Result of `requestLoginCode`: the native side keeps the real Telegram token. */

@@ -130,6 +130,188 @@ class MessagesProtocolTest {
         assertNull(decoded.editDate)
     }
 
+    @Test
+    fun `a message document decodes the enriched fields`() {
+        val decoded = json.decodeFromString<Message>(MESSAGE)
+
+        // Forward header.
+        val forward = decoded.forwardHeader
+        assertEquals(true, forward?.imported)
+        assertEquals(true, forward?.savedOut)
+        assertEquals(7L, forward?.fromId)
+        assertEquals("Some One", forward?.fromName)
+        assertEquals(1_700_000_000_000L, forward?.date)
+        assertEquals(42, forward?.channelPost)
+        assertEquals("Author", forward?.postAuthor)
+        assertEquals(-1_000_007L, forward?.savedFromPeer)
+        assertEquals(30, forward?.savedFromMsgId)
+        assertEquals(8L, forward?.savedFromId)
+        assertEquals("Original", forward?.savedFromName)
+        assertEquals(1_700_000_060_000L, forward?.savedDate)
+        assertEquals("psa_type", forward?.psaType)
+
+        // Reply header.
+        val reply = decoded.replyHeader
+        assertEquals("header", reply?.kind)
+        assertEquals(true, reply?.replyToScheduled)
+        assertEquals(true, reply?.forumTopic)
+        assertEquals(true, reply?.quote)
+        assertEquals(true, reply?.replyToEphemeral)
+        assertEquals(30, reply?.replyToMsgId)
+        assertEquals(-1_000_007L, reply?.replyToPeerId)
+        assertEquals("quoted", reply?.quoteText)
+        assertEquals(3, reply?.quoteOffset)
+        assertEquals(5, reply?.todoItemId)
+        assertEquals("AQID", reply?.pollOption)
+        assertEquals(7L, reply?.replyFrom?.fromId)
+        assertEquals("Some One", reply?.replyFrom?.fromName)
+
+        // Restriction reasons.
+        assertEquals(1, decoded.restrictionReasons.size)
+        assertEquals(listOf("all", "ios"), decoded.restrictionReasons[0].platforms)
+        assertEquals("spam", decoded.restrictionReasons[0].reason)
+        assertEquals("Reported as spam", decoded.restrictionReasons[0].text)
+
+        // Action.
+        assertEquals(31, decoded.action?.messageId)
+        assertEquals(7L, decoded.action?.senderId)
+        assertEquals("pinMessage", decoded.action?.kind)
+
+        // Reply markup.
+        val markup = decoded.replyMarkup
+        assertEquals("inline", markup?.kind)
+        assertEquals(1, markup?.rows?.size)
+        val button = markup?.rows?.get(0)?.get(0)
+        assertEquals("url", button?.kind)
+        assertEquals("Open", button?.text)
+        assertEquals("https://example.org", button?.url)
+
+        // Peer and sender.
+        assertEquals(-1_000_007L, decoded.peer?.id)
+        assertEquals("channel", decoded.peer?.kind)
+        assertEquals(7L, decoded.sender?.id)
+        assertEquals("someone", decoded.sender?.username)
+    }
+
+    @Test
+    fun `a send payload carries its parse mode and its entities`() {
+        val payload = SendMessagePayload(
+            PeerTarget(peerHandle = 7L),
+            text = "<b>hi</b>",
+            replyToMessageId = null,
+            silent = false,
+            linkPreview = true,
+            parseMode = "html",
+            entities = listOf(EntitySpec(offset = 0, length = 2, type = "bold")),
+        )
+
+        assertEquals(
+            """{"peerHandle":7,"text":"<b>hi</b>","parseMode":"html",""" +
+                """"entities":[{"offset":0,"length":2,"type":"bold"}]}""",
+            requests.encodeToString(payload),
+        )
+
+        // Both are absent by default, so a plain send stays plain.
+        assertEquals(
+            """{"peerHandle":7,"text":"hi"}""",
+            requests.encodeToString(
+                SendMessagePayload(PeerTarget(peerHandle = 7L), "hi", null, false, true),
+            ),
+        )
+    }
+
+    @Test
+    fun `a send-file payload names either a path or an upload handle`() {
+        assertEquals(
+            """{"peerHandle":7,"path":"/tmp/a.pdf","caption":"c","asPhoto":true}""",
+            requests.encodeToString(
+                SendFilePayload(
+                    PeerTarget(peerHandle = 7L),
+                    path = "/tmp/a.pdf",
+                    caption = "c",
+                    asPhoto = true,
+                    replyToMessageId = null,
+                    silent = false,
+                ),
+            ),
+        )
+        assertEquals(
+            """{"peerHandle":7,"caption":"","asPhoto":false,"fileHandle":12}""",
+            requests.encodeToString(
+                SendFilePayload(
+                    PeerTarget(peerHandle = 7L),
+                    path = null,
+                    caption = "",
+                    asPhoto = false,
+                    replyToMessageId = null,
+                    silent = false,
+                    fileHandle = 12,
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `an album item names either a path or an upload handle`() {
+        assertEquals(
+            """{"peerHandle":7,"items":[""" +
+                """{"path":"/tmp/a.pdf","caption":"","asPhoto":false},""" +
+                """{"caption":"","asPhoto":false,"fileHandle":12}]}""",
+            requests.encodeToString(
+                SendAlbumPayload(
+                    PeerTarget(peerHandle = 7L),
+                    listOf(
+                        AlbumItemPayload(path = "/tmp/a.pdf", caption = "", asPhoto = false),
+                        AlbumItemPayload(caption = "", asPhoto = false, fileHandle = 12),
+                    ),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `an edit payload carries every rich option`() {
+        val payload = EditMessagePayload(
+            peer = PeerTarget(peerHandle = 7L),
+            messageId = 31,
+            text = "<b>hi</b>",
+            linkPreview = false,
+            parseMode = "html",
+            entities = listOf(EntitySpec(offset = 0, length = 2, type = "italic")),
+            invertMedia = true,
+            ttlSeconds = 30,
+            markup = MarkupSpec.Hide(selective = true),
+            media = EditMediaSpec(path = "/tmp/a.pdf", kind = "file"),
+        )
+
+        assertEquals(
+            """{"peerHandle":7,"messageId":31,"text":"<b>hi</b>","linkPreview":false,""" +
+                """"parseMode":"html","entities":[{"offset":0,"length":2,"type":"italic"}],""" +
+                """"invertMedia":true,"ttlSeconds":30,"markup":{"kind":"hide","selective":true},""" +
+                """"media":{"path":"/tmp/a.pdf","kind":"file"}}""",
+            requests.encodeToString(payload),
+        )
+    }
+
+    @Test
+    fun `an edit payload leaves the rich options out by default`() {
+        val payload = EditMessagePayload(PeerTarget(peerHandle = 7L), messageId = 31)
+
+        assertEquals("""{"peerHandle":7,"messageId":31}""", requests.encodeToString(payload))
+    }
+
+    @Test
+    fun `an edit media names a copy of another message`() {
+        val payload = EditMediaSpec(
+            copyOf = CopyOfSpec(peer = PeerTarget(peerHandle = 2L), messageId = 7),
+        )
+
+        assertEquals(
+            """{"copyOf":{"peer":{"peerHandle":2},"messageId":7}}""",
+            requests.encodeToString(payload),
+        )
+    }
+
     private companion object {
         val MESSAGE = """
             {"id": 31, "text": "hello", "outgoing": true, "replyToMessageId": 30,
@@ -138,7 +320,52 @@ class MessagesProtocolTest {
              "fromChannelPost": false, "fromScheduled": true, "editHide": false, "viaBotId": 99,
              "postAuthor": "Author", "groupedId": 88, "viewCount": 5, "forwardCount": 4,
              "replyCount": 3, "reactionCount": 2,
-             "media": {"kind": "document", "id": 5150, "name": "report.pdf"}}
+             "media": {"kind": "document", "id": 5150, "name": "report.pdf"},
+             "forwardHeader": {
+                 "imported": true, "savedOut": true, "fromId": 7, "fromName": "Some One",
+                 "date": 1700000000000, "channelPost": 42, "postAuthor": "Author",
+                 "savedFromPeer": -1000007, "savedFromMsgId": 30, "savedFromId": 8,
+                 "savedFromName": "Original", "savedDate": 1700000060000,
+                 "psaType": "psa_type"},
+             "replyHeader": {
+                 "kind": "header", "replyToScheduled": true, "forumTopic": true,
+                 "quote": true, "replyToEphemeral": true, "replyToMsgId": 30,
+                 "replyToPeerId": -1000007, "replyFrom": {
+                     "imported": true, "savedOut": true, "fromId": 7, "fromName": "Some One",
+                     "date": 1700000000000, "channelPost": 42, "postAuthor": "Author",
+                     "savedFromPeer": -1000007, "savedFromMsgId": 30, "savedFromId": 8,
+                     "savedFromName": "Original", "savedDate": 1700000060000,
+                     "psaType": "psa_type"},
+                 "replyMedia": null, "replyToTopId": 29, "quoteText": "quoted",
+                 "quoteOffset": 3, "todoItemId": 5, "pollOption": "AQID",
+                 "storyPeer": null, "storyId": null},
+             "restrictionReasons": [
+                 {"platforms": ["all", "ios"], "reason": "spam", "text": "Reported as spam"}],
+             "action": {"messageId": 31, "senderId": 7, "kind": "pinMessage"},
+             "replyMarkup": {
+                 "kind": "inline",
+                 "rows": [[{"kind": "url", "text": "Open", "url": "https://example.org",
+                            "data": null, "requiresPassword": null, "fwdText": null,
+                            "buttonId": null, "query": null, "samePeer": null,
+                            "peerTypes": null, "quiz": null, "userId": null,
+                            "copyText": null, "maxQuantity": null,
+                            "requestWriteAccess": null}]],
+                 "fitSize": false, "singleUse": false, "selective": false,
+                 "persistent": false, "placeholder": null},
+             "peer": {"nativeHandle": 12, "id": -1000007, "kind": "channel",
+                      "username": "channel", "name": "A Channel",
+                      "usernames": ["channel_alt"], "isMegagroup": null,
+                      "hasPhoto": true, "permissions": null},
+             "sender": {"id": 7, "username": "someone", "firstName": "Some", "lastName": "One",
+                        "fullName": "Some One", "usernames": ["someone_alt"], "phone": null,
+                        "photoId": null, "status": "offline", "statusExpires": null,
+                        "lastSeen": null, "statusByMe": false, "langCode": null,
+                        "isSelf": false, "contact": false, "mutualContact": false,
+                        "deleted": false, "isBot": true, "botPrivacy": false,
+                        "botSupportsChats": false, "botInlineGeo": false,
+                        "botInlinePlaceholder": null, "verified": false,
+                        "restricted": false, "support": false, "scam": false,
+                        "restrictionReasons": []}}
         """.trimIndent()
     }
 }

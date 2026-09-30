@@ -38,6 +38,37 @@ internal data class DownloadMediaChunkPayload(
 @Serializable
 internal data class UploadFilePayload(val path: String)
 
+/**
+ * Payload of `uploadBytes`: the declared name and the whole file base64-encoded.
+ *
+ * Base64 inflates the bytes by a third and JSON carries them as text, so this is for small files;
+ * `FilesApi.uploadStream` is the operation for anything sizeable.
+ */
+@Serializable
+internal data class UploadBytesPayload(
+    val name: String,
+    val dataBase64: String,
+)
+
+/** Payload of `uploadStreamBegin`: the name the finished upload carries. */
+@Serializable
+internal data class UploadStreamBeginPayload(val name: String)
+
+/** Result of `uploadStreamBegin`: the id every later chunk and the finish call name. */
+@Serializable
+internal data class UploadStreamBeginResult(val uploadId: Long)
+
+/** Payload of `uploadStreamChunk`: the stream to append to and one base64 chunk. */
+@Serializable
+internal data class UploadStreamChunkPayload(
+    val uploadId: Long,
+    val dataBase64: String,
+)
+
+/** Payload of `uploadStreamFinish`: the stream whose accumulated bytes are uploaded. */
+@Serializable
+internal data class UploadStreamFinishPayload(val uploadId: Long)
+
 /** Payload of `iterProfilePhotos`. */
 @Serializable
 internal data class ProfilePhotosPayload(
@@ -72,7 +103,9 @@ internal data class MediaChunk(
  * Result of `uploadFile`: the metadata of an upload, which a later send can reuse.
  *
  * [isBig] distinguishes the two TL constructors grammers picks between at ten megabytes, and only
- * the small-file one carries an [md5Checksum].
+ * the small-file one carries an [md5Checksum]. [handle] is the per-client registry handle a later
+ * send references this upload by; it is distinct from [id], the TL file id Telegram assigned, and
+ * lives only as long as the client that produced it.
  */
 @Serializable
 internal data class UploadedFile(
@@ -82,6 +115,7 @@ internal data class UploadedFile(
     val parts: Int,
     val md5Checksum: String? = null,
     val isBig: Boolean = false,
+    val handle: Long? = null,
 )
 
 /** One profile photo, the item `iterProfilePhotos` yields. */

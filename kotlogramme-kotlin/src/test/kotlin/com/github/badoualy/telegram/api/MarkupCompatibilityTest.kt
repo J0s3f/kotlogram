@@ -3,6 +3,7 @@ package com.github.badoualy.telegram.api
 import kotlinx.serialization.json.Json
 import org.kotlogramme.protocol.InlineButtonSpec
 import org.kotlogramme.protocol.KeyboardButtonSpec
+import org.kotlogramme.protocol.MarkupSpec
 import org.kotlogramme.protocol.ReplyMarkup as BridgeReplyMarkup
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -160,6 +161,52 @@ class MarkupCompatibilityTest {
         assertEquals("inputRequestPeer", Button.InputRequestPeer("Suggest").kind)
         assertEquals("forceReply", ReplyMarkup.ForceReply().kind)
         assertEquals("hide", ReplyMarkup.Hide().kind)
+    }
+
+    @Test
+    fun `a markup converts to the spec a send carries`() {
+        val inline = assertIs<MarkupSpec.Inline>(
+            ReplyMarkup.Inline(
+                listOf(
+                    listOf(Button.Url("Docs", "https://example.org")),
+                    listOf(Button.Callback("Vote", "vote:yes", false)),
+                ),
+            ).asSpec(),
+        )
+        assertEquals(InlineButtonSpec.Url("Docs", "https://example.org"), inline.rows[0][0])
+        assertEquals(InlineButtonSpec.Callback("Vote", "vote:yes"), inline.rows[1][0])
+
+        val keyboard = assertIs<MarkupSpec.Keyboard>(
+            ReplyMarkup.Keyboard(
+                rows = listOf(listOf(Button.Text("Go"), Button.RequestPoll("Quiz", true))),
+                fitSize = true,
+                singleUse = true,
+                selective = true,
+                // `persistent` and `placeholder` have no grammers builder method, so a spec drops them.
+                persistent = true,
+                placeholder = "Pick one",
+            ).asSpec(),
+        )
+        assertTrue(keyboard.fitSize && keyboard.singleUse && keyboard.selective)
+        assertEquals(KeyboardButtonSpec.Text("Go"), keyboard.rows[0][0])
+        assertEquals(KeyboardButtonSpec.RequestPoll("Quiz", quiz = true), keyboard.rows[0][1])
+
+        val force = assertIs<MarkupSpec.ForceReply>(
+            ReplyMarkup.ForceReply(singleUse = true, selective = true).asSpec(),
+        )
+        assertTrue(force.singleUse && force.selective)
+
+        val hide = assertIs<MarkupSpec.Hide>(ReplyMarkup.Hide(selective = true).asSpec())
+        assertTrue(hide.selective)
+    }
+
+    @Test
+    fun `a markup of an unknown kind cannot become a spec`() {
+        val unknown = ReplyMarkup.Unknown(
+            kind = "someNewMarkup",
+            rows = listOf(listOf(Button.Text("Go"))),
+        )
+        assertFailsWith<IllegalArgumentException> { unknown.asSpec() }
     }
 
     /** A button document of [kind] with every field populated, so no variant can pass by accident. */

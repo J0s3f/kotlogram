@@ -18,6 +18,9 @@ internal data class SendMessagePayload(
     val replyToMessageId: Int? = null,
     val silent: Boolean = false,
     val linkPreview: Boolean = true,
+    val markup: MarkupSpec? = null,
+    val parseMode: String? = null,
+    val entities: List<EntitySpec>? = null,
 ) {
     constructor(
         peer: PeerTarget,
@@ -25,36 +28,53 @@ internal data class SendMessagePayload(
         replyToMessageId: Int?,
         silent: Boolean,
         linkPreview: Boolean,
-    ) : this(peer.peerHandle, peer.username, text, replyToMessageId, silent, linkPreview)
+        markup: MarkupSpec? = null,
+        parseMode: String? = null,
+        entities: List<EntitySpec>? = null,
+    ) : this(peer.peerHandle, peer.username, text, replyToMessageId, silent, linkPreview, markup, parseMode, entities)
 }
 
-/** Payload of `sendFile`. */
+/**
+ * Payload of `sendFile`.
+ *
+ * Exactly one of [path] and [fileHandle] is set: a path uploads the local file now, a handle
+ * reuses an upload a `uploadBytes` or `uploadStreamFinish` already produced.
+ */
 @Serializable
 internal data class SendFilePayload(
     val peerHandle: Long? = null,
     val username: String? = null,
-    val path: String,
+    val path: String? = null,
     val caption: String,
     val asPhoto: Boolean,
     val replyToMessageId: Int? = null,
     val silent: Boolean = false,
+    val markup: MarkupSpec? = null,
+    val fileHandle: Long? = null,
 ) {
     constructor(
         peer: PeerTarget,
-        path: String,
+        path: String?,
         caption: String,
         asPhoto: Boolean,
         replyToMessageId: Int?,
         silent: Boolean,
-    ) : this(peer.peerHandle, peer.username, path, caption, asPhoto, replyToMessageId, silent)
+        markup: MarkupSpec? = null,
+        fileHandle: Long? = null,
+    ) : this(peer.peerHandle, peer.username, path, caption, asPhoto, replyToMessageId, silent, markup, fileHandle)
 }
 
-/** One entry of the `sendAlbum` media list. */
+/**
+ * One entry of the `sendAlbum` media list.
+ *
+ * As with `sendFile`, exactly one of [path] and [fileHandle] is set.
+ */
 @Serializable
 internal data class AlbumItemPayload(
-    val path: String,
+    val path: String? = null,
     val caption: String,
     val asPhoto: Boolean,
+    val fileHandle: Long? = null,
 )
 
 /** Payload of `sendAlbum`. */
@@ -67,17 +87,83 @@ internal data class SendAlbumPayload(
     constructor(peer: PeerTarget, items: List<AlbumItemPayload>) : this(peer.peerHandle, peer.username, items)
 }
 
+/**
+ * One formatting entity an outgoing message carries, in the request direction.
+ *
+ * [type] names the layer's entity constructor without its `messageEntity` prefix, for example
+ * `bold`, `pre` or `textUrl`. The variant-specific fields are absent on the types that cannot
+ * answer them: this is the shape a future projection of the received entities will serialize, so a
+ * message read back can be sent again without a second model.
+ */
+@Serializable
+internal data class EntitySpec(
+    val offset: Int,
+    val length: Int,
+    val type: String,
+    val url: String? = null,
+    val userId: Long? = null,
+    val language: String? = null,
+    val customEmojiId: Long? = null,
+)
+
+/**
+ * The media an edit replaces the message's media with.
+ *
+ * Exactly one of [path], [url] or [copyOf] is set: a local file is uploaded, a URL is handed to
+ * Telegram to download, and `copyOf` reuses the media of an existing message without a re-upload.
+ * [kind] is `photo`, `document` (the default) or `file`, as on the send side.
+ */
+@Serializable
+internal data class EditMediaSpec(
+    val path: String? = null,
+    val kind: String? = null,
+    val url: String? = null,
+    val copyOf: CopyOfSpec? = null,
+)
+
+/** The message whose media an edit reuses. */
+@Serializable
+internal data class CopyOfSpec(val peer: PeerTarget, val messageId: Int)
+
 /** Payload of `editMessage`. */
 @Serializable
 internal data class EditMessagePayload(
     val peerHandle: Long? = null,
     val username: String? = null,
     val messageId: Int,
-    val text: String,
+    val text: String? = null,
     val linkPreview: Boolean = true,
+    val parseMode: String? = null,
+    val entities: List<EntitySpec>? = null,
+    val invertMedia: Boolean = false,
+    val ttlSeconds: Int? = null,
+    val markup: MarkupSpec? = null,
+    val media: EditMediaSpec? = null,
 ) {
-    constructor(peer: PeerTarget, messageId: Int, text: String, linkPreview: Boolean) :
-        this(peer.peerHandle, peer.username, messageId, text, linkPreview)
+    constructor(
+        peer: PeerTarget,
+        messageId: Int,
+        text: String? = null,
+        linkPreview: Boolean = true,
+        parseMode: String? = null,
+        entities: List<EntitySpec>? = null,
+        invertMedia: Boolean = false,
+        ttlSeconds: Int? = null,
+        markup: MarkupSpec? = null,
+        media: EditMediaSpec? = null,
+    ) : this(
+        peer.peerHandle,
+        peer.username,
+        messageId,
+        text,
+        linkPreview,
+        parseMode,
+        entities,
+        invertMedia,
+        ttlSeconds,
+        markup,
+        media,
+    )
 }
 
 /** Payload of `deleteMessages` and `getMessages`. */

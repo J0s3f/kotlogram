@@ -1,8 +1,6 @@
 //! Message operations: sending, editing, deleting, reading, searching, forwarding, pinning and
 //! reacting.
 
-use std::path::PathBuf;
-
 use grammers_client::media::InputMedia;
 use grammers_client::message::InputMessage;
 use grammers_client::message::InputReactions;
@@ -10,11 +8,13 @@ use grammers_client::tl;
 use serde::Deserialize;
 use serde_json::json;
 
+use super::markup::reply_markup_from_spec;
+use super::media::{apply_edit_media, EditMediaSpec};
 use super::Handler;
-use crate::client::{resolve_peer, NativeClient};
+use crate::client::{resolve_peer, resolve_upload, NativeClient};
 use crate::dto::message::{message_dto, MessageCountDto};
-use crate::error::{error, invocation_error, json_string, parse_payload};
-use crate::payload::PeerTarget;
+use crate::error::{invocation_error, json_string, parse_payload};
+use crate::payload::{file_source, resolve_format, EntitySpec, MarkupSpec, PeerTarget};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -25,6 +25,11 @@ struct SendMessagePayload {
     reply_to_message_id: Option<i32>,
     silent: Option<bool>,
     link_preview: Option<bool>,
+    /// `html`, `markdown` or `none` (the default): how the text is parsed into entities.
+    parse_mode: Option<String>,
+    /// Explicit formatting entities, which override the ones the parse mode derives.
+    entities: Option<Vec<EntitySpec>>,
+    markup: Option<MarkupSpec>,
 }
 
 #[derive(Deserialize)]
@@ -32,19 +37,34 @@ struct SendMessagePayload {
 struct SendFilePayload {
     #[serde(flatten)]
     peer: PeerTarget,
-    path: String,
+    /// The local file to upload, when the send names a path rather than an upload handle.
+    path: Option<String>,
     caption: Option<String>,
     as_photo: Option<bool>,
     reply_to_message_id: Option<i32>,
     silent: Option<bool>,
+    markup: Option<MarkupSpec>,
+    /// The handle of an upload that already ran, as an alternative to [Self::path]. Exactly one of
+    /// the two must be set.
+    file_handle: Option<i64>,
 }
 
+/// One item of an album.
+///
+/// An album item carries no markup: the `messages.SendMultiMedia` request the album is sent with
+/// has no `reply_markup` field in the layer schema, so there is nowhere to attach one. A markup on
+/// an album is refused by the layer rather than silently dropped, which is why the field is absent
+/// here rather than ignored.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct AlbumItemPayload {
-    path: String,
+    /// The local file to upload, when the item names a path rather than an upload handle.
+    path: Option<String>,
     caption: Option<String>,
     as_photo: Option<bool>,
+    /// The handle of an upload that already ran, as an alternative to [Self::path]. Exactly one of
+    /// the two must be set.
+    file_handle: Option<i64>,
 }
 
 #[derive(Deserialize)]
@@ -61,8 +81,21 @@ struct EditMessagePayload {
     #[serde(flatten)]
     peer: PeerTarget,
     message_id: i32,
-    text: String,
+    /// The new text. Absent keeps the message's current text, which is what a media-only edit
+    /// sends; grammers drops an empty text from the request.
+    text: Option<String>,
+    /// `html`, `markdown` or `none` (the default): how [text] is parsed into entities. Ignored
+    /// when [entities] is set.
+    parse_mode: Option<String>,
+    /// Explicit formatting entities, which override the ones the parse mode derives.
+    entities: Option<Vec<EntitySpec>>,
     link_preview: Option<bool>,
+    invert_media: Option<bool>,
+    /// The media's time-to-live in seconds. Applied before the media, as grammers requires.
+    ttl_seconds: Option<i32>,
+    markup: Option<MarkupSpec>,
+    /// Replaces the message's media; absent leaves it untouched.
+    media: Option<EditMediaSpec>,
 }
 
 #[derive(Deserialize)]
@@ -208,30 +241,41 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
 fn send_message(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: SendMessagePayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
-    let message = InputMessage::new()
-        .text(data.text)
+    let (text, entities) = resolve_format(
+        &data.text,
+        data.parse_mode.as_deref(),
+        data.entities.as_deref(),
+    )?;
+    let mut message = InputMessage::new()
+        .text(text)
+        .fmt_entities(entities)
         .reply_to(data.reply_to_message_id)
         .silent(data.silent.unwrap_or(false))
         .link_preview(data.link_preview.unwrap_or(true));
+    if let Some(markup) = &data.markup {
+        message = message.reply_markup(reply_markup_from_spec(markup)?);
+    }
     let message = native
         .runtime
         .block_on(native.client.send_message(peer, message))
         .map_err(invocation_error)?;
-    json_string(message_dto(&message))
+    json_string(message_dto(native, &message))
 }
 
 fn send_file(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: SendFilePayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
-    let path = PathBuf::from(data.path);
-    let uploaded = native
-        .runtime
-        .block_on(native.client.upload_file(&path))
-        .map_err(error)?;
-    let message = InputMessage::new()
+    let uploaded = native.runtime.block_on(resolve_upload(
+        native,
+        file_source(data.path, data.file_handle)?,
+    ))?;
+    let mut message = InputMessage::new()
         .text(data.caption.unwrap_or_default())
         .reply_to(data.reply_to_message_id)
         .silent(data.silent.unwrap_or(false));
+    if let Some(markup) = &data.markup {
+        message = message.reply_markup(reply_markup_from_spec(markup)?);
+    }
     let message = if data.as_photo.unwrap_or(false) {
         message.photo(uploaded)
     } else {
@@ -241,7 +285,7 @@ fn send_file(native: &NativeClient, payload: &str) -> Result<String, String> {
         .runtime
         .block_on(native.client.send_message(peer, message))
         .map_err(invocation_error)?;
-    json_string(message_dto(&message))
+    json_string(message_dto(native, &message))
 }
 
 fn send_album(native: &NativeClient, payload: &str) -> Result<String, String> {
@@ -253,11 +297,8 @@ fn send_album(native: &NativeClient, payload: &str) -> Result<String, String> {
     let messages = native.runtime.block_on(async {
         let mut media = Vec::with_capacity(data.items.len());
         for item in data.items {
-            let uploaded = native
-                .client
-                .upload_file(PathBuf::from(item.path))
-                .await
-                .map_err(error)?;
+            let uploaded =
+                resolve_upload(native, file_source(item.path, item.file_handle)?).await?;
             let input = InputMedia::new().caption(item.caption.unwrap_or_default());
             media.push(if item.as_photo.unwrap_or(false) {
                 input.photo(uploaded)
@@ -274,7 +315,7 @@ fn send_album(native: &NativeClient, payload: &str) -> Result<String, String> {
     json_string(
         messages
             .iter()
-            .map(|message| message.as_ref().map(message_dto))
+            .map(|message| message.as_ref().map(|message| message_dto(native, message)))
             .collect::<Vec<_>>(),
     )
 }
@@ -282,9 +323,26 @@ fn send_album(native: &NativeClient, payload: &str) -> Result<String, String> {
 fn edit_message(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: EditMessagePayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
-    let message = InputMessage::new()
-        .text(data.text)
-        .link_preview(data.link_preview.unwrap_or(true));
+    let text = data.text.as_deref().unwrap_or_default();
+    let (text, entities) =
+        resolve_format(text, data.parse_mode.as_deref(), data.entities.as_deref())?;
+    let mut message = InputMessage::new()
+        .text(text)
+        .fmt_entities(entities)
+        .link_preview(data.link_preview.unwrap_or(true))
+        .invert_media(data.invert_media.unwrap_or(false));
+    // grammers requires the TTL to be set before the media it applies to.
+    if let Some(ttl_seconds) = data.ttl_seconds {
+        message = message.media_ttl(ttl_seconds);
+    }
+    if let Some(markup) = &data.markup {
+        message = message.reply_markup(reply_markup_from_spec(markup)?);
+    }
+    if let Some(media) = &data.media {
+        message = native
+            .runtime
+            .block_on(apply_edit_media(native, message, media))?;
+    }
     native
         .runtime
         .block_on(native.client.edit_message(peer, data.message_id, message))
@@ -318,7 +376,7 @@ fn get_history(native: &NativeClient, payload: &str) -> Result<String, String> {
         }
         let mut result = Vec::new();
         while let Some(message) = iterator.next().await.map_err(invocation_error)? {
-            result.push(message_dto(&message));
+            result.push(message_dto(native, &message));
         }
         Ok::<_, String>(result)
     })?;
@@ -361,7 +419,7 @@ fn get_chat_photos(native: &NativeClient, payload: &str) -> Result<String, Strin
         }
         let mut result = Vec::new();
         while let Some(message) = iterator.next().await.map_err(invocation_error)? {
-            result.push(message_dto(&message));
+            result.push(message_dto(native, &message));
         }
         Ok::<_, String>(result)
     })?;
@@ -393,7 +451,7 @@ fn get_reply_to_message(native: &NativeClient, payload: &str) -> Result<String, 
             None => Ok(None),
         }
     })?;
-    json_string(reply.as_ref().map(message_dto))
+    json_string(reply.as_ref().map(|message| message_dto(native, message)))
 }
 
 fn get_messages(native: &NativeClient, payload: &str) -> Result<String, String> {
@@ -407,7 +465,7 @@ fn get_messages(native: &NativeClient, payload: &str) -> Result<String, String> 
         .block_on(native.client.get_messages_by_id(peer, &data.message_ids))
         .map_err(invocation_error)?
         .iter()
-        .map(|message| message.as_ref().map(message_dto))
+        .map(|message| message.as_ref().map(|message| message_dto(native, message)))
         .collect::<Vec<_>>();
     json_string(messages)
 }
@@ -452,7 +510,12 @@ fn search_messages(native: &NativeClient, payload: &str) -> Result<String, Strin
         }
         Ok::<_, String>(result)
     })?;
-    json_string(messages.iter().map(message_dto).collect::<Vec<_>>())
+    json_string(
+        messages
+            .iter()
+            .map(|message| message_dto(native, message))
+            .collect::<Vec<_>>(),
+    )
 }
 
 /// Counts the messages in a peer that match the same options [`search_messages`] accepts.
@@ -496,7 +559,7 @@ fn search_all_messages(native: &NativeClient, payload: &str) -> Result<String, S
         }
         let mut result = Vec::new();
         while let Some(message) = iterator.next().await.map_err(invocation_error)? {
-            result.push(message_dto(&message));
+            result.push(message_dto(native, &message));
         }
         Ok::<_, String>(result)
     })?;
@@ -576,7 +639,7 @@ fn forward_messages(native: &NativeClient, payload: &str) -> Result<String, Stri
         )
         .map_err(invocation_error)?
         .iter()
-        .map(|message| message.as_ref().map(message_dto))
+        .map(|message| message.as_ref().map(|message| message_dto(native, message)))
         .collect::<Vec<_>>();
     json_string(messages)
 }
@@ -588,7 +651,7 @@ fn get_pinned_message(native: &NativeClient, payload: &str) -> Result<String, St
         .runtime
         .block_on(native.client.get_pinned_message(peer))
         .map_err(invocation_error)?;
-    json_string(message.as_ref().map(message_dto))
+    json_string(message.as_ref().map(|message| message_dto(native, message)))
 }
 
 fn pin_message(native: &NativeClient, payload: &str) -> Result<String, String> {
@@ -652,6 +715,8 @@ fn send_reaction(native: &NativeClient, payload: &str) -> Result<String, String>
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::payload::{EntitySpec, MarkupSpec};
 
     /// The count operations answer this document, which Kotlin decodes as `MessageCount`.
     #[test]
@@ -798,5 +863,135 @@ mod tests {
                 "{operation} is declared by this module but not routed"
             );
         }
+    }
+
+    #[test]
+    fn the_send_payloads_decode_a_markup_spec() {
+        let data: SendMessagePayload = parse_payload(
+            r#"{"peerHandle":1,"text":"hi","markup":{"kind":"hide","selective":true}}"#,
+        )
+        .expect("a send payload");
+        assert!(matches!(
+            data.markup,
+            Some(MarkupSpec::Hide { selective: true })
+        ));
+
+        let data: SendFilePayload =
+            parse_payload(r#"{"peerHandle":1,"path":"/tmp/a.pdf","markup":{"kind":"forceReply"}}"#)
+                .expect("a send-file payload");
+        assert!(matches!(data.markup, Some(MarkupSpec::ForceReply { .. })));
+
+        // An absent markup is `None`, so a send without one is unchanged.
+        let data: SendMessagePayload =
+            parse_payload(r#"{"peerHandle":1,"text":"hi"}"#).expect("a send payload");
+        assert!(data.markup.is_none());
+    }
+
+    #[test]
+    fn the_send_payload_decodes_a_parse_mode_and_entities() {
+        let data: SendMessagePayload = parse_payload(
+            r#"{"peerHandle":1,"text":"<b>hi</b>","parseMode":"html",
+                "entities":[{"offset":0,"length":2,"type":"bold"}]}"#,
+        )
+        .expect("a send payload");
+        assert_eq!(data.parse_mode.as_deref(), Some("html"));
+        assert_eq!(data.entities.as_ref().map(Vec::len), Some(1));
+        assert_eq!(
+            data.entities.as_ref().map(|e| e[0].entity_type.as_str()),
+            Some("bold")
+        );
+
+        // Both are absent by default.
+        let data: SendMessagePayload =
+            parse_payload(r#"{"peerHandle":1,"text":"hi"}"#).expect("a send payload");
+        assert!(data.parse_mode.is_none() && data.entities.is_none());
+    }
+
+    #[test]
+    fn the_send_payloads_read_an_upload_handle_instead_of_a_path() {
+        let data: SendFilePayload =
+            parse_payload(r#"{"peerHandle":1,"fileHandle":7,"caption":"hi","asPhoto":true}"#)
+                .expect("a send-file payload");
+        assert_eq!(data.file_handle, Some(7));
+        assert_eq!(data.path, None);
+
+        let data: SendAlbumPayload = parse_payload(
+            r#"{"peerHandle":1,"items":[{"fileHandle":7,"caption":"a"},{"path":"/tmp/b.pdf"}]}"#,
+        )
+        .expect("an album payload");
+        assert_eq!(data.items[0].file_handle, Some(7));
+        assert_eq!(data.items[0].path, None);
+        assert_eq!(data.items[1].file_handle, None);
+        assert_eq!(data.items[1].path.as_deref(), Some("/tmp/b.pdf"));
+    }
+
+    #[test]
+    fn the_edit_payload_decodes_every_rich_option() {
+        let data: EditMessagePayload = parse_payload(
+            r#"{"peerHandle":1,"messageId":31,"text":"<b>hi</b>","parseMode":"html",
+                "linkPreview":false,"invertMedia":true,"ttlSeconds":30,
+                "markup":{"kind":"hide"},
+                "media":{"path":"/tmp/a.pdf","kind":"file"}}"#,
+        )
+        .expect("an edit payload");
+        assert_eq!(data.message_id, 31);
+        assert_eq!(data.text.as_deref(), Some("<b>hi</b>"));
+        assert_eq!(data.parse_mode.as_deref(), Some("html"));
+        assert_eq!(data.link_preview, Some(false));
+        assert_eq!(data.invert_media, Some(true));
+        assert_eq!(data.ttl_seconds, Some(30));
+        assert!(matches!(data.markup, Some(MarkupSpec::Hide { .. })));
+        let media = data.media.expect("the media");
+        assert_eq!(media.path.as_deref(), Some("/tmp/a.pdf"));
+        assert_eq!(media.kind.as_deref(), Some("file"));
+
+        // A copy-of media carries its source message.
+        let data: EditMessagePayload = parse_payload(
+            r#"{"username":"channel","messageId":31,
+                "media":{"copyOf":{"peer":{"peerHandle":2},"messageId":7}}}"#,
+        )
+        .expect("an edit payload");
+        let copy = data.media.expect("the media").copy_of.expect("a source");
+        assert_eq!(copy.peer.peer_handle, Some(2));
+        assert_eq!(copy.message_id, 7);
+    }
+
+    #[test]
+    fn a_media_only_edit_leaves_the_text_absent() {
+        let data: EditMessagePayload =
+            parse_payload(r#"{"peerHandle":1,"messageId":31,"media":{"path":"/tmp/a.pdf"}}"#)
+                .expect("an edit payload");
+        assert!(data.text.is_none() && data.parse_mode.is_none() && data.entities.is_none());
+        // The handler resolves an absent text to the empty string, which grammers drops.
+        let (text, entities) = resolve_format("", None, None).expect("plain text");
+        assert_eq!(text, "");
+        assert!(entities.is_empty());
+    }
+
+    #[test]
+    fn an_explicit_entity_list_overrides_the_parse_mode() {
+        let entities =
+            vec![
+                parse_payload::<EntitySpec>(r#"{"offset":0,"length":2,"type":"italic"}"#)
+                    .expect("an entity"),
+            ];
+        let (text, resolved) =
+            resolve_format("<b>hi</b>", Some("html"), Some(&entities)).expect("a formatted text");
+        assert_eq!(text, "hi");
+        assert_eq!(
+            resolved,
+            vec![grammers_client::tl::enums::MessageEntity::Italic(
+                grammers_client::tl::types::MessageEntityItalic {
+                    offset: 0,
+                    length: 2,
+                }
+            )]
+        );
+
+        // A bad parse mode is refused before any client call.
+        assert_eq!(
+            resolve_format("hi", Some("json"), None).unwrap_err(),
+            "unsupported parse mode: json"
+        );
     }
 }

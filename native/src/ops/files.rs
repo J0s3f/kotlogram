@@ -1,8 +1,10 @@
 //! File transfer: downloading media, chunked downloads, uploads with declared MIME types and profile photos.
 
+use std::io::Cursor;
 use std::path::PathBuf;
 
 use grammers_client::media::Media as ClientMedia;
+use grammers_client::media::Uploaded;
 use grammers_session::types::PeerRef;
 use serde::Deserialize;
 use serde_json::json;
@@ -10,7 +12,7 @@ use serde_json::json;
 use super::Handler;
 use crate::client::{resolve_peer, NativeClient};
 use crate::dto::files::{
-    base64, profile_photo_dto, uploaded_dto, DownloadResultDto, MediaChunkDto,
+    base64, decode_base64, profile_photo_dto, uploaded_dto, DownloadResultDto, MediaChunkDto,
 };
 use crate::error::{error, invocation_error, json_string, parse_payload};
 use crate::payload::PeerTarget;
@@ -45,6 +47,39 @@ struct UploadFilePayload {
     path: String,
 }
 
+/// Payload of `uploadBytes`: the declared name and the whole file as one base64 string.
+///
+/// Base64 inflates the data by a third and JSON carries it as text, so this is for small files.
+/// `uploadStreamBegin`/`Chunk`/`Finish` is the operation to use for anything sizeable.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UploadBytesPayload {
+    name: String,
+    data_base64: String,
+}
+
+/// Payload of `uploadStreamBegin`: the name the finished upload will carry.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UploadStreamBeginPayload {
+    name: String,
+}
+
+/// Payload of `uploadStreamChunk`: the stream to append to and one base64 chunk.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UploadStreamChunkPayload {
+    upload_id: i64,
+    data_base64: String,
+}
+
+/// Payload of `uploadStreamFinish`: the stream whose accumulated bytes are uploaded.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UploadStreamFinishPayload {
+    upload_id: i64,
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ProfilePhotosPayload {
@@ -58,6 +93,10 @@ pub(crate) const OPERATIONS: &[&str] = &[
     "downloadMedia",
     "downloadMediaChunk",
     "uploadFile",
+    "uploadBytes",
+    "uploadStreamBegin",
+    "uploadStreamChunk",
+    "uploadStreamFinish",
     "iterProfilePhotos",
 ];
 
@@ -70,6 +109,10 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
         "downloadMedia" => download_media,
         "downloadMediaChunk" => download_media_chunk,
         "uploadFile" => upload_file,
+        "uploadBytes" => upload_bytes,
+        "uploadStreamBegin" => upload_stream_begin,
+        "uploadStreamChunk" => upload_stream_chunk,
+        "uploadStreamFinish" => upload_stream_finish,
         "iterProfilePhotos" => iter_profile_photos,
         _ => return None,
     })
@@ -131,7 +174,68 @@ fn upload_file(native: &NativeClient, payload: &str) -> Result<String, String> {
         .runtime
         .block_on(native.client.upload_file(&path))
         .map_err(error)?;
-    json_string(uploaded_dto(&uploaded, size)?)
+    finish_upload(native, uploaded, size)
+}
+
+/// Uploads [data] under [name] in one shot: the single-shot sibling of the streamed path.
+///
+/// The bytes are carried base64 in the JSON payload, which inflates them by a third; a caller with
+/// anything but a small file should use the `uploadStream*` operations instead.
+fn upload_bytes(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: UploadBytesPayload = parse_payload(payload)?;
+    let bytes = decode_base64(&data.data_base64)?;
+    let size = bytes.len() as i64;
+    let mut stream = Cursor::new(bytes);
+    let uploaded = native
+        .runtime
+        .block_on(
+            native
+                .client
+                .upload_stream(&mut stream, size as usize, data.name),
+        )
+        .map_err(error)?;
+    finish_upload(native, uploaded, size)
+}
+
+/// Opens a chunked upload and returns the id every later chunk names.
+fn upload_stream_begin(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: UploadStreamBeginPayload = parse_payload(payload)?;
+    let upload_id = native.uploads.begin(data.name)?;
+    json_string(json!({ "uploadId": upload_id }))
+}
+
+/// Appends one decoded chunk to the stream [UploadStreamChunkPayload::upload_id] names.
+fn upload_stream_chunk(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: UploadStreamChunkPayload = parse_payload(payload)?;
+    let bytes = decode_base64(&data.data_base64)?;
+    native.uploads.append(data.upload_id, &bytes)?;
+    json_string(json!({ "ok": true }))
+}
+
+/// Feeds the bytes accumulated for a stream through grammers' `upload_stream`.
+///
+/// A `std::io::Cursor<Vec<u8>>` is the `tokio::io::AsyncRead + Unpin` source grammers wants, and
+/// the stream's declared name is what the upload carries as its file name.
+fn upload_stream_finish(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: UploadStreamFinishPayload = parse_payload(payload)?;
+    let stream = native.uploads.take(data.upload_id)?;
+    let size = stream.data.len() as i64;
+    let mut cursor = Cursor::new(stream.data);
+    let uploaded = native
+        .runtime
+        .block_on(
+            native
+                .client
+                .upload_stream(&mut cursor, size as usize, stream.name),
+        )
+        .map_err(error)?;
+    finish_upload(native, uploaded, size)
+}
+
+/// Registers a finished upload and projects the metadata plus the handle that references it.
+fn finish_upload(native: &NativeClient, uploaded: Uploaded, size: i64) -> Result<String, String> {
+    let handle = native.uploads.register(uploaded.clone())?;
+    json_string(uploaded_dto(&uploaded, size, Some(handle))?)
 }
 
 fn iter_profile_photos(native: &NativeClient, payload: &str) -> Result<String, String> {
@@ -244,5 +348,27 @@ mod tests {
         assert_eq!(data.peer.username.as_deref(), Some("channel"));
         assert_eq!(data.chunk_size, 524_288);
         assert_eq!(data.skip_chunks, 2);
+    }
+
+    #[test]
+    fn the_upload_payloads_read_their_camel_case_fields() {
+        let bytes: UploadBytesPayload =
+            parse_payload(r#"{"name":"holidays.jpg","dataBase64":"Zm9vYmFy"}"#)
+                .expect("an upload-bytes payload");
+        assert_eq!(bytes.name, "holidays.jpg");
+        assert_eq!(bytes.data_base64, "Zm9vYmFy");
+
+        let begin: UploadStreamBeginPayload =
+            parse_payload(r#"{"name":"movie.mp4"}"#).expect("a begin payload");
+        assert_eq!(begin.name, "movie.mp4");
+
+        let chunk: UploadStreamChunkPayload =
+            parse_payload(r#"{"uploadId":12,"dataBase64":"Zm9v"}"#).expect("a chunk payload");
+        assert_eq!(chunk.upload_id, 12);
+        assert_eq!(chunk.data_base64, "Zm9v");
+
+        let finish: UploadStreamFinishPayload =
+            parse_payload(r#"{"uploadId":12}"#).expect("a finish payload");
+        assert_eq!(finish.upload_id, 12);
     }
 }

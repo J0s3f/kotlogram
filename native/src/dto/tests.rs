@@ -9,9 +9,11 @@ use grammers_client::tl;
 use serde::Serialize;
 use serde_json::json;
 
+use crate::dto::action::MessageActionDto;
 use crate::dto::dialog::DialogDto;
+use crate::dto::markup::{ButtonDto, ReplyMarkupDto};
 use crate::dto::media::MediaDto;
-use crate::dto::message::MessageDto;
+use crate::dto::message::{ForwardHeaderDto, MessageDto, ReplyHeaderDto};
 use crate::dto::participant::ParticipantDto;
 use crate::dto::peer::PeerDto;
 use crate::dto::permissions::{ChatPermissionsDto, ChatRestrictionsDto};
@@ -82,7 +84,47 @@ fn full_peer() -> PeerDto {
             add_admins: false,
             anonymous: false,
             manage_call: false,
+            ..ChatPermissionsDto::default()
         }),
+    }
+}
+
+fn full_forward_header() -> ForwardHeaderDto {
+    ForwardHeaderDto {
+        imported: true,
+        saved_out: true,
+        from_id: Some(7),
+        from_name: Some("Some One".to_owned()),
+        date: 1_700_000_000_000,
+        channel_post: Some(42),
+        post_author: Some("Author".to_owned()),
+        saved_from_peer: Some(-1_000_007),
+        saved_from_msg_id: Some(30),
+        saved_from_id: Some(8),
+        saved_from_name: Some("Original".to_owned()),
+        saved_date: Some(1_700_000_060_000),
+        psa_type: Some("psa_type".to_owned()),
+    }
+}
+
+fn full_reply_header() -> ReplyHeaderDto {
+    ReplyHeaderDto {
+        kind: "header",
+        reply_to_scheduled: true,
+        forum_topic: true,
+        quote: true,
+        reply_to_ephemeral: true,
+        reply_to_msg_id: Some(30),
+        reply_to_peer_id: Some(-1_000_007),
+        reply_from: Some(full_forward_header()),
+        reply_media: None,
+        reply_to_top_id: Some(29),
+        quote_text: Some("quoted".to_owned()),
+        quote_offset: Some(3),
+        todo_item_id: Some(5),
+        poll_option: Some("AQID".to_owned()),
+        story_peer: None,
+        story_id: None,
     }
 }
 
@@ -111,6 +153,45 @@ fn full_message(media: Option<MediaDto>) -> MessageDto {
         reply_count: Some(3),
         reaction_count: Some(2),
         media,
+        forward_header: Some(full_forward_header()),
+        reply_header: Some(full_reply_header()),
+        restriction_reasons: vec![RestrictionReasonDto {
+            platforms: vec!["all".to_owned(), "ios".to_owned()],
+            reason: "spam".to_owned(),
+            text: "Reported as spam".to_owned(),
+        }],
+        action: Some(MessageActionDto {
+            message_id: 31,
+            sender_id: Some(7),
+            kind: "pinMessage",
+        }),
+        reply_markup: Some(ReplyMarkupDto {
+            kind: "inline",
+            rows: vec![vec![ButtonDto {
+                kind: "url",
+                text: "Open".to_owned(),
+                url: Some("https://example.org".to_owned()),
+                data: None,
+                requires_password: None,
+                fwd_text: None,
+                button_id: None,
+                query: None,
+                same_peer: None,
+                peer_types: None,
+                quiz: None,
+                user_id: None,
+                copy_text: None,
+                max_quantity: None,
+                request_write_access: None,
+            }]],
+            fit_size: false,
+            single_use: false,
+            selective: false,
+            persistent: false,
+            placeholder: None,
+        }),
+        peer: Some(full_peer()),
+        sender: Some(full_user()),
     }
 }
 
@@ -150,6 +231,7 @@ fn full_participant() -> ParticipantDto {
             add_admins: true,
             anonymous: false,
             manage_call: true,
+            ..ChatPermissionsDto::default()
         }),
         restrictions: None,
     }
@@ -292,6 +374,15 @@ fn peer_encodes_every_projected_field() {
                 "addAdmins": false,
                 "anonymous": false,
                 "manageCall": false,
+                "manageTopics": false,
+                "postStories": false,
+                "editStories": false,
+                "deleteStories": false,
+                "manageDirectMessages": false,
+                "manageRanks": false,
+                "manageLinkedPeers": false,
+                "manageWelcomeMessages": false,
+                "other": false,
             },
         }),
     );
@@ -299,34 +390,90 @@ fn peer_encodes_every_projected_field() {
 
 #[test]
 fn message_encodes_every_projected_field() {
-    assert_json(
-        &full_message(None),
-        json!({
-            "id": 31,
-            "text": "hello",
-            "outgoing": true,
-            "replyToMessageId": 30,
-            "peerId": -1_000_007,
-            "senderId": 7,
-            "date": 1_700_000_000_000i64,
-            "editDate": 1_700_000_060_000i64,
-            "mentioned": true,
-            "mediaUnread": false,
-            "silent": true,
-            "pinned": true,
-            "fromChannelPost": false,
-            "fromScheduled": true,
-            "editHide": false,
-            "viaBotId": 99,
-            "postAuthor": "Author",
-            "groupedId": 88,
-            "viewCount": 5,
-            "forwardCount": 4,
-            "replyCount": 3,
-            "reactionCount": 2,
-            "media": null,
-        }),
+    let mut expected = json!({
+        "id": 31,
+        "text": "hello",
+        "outgoing": true,
+        "replyToMessageId": 30,
+        "peerId": -1_000_007,
+        "senderId": 7,
+        "date": 1_700_000_000_000i64,
+        "editDate": 1_700_000_060_000i64,
+        "mentioned": true,
+        "mediaUnread": false,
+        "silent": true,
+        "pinned": true,
+        "fromChannelPost": false,
+        "fromScheduled": true,
+        "editHide": false,
+        "viaBotId": 99,
+        "postAuthor": "Author",
+        "groupedId": 88,
+        "viewCount": 5,
+        "forwardCount": 4,
+        "replyCount": 3,
+        "reactionCount": 2,
+        "media": null,
+    });
+    let object = expected.as_object_mut().expect("an object");
+    object.insert(
+        "forwardHeader".to_owned(),
+        serde_json::to_value(full_forward_header()).expect("a forward header encodes"),
     );
+    object.insert(
+        "replyHeader".to_owned(),
+        serde_json::to_value(full_reply_header()).expect("a reply header encodes"),
+    );
+    object.insert(
+        "restrictionReasons".to_owned(),
+        serde_json::to_value(vec![RestrictionReasonDto {
+            platforms: vec!["all".to_owned(), "ios".to_owned()],
+            reason: "spam".to_owned(),
+            text: "Reported as spam".to_owned(),
+        }])
+        .expect("restriction reasons encode"),
+    );
+    object.insert(
+        "action".to_owned(),
+        serde_json::to_value(MessageActionDto {
+            message_id: 31,
+            sender_id: Some(7),
+            kind: "pinMessage",
+        })
+        .expect("an action encodes"),
+    );
+    object.insert(
+        "replyMarkup".to_owned(),
+        serde_json::to_value(ReplyMarkupDto {
+            kind: "inline",
+            rows: vec![vec![ButtonDto {
+                kind: "url",
+                text: "Open".to_owned(),
+                url: Some("https://example.org".to_owned()),
+                data: None,
+                requires_password: None,
+                fwd_text: None,
+                button_id: None,
+                query: None,
+                same_peer: None,
+                peer_types: None,
+                quiz: None,
+                user_id: None,
+                copy_text: None,
+                max_quantity: None,
+                request_write_access: None,
+            }]],
+            fit_size: false,
+            single_use: false,
+            selective: false,
+            persistent: false,
+            placeholder: None,
+        })
+        .expect("a markup encodes"),
+    );
+    object.insert("peer".to_owned(), json!(full_peer()));
+    object.insert("sender".to_owned(), json!(full_user()));
+    assert_json(&full_message(None), expected);
 }
 
 #[test]
@@ -372,6 +519,15 @@ fn participant_encodes_every_projected_field() {
             "addAdmins": true,
             "anonymous": false,
             "manageCall": true,
+            "manageTopics": false,
+            "postStories": false,
+            "editStories": false,
+            "deleteStories": false,
+            "manageDirectMessages": false,
+            "manageRanks": false,
+            "manageLinkedPeers": false,
+            "manageWelcomeMessages": false,
+            "other": false,
         },
         "restrictions": null,
     });
@@ -442,7 +598,7 @@ fn message_carries_its_media() {
 }
 
 #[test]
-fn admin_rights_only_project_the_grammers_accessors() {
+fn admin_rights_project_every_layer_flag() {
     let rights = tl::types::ChatAdminRights {
         change_info: true,
         post_messages: false,
@@ -477,12 +633,21 @@ fn admin_rights_only_project_the_grammers_accessors() {
             "addAdmins": false,
             "anonymous": true,
             "manageCall": false,
+            "manageTopics": true,
+            "postStories": true,
+            "editStories": true,
+            "deleteStories": true,
+            "manageDirectMessages": true,
+            "manageRanks": false,
+            "manageLinkedPeers": false,
+            "manageWelcomeMessages": false,
+            "other": true,
         }),
     );
 }
 
 #[test]
-fn banned_rights_project_the_grammers_accessors() {
+fn banned_rights_project_every_layer_flag() {
     let rights = tl::types::ChatBannedRights {
         view_messages: true,
         send_messages: false,
@@ -524,6 +689,17 @@ fn banned_rights_project_the_grammers_accessors() {
             "changeInfo": false,
             "inviteUsers": true,
             "pinMessages": false,
+            "manageTopics": true,
+            "sendPhotos": true,
+            "sendVideos": true,
+            "sendRoundvideos": true,
+            "sendAudios": true,
+            "sendVoices": true,
+            "sendDocs": true,
+            "sendPlain": true,
+            "editRank": false,
+            "sendReactions": false,
+            "manageLinkedPeers": false,
             "untilDate": 1_700_000_000_000i64,
         }),
     );

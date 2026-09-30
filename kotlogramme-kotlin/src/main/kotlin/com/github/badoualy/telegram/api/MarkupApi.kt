@@ -2,6 +2,7 @@ package com.github.badoualy.telegram.api
 
 import org.kotlogramme.protocol.InlineButtonSpec
 import org.kotlogramme.protocol.KeyboardButtonSpec
+import org.kotlogramme.protocol.MarkupSpec
 
 /**
  * Reply markups: reading the one a message carries and building the four grammers can send.
@@ -106,3 +107,24 @@ internal fun Button.asKeyboardSpec(): KeyboardButtonSpec = when (this) {
 /** The [name] field this button needs to build, which a received button of that kind always has. */
 private fun Button.requireField(value: String?, name: String): String =
     requireNotNull(value) { "a $kind button carries no $name" }
+
+/**
+ * Converts this markup to the wire spec a send payload carries.
+ *
+ * The fields a spec cannot carry — [ReplyMarkup.Keyboard.persistent] and
+ * [ReplyMarkup.Keyboard.placeholder], which grammers' builder cannot set — are dropped, exactly as
+ * the build operations drop them. An [ReplyMarkup.Unknown] has no grammers constructor, so it
+ * cannot be sent.
+ */
+internal fun ReplyMarkup.asSpec(): MarkupSpec = when (this) {
+    is ReplyMarkup.Inline -> MarkupSpec.Inline(rows.map { row -> row.map { it.asInlineSpec() } })
+    is ReplyMarkup.Keyboard -> MarkupSpec.Keyboard(
+        rows.map { row -> row.map { it.asKeyboardSpec() } },
+        fitSize = fitSize,
+        singleUse = singleUse,
+        selective = selective,
+    )
+    is ReplyMarkup.ForceReply -> MarkupSpec.ForceReply(singleUse = singleUse, selective = selective)
+    is ReplyMarkup.Hide -> MarkupSpec.Hide(selective = selective)
+    is ReplyMarkup.Unknown -> throw IllegalArgumentException("grammers builds no markup of kind '$kind'")
+}

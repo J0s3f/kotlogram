@@ -10,7 +10,8 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 ## 0.1.0 — unreleased
 
 First compatibility release, 0.1.0 is the WIP surface that closes the Phase 1 gap to the grammers
-typed client API. Sixty-six native operations, each reachable from Kotlin.
+typed client API, plus the post-parity feature work below. Ninety-six native operations, each
+reachable from Kotlin.
 
 ### Bridge
 
@@ -66,14 +67,40 @@ typed client API. Sixty-six native operations, each reachable from Kotlin.
 - The seven frozen JNI export names are regression-tested against the release DLL.
 - The live integration test gained a media/file round-trip scenario (opt-in, not run in CI).
 
+### Post-parity feature work
+
+- **Chat rights, full round-trip.** All Layer-216 admin and ban flags are projected and written; the
+  rights the grammers builders cannot set go through raw `channels.EditBanned` / `channels.EditAdmin`
+  (or the basic-group `messages.EditChatAdmin` / `DeleteChatUser`), merging the current rights via
+  `channels.GetParticipant`.
+- **Reply markups can finally be sent.** A shared `MarkupSpec` is accepted by every send payload
+  (`messagesSendMessage`, `messagesSendFile`, `mediaSend`, `mediaSendUrl`, `mediaCopy`) and both
+  edits, with `ReplyMarkup.asSpec()` to send a markup read off another message.
+- **Full edit parity.** `messagesEditMessage` and `editInlineMessage` carry text, parse modes,
+  explicit entities, reply markup, media replacement (path / URL / copy of another message) and TTL.
+- **Richer messages.** `Message` gained forward and reply headers, restriction reasons, the embedded
+  service action and reply markup, and full peer/sender objects.
+- **Guest chats.** The `GuestChatQuery` update is projected and `answerGuestChatQuery` answers it
+  with `messages.SetBotGuestChatResult`.
+- **Inline.** `sendInlineBotResult` sends a chosen result; the query page reports `switchPm`,
+  `switchWebview` and the text a result would post; `answerInlineQuery` gained media results
+  (photo/gif/video/voice/document) beside articles.
+- **Uploads.** `uploadBytes` and the `uploadStreamBegin`/`Chunk`/`Finish` trio upload from memory or
+  a stream, and every send references an upload by `fileHandle` instead of re-reading a path.
+- **Typed raw families.** `ContactsApi`, `AccountApi`, `FoldersApi` and `StickersApi` expose the
+  operations grammers has no high-level API for — contacts and blocking, profile/username/status,
+  authorizations, password settings and privacy rules, dialog filters, and sticker-set reads — as
+  typed operations over the TL layer.
+
 ### Notes and known limitations
 
 - The bridge tracks grammers' codeberg repository rather than a crates.io version, because grammers
-  is developed there and releases are cut rarely.
+  is developed there and releases are cut rarely. The three grammers crates are pinned to rev
+  `42d4b51059524cf7c8c9a07745a1071057fa1526` for reproducible builds.
 - The historical generated Layer-66 TL API is not recreated; a versioned raw API
   (`RawTelegramApi`) is the escape hatch for methods the facade does not map.
-- grammers exposes no typed contacts or account API, so those families stay behind
-  `invokeRaw`.
+- grammers exposes no typed contacts or account API; the `ContactsApi` and `AccountApi` families
+  are hand-written over the TL layer rather than grammers client methods.
 - `UpdateCallback` is delivered on demand by the caller's loop; there is no background dispatcher.
 - `accept_invite_link`/`parse_invite_link` and `Client::edit_inline_message` are rebuilt on the
   same layer requests because the grammers feature is crate-private or not enabled; date-bounded

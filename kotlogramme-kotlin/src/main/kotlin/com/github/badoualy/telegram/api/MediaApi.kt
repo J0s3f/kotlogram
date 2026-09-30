@@ -59,6 +59,7 @@ interface MediaApi : BridgeApi {
         replyToMsgId: Int? = null,
         scheduleDate: Long? = null,
         scheduleOnceOnline: Boolean = false,
+        replyMarkup: ReplyMarkup? = null,
     ): Message = bridge.sendMedia(
         peer = peer.native,
         path = path,
@@ -73,12 +74,51 @@ interface MediaApi : BridgeApi {
         replyToMessageId = replyToMsgId,
         scheduleDate = scheduleDate,
         scheduleOnceOnline = scheduleOnceOnline,
+        replyMarkup = replyMarkup?.asSpec(),
+    ).toCompatibility()
+
+    /**
+     * Sends a file already uploaded by this client as a typed attachment, referencing it by
+     * [UploadedFile.handle] so it is not uploaded a second time. The options are those [mediaSend]
+     * takes.
+     */
+    fun mediaSend(
+        peer: TelegramPeer,
+        file: UploadedFile,
+        kind: MediaKind = MediaKind.DOCUMENT,
+        caption: String = "",
+        parseMode: CaptionParseMode = CaptionParseMode.NONE,
+        spoiler: Boolean = false,
+        mimeType: String? = null,
+        ttlSeconds: Int? = null,
+        invertMedia: Boolean = false,
+        silent: Boolean = false,
+        replyToMsgId: Int? = null,
+        scheduleDate: Long? = null,
+        scheduleOnceOnline: Boolean = false,
+        replyMarkup: ReplyMarkup? = null,
+    ): Message = bridge.sendMedia(
+        peer = peer.native,
+        path = null,
+        kind = kind.wireName,
+        caption = caption,
+        parseMode = parseMode.wireName,
+        spoiler = spoiler,
+        mimeType = mimeType,
+        ttlSeconds = ttlSeconds,
+        invertMedia = invertMedia,
+        silent = silent,
+        replyToMessageId = replyToMsgId,
+        scheduleDate = scheduleDate,
+        scheduleOnceOnline = scheduleOnceOnline,
+        replyMarkup = replyMarkup?.asSpec(),
+        fileHandle = requireNotNull(file.handle) { "the uploaded file carries no handle" },
     ).toCompatibility()
 
     /**
      * Sends media Telegram downloads from [url], with the same options as [mediaSend].
      *
-     * A URL attachment is either a photo or a document; there is no verbatim-file form of it.
+     * A URL attachment is either a photo or a document; there is no verbatim form of it.
      */
     fun mediaSendUrl(
         peer: TelegramPeer,
@@ -94,6 +134,7 @@ interface MediaApi : BridgeApi {
         replyToMsgId: Int? = null,
         scheduleDate: Long? = null,
         scheduleOnceOnline: Boolean = false,
+        replyMarkup: ReplyMarkup? = null,
     ): Message = bridge.sendMediaUrl(
         peer = peer.native,
         url = url,
@@ -108,6 +149,7 @@ interface MediaApi : BridgeApi {
         replyToMessageId = replyToMsgId,
         scheduleDate = scheduleDate,
         scheduleOnceOnline = scheduleOnceOnline,
+        replyMarkup = replyMarkup?.asSpec(),
     ).toCompatibility()
 
     /**
@@ -122,6 +164,7 @@ interface MediaApi : BridgeApi {
         parseMode: CaptionParseMode = CaptionParseMode.NONE,
         silent: Boolean = false,
         replyToMsgId: Int? = null,
+        replyMarkup: ReplyMarkup? = null,
     ): Message = bridge.copyMedia(
         destination = destination.native,
         source = source.native,
@@ -130,5 +173,6 @@ interface MediaApi : BridgeApi {
         parseMode = parseMode.wireName,
         silent = silent,
         replyToMessageId = replyToMsgId,
+        replyMarkup = replyMarkup?.asSpec(),
     ).toCompatibility()
 }

@@ -8,15 +8,20 @@
 //! media projection uses — one object whose `kind` names the variant, with the fields the other
 //! variant cannot answer left null.
 //!
-//! The message a result sends and the reply markup it may carry are not projected: a caller picks
-//! a result by its metadata, and handing that message back to an inline answer is a separate
-//! request. The page itself carries the query id and the offset that asks for the next page, both
-//! of which a caller needs to page and to answer.
+//! The message a result sends is projected as its plain text (`sendMessageText`): a caller picks a
+//! result by its metadata, and the text it would post is the one thing about that message an inline
+//! answer needs, so a caller can read it without rebuilding the message. The reply markup the
+//! message may carry is still not projected — handing a message back to an inline answer is a
+//! separate request. The page itself carries the query id and the offset that asks for the next
+//! page, both of which a caller needs to page and to answer, and the switch-to-PM and
+//! switch-to-webview prompts the bot answered with.
 //!
 //! [`BotInlineResult`]: grammers_client::tl::enums::BotInlineResult
 
 use grammers_client::tl;
 use serde::Serialize;
+
+use crate::dto::message::MessageDto;
 
 /// One page of results an inline bot answered a query with.
 #[derive(Serialize)]
@@ -28,7 +33,41 @@ pub(crate) struct InlineQueryResultsDto {
     pub(crate) next_offset: Option<String>,
     /// Whether the results should be shown as a gallery rather than a list.
     pub(crate) gallery: bool,
+    /// The prompt that offers to move the query to the bot's private chat, when the bot sent one.
+    pub(crate) switch_pm: Option<InlineSwitchPmDto>,
+    /// The prompt that offers to move the query to a webview, when the bot sent one.
+    pub(crate) switch_webview: Option<InlineSwitchWebviewDto>,
     pub(crate) results: Vec<InlineResultDto>,
+}
+
+/// The switch-to-private-chat prompt a page may carry, mirroring `InlineBotSwitchPM`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct InlineSwitchPmDto {
+    pub(crate) text: String,
+    pub(crate) start_param: String,
+}
+
+/// The switch-to-webview prompt a page may carry, mirroring `InlineBotWebView`.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct InlineSwitchWebviewDto {
+    pub(crate) text: String,
+    pub(crate) url: String,
+}
+
+/// What `sendInlineBotResult` produced: the sent message when it could be identified, and a bare
+/// acknowledgement otherwise.
+///
+/// The layer answers the send with an `Updates` bundle rather than the message itself. When the
+/// bundle names the message it produced, it is fetched and projected as [Self::message]. When it
+/// does not (a scheduled send, or a bundle that carries no message update), the send still
+/// succeeded and the update stream delivers the message asynchronously, so only [Self::ok] is set.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SentInlineResultDto {
+    pub(crate) ok: bool,
+    pub(crate) message: Option<MessageDto>,
 }
 
 /// One result of an inline query, flattened over the layer's two result constructors.
@@ -53,6 +92,9 @@ pub(crate) struct InlineResultDto {
     pub(crate) photo_id: Option<i64>,
     /// The document a media result points at, if it is one.
     pub(crate) document_id: Option<i64>,
+    /// The text the result's `send_message` would post, when it sends a text message. It is null
+    /// for a result whose message carries media rather than text.
+    pub(crate) send_message_text: Option<String>,
 }
 
 /// A web document a result points at. grammers only exposes the URL, the size and the MIME type of
@@ -73,6 +115,20 @@ pub(crate) fn inline_query_results_dto(
         query_id: results.query_id,
         next_offset: results.next_offset.clone(),
         gallery: results.gallery,
+        switch_pm: results.switch_pm.as_ref().map(|prompt| {
+            let tl::enums::InlineBotSwitchPm::Pm(prompt) = prompt;
+            InlineSwitchPmDto {
+                text: prompt.text.clone(),
+                start_param: prompt.start_param.clone(),
+            }
+        }),
+        switch_webview: results.switch_webview.as_ref().map(|prompt| {
+            let tl::enums::InlineBotWebView::View(prompt) = prompt;
+            InlineSwitchWebviewDto {
+                text: prompt.text.clone(),
+                url: prompt.url.clone(),
+            }
+        }),
         results: results.results.iter().map(inline_result_dto).collect(),
     }
 }
@@ -91,6 +147,7 @@ pub(crate) fn inline_result_dto(result: &tl::enums::BotInlineResult) -> InlineRe
             content: result.content.as_ref().map(web_document_dto),
             photo_id: None,
             document_id: None,
+            send_message_text: send_message_text(&result.send_message),
         },
         tl::enums::BotInlineResult::BotInlineMediaResult(result) => InlineResultDto {
             kind: "mediaResult",
@@ -103,7 +160,17 @@ pub(crate) fn inline_result_dto(result: &tl::enums::BotInlineResult) -> InlineRe
             content: None,
             photo_id: result.photo.as_ref().map(tl::enums::Photo::id),
             document_id: result.document.as_ref().map(tl::enums::Document::id),
+            send_message_text: send_message_text(&result.send_message),
         },
+    }
+}
+
+/// The text a bot inline message would post, when it is a text message. Every other constructor
+/// carries media rather than the plain text this projection reports, so those answer `None`.
+pub(crate) fn send_message_text(message: &tl::enums::BotInlineMessage) -> Option<String> {
+    match message {
+        tl::enums::BotInlineMessage::Text(text) => Some(text.message.clone()),
+        _ => None,
     }
 }
 
@@ -188,8 +255,18 @@ mod tests {
             gallery: true,
             query_id: 901,
             next_offset: Some("10".to_owned()),
-            switch_pm: None,
-            switch_webview: None,
+            switch_pm: Some(tl::enums::InlineBotSwitchPm::Pm(
+                tl::types::InlineBotSwitchPm {
+                    text: "Open the bot".to_owned(),
+                    start_param: "start".to_owned(),
+                },
+            )),
+            switch_webview: Some(tl::enums::InlineBotWebView::View(
+                tl::types::InlineBotWebView {
+                    text: "Open the page".to_owned(),
+                    url: "https://example.org/page".to_owned(),
+                },
+            )),
             results: vec![plain_result(), media_result()],
             cache_time: 0,
             users: Vec::new(),
@@ -200,6 +277,8 @@ mod tests {
                 "queryId": 901,
                 "nextOffset": "10",
                 "gallery": true,
+                "switchPm": { "text": "Open the bot", "startParam": "start" },
+                "switchWebview": { "text": "Open the page", "url": "https://example.org/page" },
                 "results": [
                     {
                         "kind": "result",
@@ -216,6 +295,7 @@ mod tests {
                         "content": null,
                         "photoId": null,
                         "documentId": null,
+                        "sendMessageText": "hello",
                     },
                     {
                         "kind": "mediaResult",
@@ -228,6 +308,7 @@ mod tests {
                         "content": null,
                         "photoId": null,
                         "documentId": 9_001,
+                        "sendMessageText": "hello",
                     },
                 ],
             }),
@@ -252,6 +333,8 @@ mod tests {
                 "queryId": 2,
                 "nextOffset": null,
                 "gallery": false,
+                "switchPm": null,
+                "switchWebview": null,
                 "results": [],
             }),
         );
@@ -282,8 +365,20 @@ mod tests {
                 "content": null,
                 "photoId": 4_242,
                 "documentId": null,
+                "sendMessageText": "hello",
             }),
         );
+    }
+
+    #[test]
+    fn a_media_carrying_message_reports_no_text() {
+        let media = tl::enums::BotInlineMessage::MediaAuto(tl::types::BotInlineMessageMediaAuto {
+            invert_media: false,
+            message: "caption".to_owned(),
+            entities: None,
+            reply_markup: None,
+        });
+        assert_eq!(super::send_message_text(&media), None);
     }
 
     #[test]
@@ -299,6 +394,7 @@ mod tests {
             content: None,
             photo_id: None,
             document_id: None,
+            send_message_text: None,
         })
         .expect("a projection encodes")
         .as_object()
@@ -317,6 +413,7 @@ mod tests {
             "content",
             "photoId",
             "documentId",
+            "sendMessageText",
         ];
         let mut names = names;
         names.sort();

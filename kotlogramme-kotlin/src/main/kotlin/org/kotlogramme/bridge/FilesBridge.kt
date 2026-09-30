@@ -8,10 +8,16 @@ import org.kotlogramme.protocol.DownloadResult
 import org.kotlogramme.protocol.MediaChunk
 import org.kotlogramme.protocol.Peer
 import org.kotlogramme.protocol.PeerTarget
+import org.kotlogramme.protocol.OperationResult
 import org.kotlogramme.protocol.ProfilePhoto
 import org.kotlogramme.protocol.ProfilePhotosPayload
+import org.kotlogramme.protocol.UploadBytesPayload
 import org.kotlogramme.protocol.UploadedFile
 import org.kotlogramme.protocol.UploadFilePayload
+import org.kotlogramme.protocol.UploadStreamBeginPayload
+import org.kotlogramme.protocol.UploadStreamBeginResult
+import org.kotlogramme.protocol.UploadStreamChunkPayload
+import org.kotlogramme.protocol.UploadStreamFinishPayload
 import java.nio.file.Path
 
 /**
@@ -46,6 +52,40 @@ internal interface FilesBridge {
     fun uploadFile(path: Path): UploadedFile = transport.request(
         "uploadFile",
         UploadFilePayload(path.toAbsolutePath().toString()),
+    )
+
+    /**
+     * Uploads [dataBase64] under [name] in one call; the result is the metadata a later send
+     * reuses. The bytes travel base64-encoded, so this is for small files.
+     */
+    @Operation("uploadBytes")
+    fun uploadBytes(name: String, dataBase64: String): UploadedFile = transport.request(
+        "uploadBytes",
+        UploadBytesPayload(name, dataBase64),
+    )
+
+    /** Opens a chunked upload under [name] and returns the id its chunks and finish name. */
+    @Operation("uploadStreamBegin")
+    fun uploadStreamBegin(name: String): Long =
+        transport.request<UploadStreamBeginPayload, UploadStreamBeginResult>(
+            "uploadStreamBegin",
+            UploadStreamBeginPayload(name),
+        ).uploadId
+
+    /** Appends one base64 chunk to the stream [uploadId] names. */
+    @Operation("uploadStreamChunk")
+    fun uploadStreamChunk(uploadId: Long, dataBase64: String) {
+        transport.request<UploadStreamChunkPayload, OperationResult>(
+            "uploadStreamChunk",
+            UploadStreamChunkPayload(uploadId, dataBase64),
+        )
+    }
+
+    /** Uploads everything accumulated for [uploadId]; the result is the reusable metadata. */
+    @Operation("uploadStreamFinish")
+    fun uploadStreamFinish(uploadId: Long): UploadedFile = transport.request(
+        "uploadStreamFinish",
+        UploadStreamFinishPayload(uploadId),
     )
 
     /** Lists up to [limit] profile photos of a peer, most recent first. */

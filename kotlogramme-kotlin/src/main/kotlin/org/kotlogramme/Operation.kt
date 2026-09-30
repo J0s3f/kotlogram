@@ -1,8 +1,10 @@
 package org.kotlogramme
 
 import org.kotlogramme.bridge.ActionsBridge
+import org.kotlogramme.bridge.AccountBridge
 import org.kotlogramme.bridge.AuthBridge
 import org.kotlogramme.bridge.ChatsBridge
+import org.kotlogramme.bridge.ContactsBridge
 import org.kotlogramme.bridge.DialogsBridge
 import org.kotlogramme.bridge.FilesBridge
 import org.kotlogramme.bridge.InlineBridge
@@ -10,6 +12,7 @@ import org.kotlogramme.bridge.MarkupBridge
 import org.kotlogramme.bridge.MediaBridge
 import org.kotlogramme.bridge.MessagesBridge
 import org.kotlogramme.bridge.RawBridge
+import org.kotlogramme.bridge.StickersBridge
 import org.kotlogramme.bridge.UpdatesBridge
 import kotlin.reflect.KClass
 
@@ -33,9 +36,11 @@ annotation class Operation(val name: String)
 object OperationCatalog {
     private val BRIDGES: List<KClass<*>> = listOf(
         TelegramClient::class,
+        AccountBridge::class,
         AuthBridge::class,
         MessagesBridge::class,
         ChatsBridge::class,
+        ContactsBridge::class,
         DialogsBridge::class,
         UpdatesBridge::class,
         MediaBridge::class,
@@ -43,6 +48,7 @@ object OperationCatalog {
         InlineBridge::class,
         ActionsBridge::class,
         MarkupBridge::class,
+        StickersBridge::class,
         RawBridge::class,
     )
 

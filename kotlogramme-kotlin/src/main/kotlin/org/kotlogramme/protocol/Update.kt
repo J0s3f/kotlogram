@@ -31,6 +31,7 @@ data class Update(
     val callbackQuery: CallbackQueryUpdate? = null,
     val inlineQuery: InlineQueryUpdate? = null,
     val inlineSend: InlineSendUpdate? = null,
+    val guestChatQuery: GuestChatQueryUpdate? = null,
     /** The update as Telegram sent it, for the variants that carry no typed payload. */
     val rawUpdate: RawUpdate? = null,
 )
@@ -118,6 +119,20 @@ data class InlineSendUpdate(
     val text: String,
     val resultId: String,
     val messageId: InlineMessageId? = null,
+)
+
+/**
+ * A guest-chat query, mirroring grammers' `GuestChatQuery`.
+ *
+ * [queryId] is what an answer is sent to, [message] is the message that mentioned the bot, and
+ * [referenceMessages] are the messages the update carried, which the layer only sends when the
+ * mention is a reply or a forwarded message.
+ */
+@Serializable
+data class GuestChatQueryUpdate(
+    val queryId: Long,
+    val message: Message,
+    val referenceMessages: List<Message> = emptyList(),
 )
 
 /**

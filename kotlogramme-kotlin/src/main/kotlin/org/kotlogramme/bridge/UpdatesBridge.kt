@@ -2,7 +2,10 @@ package org.kotlogramme.bridge
 
 import org.kotlogramme.Operation
 import org.kotlogramme.Transport
+import org.kotlogramme.protocol.AnswerGuestChatQueryPayload
 import org.kotlogramme.protocol.EmptyPayload
+import org.kotlogramme.protocol.GuestChatAnswerResult
+import org.kotlogramme.protocol.InlineArticleSpec
 import org.kotlogramme.protocol.NextRawUpdateResult
 import org.kotlogramme.protocol.NextUpdatePayload
 import org.kotlogramme.protocol.NextUpdateResult
@@ -47,6 +50,22 @@ internal interface UpdatesBridge {
     fun syncUpdateState() {
         transport.request<EmptyPayload, OperationResult>("syncUpdateState", EmptyPayload)
     }
+
+    /**
+     * Answers the guest-chat query [queryId] with the article [result], which a caller reads off a
+     * projected `GuestChatQueryUpdate`.
+     *
+     * This is the send behind grammers' own `GuestChatQuery::answer`. The result is the identifier
+     * of the inline message the answer produced, which a caller can edit later.
+     */
+    @Operation("answerGuestChatQuery")
+    fun answerGuestChatQuery(
+        queryId: Long,
+        result: InlineArticleSpec,
+    ): GuestChatAnswerResult = transport.request(
+        "answerGuestChatQuery",
+        AnswerGuestChatQueryPayload(queryId, result),
+    )
 }
 
 /** The wait both streaming operations apply; grammers polls the stream in a loop until it expires. */

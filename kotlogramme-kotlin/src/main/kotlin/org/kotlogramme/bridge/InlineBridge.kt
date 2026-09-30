@@ -6,14 +6,20 @@ import org.kotlogramme.protocol.AnswerCallbackQueryPayload
 import org.kotlogramme.protocol.AnswerInlineQueryPayload
 import org.kotlogramme.protocol.EditInlineMessagePayload
 import org.kotlogramme.protocol.EditedInlineMessage
-import org.kotlogramme.protocol.InlineArticleSpec
+import org.kotlogramme.protocol.EntitySpec
+import org.kotlogramme.protocol.InlineEditMediaSpec
 import org.kotlogramme.protocol.InlineMessageIdPayload
 import org.kotlogramme.protocol.InlineQueryPayload
 import org.kotlogramme.protocol.InlineQueryResults
-import org.kotlogramme.protocol.InlineSwitchPmSpec
+import org.kotlogramme.protocol.InlineResultSpec
+import org.kotlogramme.protocol.InlineSwitchPm
+import org.kotlogramme.protocol.InlineSwitchWebview
+import org.kotlogramme.protocol.MarkupSpec
 import org.kotlogramme.protocol.OperationResult
 import org.kotlogramme.protocol.Peer
 import org.kotlogramme.protocol.PeerTarget
+import org.kotlogramme.protocol.SendInlineBotResultPayload
+import org.kotlogramme.protocol.SentInlineResult
 
 /**
  * Running an inline bot and answering the updates it produces.
@@ -76,17 +82,19 @@ internal interface InlineBridge {
      * `InlineQueryUpdate`.
      *
      * [nextOffset] is the offset the client sends back to ask for the next page; leave it out on
-     * the last page. [switchPm] offers to move the query to the bot's private chat.
+     * the last page. [switchPm] offers to move the query to the bot's private chat and
+     * [switchWebview] to open it in a webview.
      */
     @Operation("answerInlineQuery")
     fun answerInlineQuery(
         queryId: Long,
-        results: List<InlineArticleSpec>,
+        results: List<InlineResultSpec>,
         cacheTimeSeconds: Int = 0,
         gallery: Boolean = false,
         isPrivate: Boolean = false,
         nextOffset: String? = null,
-        switchPm: InlineSwitchPmSpec? = null,
+        switchPm: InlineSwitchPm? = null,
+        switchWebview: InlineSwitchWebview? = null,
     ) {
         transport.request<AnswerInlineQueryPayload, OperationResult>(
             "answerInlineQuery",
@@ -98,9 +106,44 @@ internal interface InlineBridge {
                 isPrivate,
                 nextOffset,
                 switchPm,
+                switchWebview,
             ),
         )
     }
+
+    /**
+     * Sends the inline result a caller chose, which it reads off a projected `InlineQueryUpdate`
+     * together with its query id.
+     *
+     * The layer answers with the sent message when it could be identified; when it could not, the
+     * send still succeeded and the update stream delivers the message asynchronously, so only the
+     * acknowledgement is answered.
+     */
+    @Operation("sendInlineBotResult")
+    fun sendInlineBotResult(
+        peer: Peer,
+        queryId: Long,
+        resultId: String,
+        silent: Boolean = false,
+        background: Boolean = false,
+        clearDraft: Boolean = false,
+        hideVia: Boolean = false,
+        replyToMessageId: Int? = null,
+        scheduleDate: Long? = null,
+    ): SentInlineResult = transport.request(
+        "sendInlineBotResult",
+        SendInlineBotResultPayload(
+            PeerTarget(peer.nativeHandle),
+            queryId,
+            resultId,
+            silent,
+            background,
+            clearDraft,
+            hideVia,
+            replyToMessageId,
+            scheduleDate,
+        ),
+    )
 
     /**
      * Edits the inline message a chosen result produced, addressed by the identifier a projected
@@ -113,9 +156,13 @@ internal interface InlineBridge {
         dcId: Int,
         accessHash: Long,
         id: Long,
-        text: String,
+        text: String = "",
         linkPreview: Boolean = true,
         invertMedia: Boolean = false,
+        parseMode: String? = null,
+        entities: List<EntitySpec>? = null,
+        replyMarkup: MarkupSpec? = null,
+        media: InlineEditMediaSpec? = null,
     ): Boolean = transport.request<EditInlineMessagePayload, EditedInlineMessage>(
         "editInlineMessage",
         EditInlineMessagePayload(
@@ -123,6 +170,10 @@ internal interface InlineBridge {
             text,
             linkPreview,
             invertMedia,
+            parseMode,
+            entities,
+            replyMarkup,
+            media,
         ),
     ).edited
 }

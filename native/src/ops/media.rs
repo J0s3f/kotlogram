@@ -20,19 +20,20 @@ use grammers_client::message::InputMessage;
 use grammers_client::tl;
 use serde::Deserialize;
 
+use super::markup::reply_markup_from_spec;
 use super::Handler;
-use crate::client::{resolve_peer, NativeClient};
+use crate::client::{resolve_peer, resolve_upload, NativeClient};
 use crate::dto::message_dto;
 use crate::error::{error, invocation_error, json_string, parse_payload};
-use crate::payload::PeerTarget;
+use crate::payload::{file_source, MarkupSpec, PeerTarget};
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct SendMediaPayload {
     #[serde(flatten)]
     peer: PeerTarget,
-    /// The local file to upload and attach.
-    path: String,
+    /// The local file to upload and attach, when the send names a path rather than a handle.
+    path: Option<String>,
     /// `photo`, `document` (the default) or `file`, which is grammers' `force_file` document.
     kind: Option<String>,
     caption: Option<String>,
@@ -47,6 +48,10 @@ struct SendMediaPayload {
     /// Epoch milliseconds at which to schedule the message.
     schedule_date: Option<i64>,
     schedule_once_online: Option<bool>,
+    markup: Option<MarkupSpec>,
+    /// The handle of an upload that already ran, as an alternative to [Self::path]. Exactly one of
+    /// the two must be set.
+    file_handle: Option<i64>,
 }
 
 #[derive(Deserialize)]
@@ -68,6 +73,7 @@ struct SendMediaUrlPayload {
     reply_to_message_id: Option<i32>,
     schedule_date: Option<i64>,
     schedule_once_online: Option<bool>,
+    markup: Option<MarkupSpec>,
 }
 
 #[derive(Deserialize)]
@@ -80,6 +86,110 @@ struct CopyMediaPayload {
     parse_mode: Option<String>,
     silent: Option<bool>,
     reply_to_message_id: Option<i32>,
+    markup: Option<MarkupSpec>,
+}
+
+/// The media an edit replaces the message's media with.
+///
+/// Exactly one of [path], [url] or [copy_of] is set: a local file is uploaded, a URL is handed to
+/// Telegram to download, and `copyOf` reuses the media of an existing message without a
+/// re-upload. [kind] is `photo`, `document` (the default) or `file`, as on the send side.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct EditMediaSpec {
+    pub(crate) path: Option<String>,
+    pub(crate) kind: Option<String>,
+    pub(crate) url: Option<String>,
+    pub(crate) copy_of: Option<CopyOfSpec>,
+}
+
+/// The message whose media an edit reuses, named the way the copy operation names its source.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct CopyOfSpec {
+    pub(crate) peer: PeerTarget,
+    pub(crate) message_id: i32,
+}
+
+/// The one source an [EditMediaSpec] names, after the exactly-one check.
+enum EditMediaSource<'a> {
+    Path(&'a str, Option<&'a str>),
+    Url(&'a str, Option<&'a str>),
+    Copy(&'a CopyOfSpec),
+}
+
+/// Picks the source an edit media names, refusing a spec that sets none or more than one.
+fn edit_media_source(spec: &EditMediaSpec) -> Result<EditMediaSource<'_>, String> {
+    match (&spec.path, &spec.url, &spec.copy_of) {
+        (Some(path), None, None) => Ok(EditMediaSource::Path(path, spec.kind.as_deref())),
+        (None, Some(url), None) => Ok(EditMediaSource::Url(url, spec.kind.as_deref())),
+        (None, None, Some(copy)) => Ok(EditMediaSource::Copy(copy)),
+        _ => Err("the edit media must set exactly one of path, url or copyOf".to_owned()),
+    }
+}
+
+/// Attaches the media an edit replaces the message's media with, the same way the send-side
+/// builders do: a local file is uploaded, a URL is handed to Telegram, and `copyOf` reuses an
+/// existing message's media without a re-upload.
+pub(crate) async fn apply_edit_media(
+    native: &NativeClient,
+    message: InputMessage,
+    spec: &EditMediaSpec,
+) -> Result<InputMessage, String> {
+    match edit_media_source(spec)? {
+        EditMediaSource::Path(path, kind) => {
+            let kind = media_kind(kind)?;
+            let uploaded = native
+                .client
+                .upload_file(PathBuf::from(path))
+                .await
+                .map_err(error)?;
+            Ok(match kind {
+                MediaKind::Photo => message.photo(uploaded),
+                MediaKind::File => message.file(uploaded),
+                MediaKind::Document => message.document(uploaded),
+            })
+        }
+        EditMediaSource::Url(url, kind) => {
+            // A URL attachment is a photo or a document; a `file` kind is the generic document.
+            let kind = media_kind(kind)?;
+            Ok(if kind == MediaKind::Photo {
+                message.photo_url(url.to_owned())
+            } else {
+                message.document_url(url.to_owned())
+            })
+        }
+        EditMediaSource::Copy(copy) => {
+            let source = resolve_peer(native, &copy.peer).await?;
+            let messages = native
+                .client
+                .get_messages_by_id(source, &[copy.message_id])
+                .await
+                .map_err(invocation_error)?;
+            let source_message = messages.into_iter().flatten().next().ok_or_else(|| {
+                format!(
+                    "message {} was not found in the source chat",
+                    copy.message_id
+                )
+            })?;
+            let media = source_message
+                .media()
+                .ok_or_else(|| "the source message carries no media to copy".to_owned())?;
+            if media.to_raw_input_media().is_none() {
+                return Err("the source message's media cannot be copied".to_owned());
+            }
+            Ok(message.copy_media(&media))
+        }
+    }
+}
+
+/// Builds the URL media an inline edit attaches, which is a photo or a document and never a local
+/// upload: an inline message has no file to upload.
+pub(crate) fn external_url_media(
+    kind: Option<&str>,
+    url: &str,
+) -> Result<tl::enums::InputMedia, String> {
+    Ok(raw_external_media(media_kind(kind)?, url, false, None))
 }
 
 /// Operation names routed by this module.
@@ -99,11 +209,13 @@ fn send_media(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: SendMediaPayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
     let kind = media_kind(data.kind.as_deref())?;
-    let path = PathBuf::from(&data.path);
-    let uploaded = native
-        .runtime
-        .block_on(native.client.upload_file(&path))
-        .map_err(error)?;
+    let uploaded = native.runtime.block_on(resolve_upload(
+        native,
+        file_source(data.path, data.file_handle)?,
+    ))?;
+    // grammers names the upload after the file it read, so a handle keeps the name it was created
+    // with and a path keeps the file's own name; the raw spoiler media needs that name either way.
+    let name = uploaded_name(&uploaded);
 
     let mut message = message_options(
         data.caption,
@@ -121,12 +233,11 @@ fn send_media(native: &NativeClient, payload: &str) -> Result<String, String> {
         message = message.mime_type(mime_type);
     }
     // grammers' photo/document/file builders force `spoiler: false`; the raw constructors carry it.
-    let message = if data.spoiler.unwrap_or(false) {
-        let file_name = file_name(&path);
+    let mut message = if data.spoiler.unwrap_or(false) {
         message.media(raw_uploaded_media(
             kind,
             uploaded,
-            &file_name,
+            &name,
             true,
             data.mime_type.as_deref(),
             data.ttl_seconds,
@@ -138,12 +249,15 @@ fn send_media(native: &NativeClient, payload: &str) -> Result<String, String> {
             MediaKind::Document => message.document(uploaded),
         }
     };
+    if let Some(markup) = &data.markup {
+        message = message.reply_markup(reply_markup_from_spec(markup)?);
+    }
 
     let message = native
         .runtime
         .block_on(native.client.send_message(peer, message))
         .map_err(invocation_error)?;
-    json_string(message_dto(&message))
+    json_string(message_dto(native, &message))
 }
 
 fn send_media_url(native: &NativeClient, payload: &str) -> Result<String, String> {
@@ -166,19 +280,22 @@ fn send_media_url(native: &NativeClient, payload: &str) -> Result<String, String
     if let Some(mime_type) = &data.mime_type {
         message = message.mime_type(mime_type);
     }
-    let message = if data.spoiler.unwrap_or(false) {
+    let mut message = if data.spoiler.unwrap_or(false) {
         message.media(raw_external_media(kind, &data.url, true, data.ttl_seconds))
     } else if kind == MediaKind::Photo {
         message.photo_url(data.url)
     } else {
         message.document_url(data.url)
     };
+    if let Some(markup) = &data.markup {
+        message = message.reply_markup(reply_markup_from_spec(markup)?);
+    }
 
     let message = native
         .runtime
         .block_on(native.client.send_message(peer, message))
         .map_err(invocation_error)?;
-    json_string(message_dto(&message))
+    json_string(message_dto(native, &message))
 }
 
 fn copy_media(native: &NativeClient, payload: &str) -> Result<String, String> {
@@ -207,7 +324,7 @@ fn copy_media(native: &NativeClient, payload: &str) -> Result<String, String> {
         return Err("the source message's media cannot be copied".to_owned());
     }
 
-    let message = message_options(
+    let mut message = message_options(
         data.caption,
         data.parse_mode.as_deref(),
         data.silent,
@@ -216,15 +333,15 @@ fn copy_media(native: &NativeClient, payload: &str) -> Result<String, String> {
         None,
         None,
     )?;
+    message = message.copy_media(&media);
+    if let Some(markup) = &data.markup {
+        message = message.reply_markup(reply_markup_from_spec(markup)?);
+    }
     let message = native
         .runtime
-        .block_on(
-            native
-                .client
-                .send_message(destination, message.copy_media(&media)),
-        )
+        .block_on(native.client.send_message(destination, message))
         .map_err(invocation_error)?;
-    json_string(message_dto(&message))
+    json_string(message_dto(native, &message))
 }
 
 /// How a file is attached to an outgoing message.
@@ -301,11 +418,13 @@ fn schedule_time(millis: i64) -> Result<SystemTime, String> {
     Ok(UNIX_EPOCH + Duration::from_millis(millis))
 }
 
-/// The name a document carries; grammers takes it from the uploaded file, which the path names.
-fn file_name(path: &PathBuf) -> String {
-    path.file_name()
-        .map(|name| name.to_string_lossy().into_owned())
-        .unwrap_or_default()
+/// The name an [`Uploaded`] carries, which is what a send that reuses a handle declares.
+fn uploaded_name(uploaded: &Uploaded) -> String {
+    match &uploaded.raw {
+        tl::enums::InputFile::File(file) => file.name.clone(),
+        tl::enums::InputFile::Big(file) => file.name.clone(),
+        _ => String::new(),
+    }
 }
 
 /// Builds the raw uploaded media the `spoiler` flag requires, matching what grammers' own
@@ -393,7 +512,6 @@ mod tests {
     //! between the payload and the grammers call. The JSON documents below describe the built
     //! `grammers-tl-types` value, which carries no serde derives.
 
-    use std::path::PathBuf;
     use std::time::{Duration, UNIX_EPOCH};
 
     use grammers_client::media::Uploaded;
@@ -401,11 +519,12 @@ mod tests {
     use serde_json::json;
 
     use crate::error::parse_payload;
+    use crate::payload::MarkupSpec;
 
     use super::{
-        caption_mode, file_name, inferred_mime, media_kind, raw_external_media, raw_uploaded_media,
-        schedule_time, CaptionMode, CopyMediaPayload, MediaKind, SendMediaPayload,
-        SendMediaUrlPayload,
+        caption_mode, edit_media_source, external_url_media, inferred_mime, media_kind,
+        raw_external_media, raw_uploaded_media, schedule_time, uploaded_name, CaptionMode,
+        CopyMediaPayload, EditMediaSpec, MediaKind, SendMediaPayload, SendMediaUrlPayload,
     };
 
     fn uploaded() -> Uploaded {
@@ -537,6 +656,29 @@ mod tests {
     }
 
     #[test]
+    fn the_uploaded_name_comes_from_the_file_grammers_produced() {
+        assert_eq!(uploaded_name(&uploaded()), "report.pdf");
+        let big = Uploaded::from_raw(tl::enums::InputFile::Big(tl::types::InputFileBig {
+            id: 8,
+            parts: 20,
+            name: "movie.mp4".to_owned(),
+        }));
+        assert_eq!(uploaded_name(&big), "movie.mp4");
+    }
+
+    #[test]
+    fn the_send_media_payload_reads_an_upload_handle_instead_of_a_path() {
+        let data: SendMediaPayload = parse_payload(
+            &json!({ "peerHandle": 12, "fileHandle": 7, "kind": "photo" }).to_string(),
+        )
+        .expect("the payload decodes");
+
+        assert_eq!(data.file_handle, Some(7));
+        assert_eq!(data.path, None);
+        assert_eq!(data.kind.as_deref(), Some("photo"));
+    }
+
+    #[test]
     fn a_file_kind_forces_the_generic_document() {
         let media = raw_uploaded_media(
             MediaKind::File,
@@ -609,8 +751,7 @@ mod tests {
     }
 
     #[test]
-    fn the_file_name_comes_from_the_path() {
-        assert_eq!(file_name(&PathBuf::from("/tmp/report.pdf")), "report.pdf");
+    fn the_mime_type_is_inferred_from_the_extension() {
         assert_eq!(inferred_mime("report.pdf"), "application/pdf");
         assert_eq!(
             inferred_mime("unknown.unknown-extension"),
@@ -650,7 +791,7 @@ mod tests {
         .expect("the payload decodes");
 
         assert_eq!(data.peer.peer_handle, Some(12));
-        assert_eq!(data.path, "/tmp/report.pdf");
+        assert_eq!(data.path.as_deref(), Some("/tmp/report.pdf"));
         assert_eq!(data.kind.as_deref(), Some("file"));
         assert_eq!(data.caption.as_deref(), Some("<b>hi</b>"));
         assert_eq!(data.parse_mode.as_deref(), Some("html"));
@@ -704,5 +845,129 @@ mod tests {
         assert_eq!(copy.message_id, 31);
         assert_eq!(copy.caption.as_deref(), Some("copied"));
         assert_eq!(copy.parse_mode, None);
+    }
+
+    #[test]
+    fn the_media_payloads_decode_a_markup_spec() {
+        let data: SendMediaPayload = parse_payload(
+            &json!({
+                "peerHandle": 1,
+                "path": "/tmp/a.pdf",
+                "markup": {
+                    "kind": "inline",
+                    "rows": [[{ "type": "url", "text": "Docs", "url": "https://example.org" }]],
+                },
+            })
+            .to_string(),
+        )
+        .expect("the payload decodes");
+        assert!(matches!(data.markup, Some(MarkupSpec::Inline { .. })));
+
+        let data: SendMediaUrlPayload = parse_payload(
+            &json!({
+                "peerHandle": 1,
+                "url": "https://example.org/a.jpg",
+                "markup": { "kind": "keyboard", "rows": [[{ "type": "text", "text": "Go" }]] },
+            })
+            .to_string(),
+        )
+        .expect("the payload decodes");
+        assert!(matches!(data.markup, Some(MarkupSpec::Keyboard { .. })));
+
+        let data: CopyMediaPayload = parse_payload(
+            &json!({
+                "destination": { "peerHandle": 1 },
+                "source": { "peerHandle": 2 },
+                "messageId": 31,
+                "markup": { "kind": "hide" },
+            })
+            .to_string(),
+        )
+        .expect("the payload decodes");
+        assert!(matches!(data.markup, Some(MarkupSpec::Hide { .. })));
+
+        // An absent markup is `None`, so a send without one is unchanged.
+        let data: SendMediaPayload =
+            parse_payload(&json!({ "peerHandle": 1, "path": "/tmp/a.pdf" }).to_string())
+                .expect("the payload decodes");
+        assert!(data.markup.is_none());
+    }
+
+    #[test]
+    fn the_edit_media_spec_decodes_each_source() {
+        let upload: EditMediaSpec =
+            parse_payload(&json!({ "path": "/tmp/a.pdf", "kind": "file" }).to_string())
+                .expect("an upload media");
+        assert_eq!(upload.path.as_deref(), Some("/tmp/a.pdf"));
+        assert_eq!(upload.kind.as_deref(), Some("file"));
+        assert!(upload.url.is_none() && upload.copy_of.is_none());
+
+        let url: EditMediaSpec = parse_payload(
+            &json!({ "url": "https://example.org/a.jpg", "kind": "photo" }).to_string(),
+        )
+        .expect("a url media");
+        assert_eq!(url.url.as_deref(), Some("https://example.org/a.jpg"));
+        assert_eq!(url.kind.as_deref(), Some("photo"));
+
+        let copy: EditMediaSpec = parse_payload(
+            &json!({
+                "copyOf": { "peer": { "username": "channel" }, "messageId": 31 },
+            })
+            .to_string(),
+        )
+        .expect("a copy media");
+        let copy_of = copy.copy_of.expect("a source");
+        assert_eq!(copy_of.peer.username.as_deref(), Some("channel"));
+        assert_eq!(copy_of.message_id, 31);
+    }
+
+    #[test]
+    fn the_edit_media_source_must_be_the_only_one_set() {
+        let upload: EditMediaSpec =
+            parse_payload(&json!({ "path": "/tmp/a.pdf" }).to_string()).expect("the payload");
+        assert!(matches!(
+            edit_media_source(&upload),
+            Ok(super::EditMediaSource::Path("/tmp/a.pdf", None))
+        ));
+
+        let none: EditMediaSpec =
+            parse_payload(&json!({ "kind": "photo" }).to_string()).expect("the payload");
+        assert_eq!(
+            edit_media_source(&none).err(),
+            Some("the edit media must set exactly one of path, url or copyOf".to_owned())
+        );
+
+        let both: EditMediaSpec = parse_payload(
+            &json!({ "path": "/tmp/a.pdf", "url": "https://example.org/a.jpg" }).to_string(),
+        )
+        .expect("the payload");
+        assert_eq!(
+            edit_media_source(&both).err(),
+            Some("the edit media must set exactly one of path, url or copyOf".to_owned())
+        );
+    }
+
+    #[test]
+    fn an_inline_edit_media_is_a_url_photo_or_document() {
+        let photo =
+            external_url_media(Some("photo"), "https://example.org/a.jpg").expect("a photo media");
+        assert_eq!(
+            media_json(&photo),
+            json!({
+                "kind": "photoExternal",
+                "spoiler": false,
+                "url": "https://example.org/a.jpg",
+                "ttlSeconds": null,
+            })
+        );
+
+        // An absent kind is grammers' document, and `file` is the same external document.
+        let document = external_url_media(None, "https://example.org/a.pdf").expect("a document");
+        assert_eq!(media_json(&document)["kind"], json!("documentExternal"));
+
+        assert_eq!(
+            external_url_media(Some("sticker"), "https://example.org/a").unwrap_err(),
+            "unsupported media kind: sticker"
+        );
     }
 }

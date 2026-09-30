@@ -50,6 +50,7 @@ class FilesCompatibilityTest {
         assertEquals(2, small.parts)
         assertEquals("d41d8cd98f00b204e9800998ecf8427e", small.md5Checksum)
         assertEquals(false, small.isBig)
+        assertEquals(7, small.handle)
 
         val big = json.decodeFromString<BridgeUploadedFile>(UPLOADED_BIG).toCompatibility()
 
@@ -57,6 +58,7 @@ class FilesCompatibilityTest {
         assertEquals(20, big.parts)
         assertNull(big.md5Checksum)
         assertEquals(true, big.isBig)
+        assertNull(big.handle)
     }
 
     @Test
@@ -85,12 +87,12 @@ class FilesCompatibilityTest {
 
         val UPLOADED_SMALL = """
             {"id": 7, "name": "holidays.jpg", "size": 1048576, "parts": 2,
-             "md5Checksum": "d41d8cd98f00b204e9800998ecf8427e", "isBig": false}
+             "md5Checksum": "d41d8cd98f00b204e9800998ecf8427e", "isBig": false, "handle": 7}
         """.trimIndent()
 
         val UPLOADED_BIG = """
             {"id": 8, "name": "movie.mp4", "size": 10485760, "parts": 20,
-             "md5Checksum": null, "isBig": true}
+             "md5Checksum": null, "isBig": true, "handle": null}
         """.trimIndent()
 
         val PROFILE_PHOTO = """

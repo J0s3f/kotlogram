@@ -4,16 +4,20 @@
 //! [`OPERATIONS`] and implements [`route`], so adding a domain is one `mod` line here plus the
 //! module's own file.
 
+pub(crate) mod account;
 pub(crate) mod actions;
 pub(crate) mod auth;
 pub(crate) mod chats;
+pub(crate) mod contacts;
 pub(crate) mod dialogs;
 pub(crate) mod files;
+pub(crate) mod folders;
 pub(crate) mod inline;
 pub(crate) mod markup;
 pub(crate) mod media;
 pub(crate) mod messages;
 pub(crate) mod raw;
+pub(crate) mod stickers;
 pub(crate) mod updates;
 
 #[cfg(test)]
@@ -27,13 +31,17 @@ pub(crate) type Handler = fn(&NativeClient, &str) -> Result<String, String>;
 
 /// Every module's `route`, in dispatch order.
 const ROUTES: &[fn(&str) -> Option<Handler>] = &[
+    account::route,
     auth::route,
     messages::route,
     chats::route,
+    contacts::route,
     dialogs::route,
     updates::route,
     media::route,
+    stickers::route,
     files::route,
+    folders::route,
     inline::route,
     actions::route,
     markup::route,
@@ -42,13 +50,17 @@ const ROUTES: &[fn(&str) -> Option<Handler>] = &[
 
 /// Every module's [`OPERATIONS`], in the same order as [`ROUTES`].
 const INVENTORY: &[&[&str]] = &[
+    account::OPERATIONS,
     auth::OPERATIONS,
     messages::OPERATIONS,
     chats::OPERATIONS,
+    contacts::OPERATIONS,
     dialogs::OPERATIONS,
     updates::OPERATIONS,
     media::OPERATIONS,
+    stickers::OPERATIONS,
     files::OPERATIONS,
+    folders::OPERATIONS,
     inline::OPERATIONS,
     actions::OPERATIONS,
     markup::OPERATIONS,

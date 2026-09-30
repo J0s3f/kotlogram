@@ -60,7 +60,10 @@ pub(crate) fn dialog_dto(
 
     Ok(DialogDto {
         peer,
-        last_message: dialog.last_message.as_ref().map(message_dto),
+        last_message: dialog
+            .last_message
+            .as_ref()
+            .map(|message| message_dto(native, message)),
         pinned,
         top_message,
         unread_count,

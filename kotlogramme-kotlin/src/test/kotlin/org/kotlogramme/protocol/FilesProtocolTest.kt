@@ -53,7 +53,7 @@ class FilesProtocolTest {
     }
 
     @Test
-    fun `an uploaded small file carries its checksum`() {
+    fun `an uploaded small file carries its checksum and registry handle`() {
         val file = roundTrips<UploadedFile>(UPLOADED_SMALL)
 
         assertEquals(7, file.id)
@@ -62,6 +62,7 @@ class FilesProtocolTest {
         assertEquals(2, file.parts)
         assertEquals("d41d8cd98f00b204e9800998ecf8427e", file.md5Checksum)
         assertEquals(false, file.isBig)
+        assertEquals(7, file.handle)
     }
 
     @Test
@@ -72,6 +73,7 @@ class FilesProtocolTest {
         assertEquals(20, file.parts)
         assertNull(file.md5Checksum)
         assertEquals(true, file.isBig)
+        assertNull(file.handle)
     }
 
     @Test
@@ -134,6 +136,31 @@ class FilesProtocolTest {
     }
 
     @Test
+    fun `the in-memory upload payload carries the name and the base64 data`() {
+        assertEquals(
+            """{"name":"holidays.jpg","dataBase64":"Zm9vYmFy"}""",
+            requests.encodeToString(UploadBytesPayload("holidays.jpg", "Zm9vYmFy")),
+        )
+    }
+
+    @Test
+    fun `the streamed upload payloads carry the id and each chunk`() {
+        assertEquals(
+            """{"name":"movie.mp4"}""",
+            requests.encodeToString(UploadStreamBeginPayload("movie.mp4")),
+        )
+        assertEquals(
+            """{"uploadId":12,"dataBase64":"Zm9v"}""",
+            requests.encodeToString(UploadStreamChunkPayload(12, "Zm9v")),
+        )
+        assertEquals(
+            """{"uploadId":12}""",
+            requests.encodeToString(UploadStreamFinishPayload(12)),
+        )
+        assertEquals(12, json.decodeFromString<UploadStreamBeginResult>("""{"uploadId":12}""").uploadId)
+    }
+
+    @Test
     fun `the profile-photos payload carries the peer and the limit`() {
         assertEquals(
             """{"peerHandle":12,"limit":10}""",
@@ -164,12 +191,12 @@ class FilesProtocolTest {
 
         val UPLOADED_SMALL = """
             {"id": 7, "name": "holidays.jpg", "size": 1048576, "parts": 2,
-             "md5Checksum": "d41d8cd98f00b204e9800998ecf8427e", "isBig": false}
+             "md5Checksum": "d41d8cd98f00b204e9800998ecf8427e", "isBig": false, "handle": 7}
         """.trimIndent()
 
         val UPLOADED_BIG = """
             {"id": 8, "name": "movie.mp4", "size": 10485760, "parts": 20,
-             "md5Checksum": null, "isBig": true}
+             "md5Checksum": null, "isBig": true, "handle": null}
         """.trimIndent()
 
         val PROFILE_PHOTO = """

@@ -11,6 +11,10 @@
 //! where `true` *denies* the same-named right. Everything that crosses the wire keeps the layer's
 //! polarity, so a caller reading a restriction back sees exactly what it sent; the negation to the
 //! "can do" spelling of the builder methods happens at the grammers call, not here.
+//!
+//! Every flag the layer carries is projected, including the ones grammers' `Permissions` and
+//! `Restrictions` accessors do not name: those wrappers keep the full raw TL struct in their public
+//! `raw` field, and the projections read it directly rather than going through the ten accessors.
 
 use grammers_client::peer::{Permissions, Restrictions};
 use grammers_client::tl;
@@ -18,11 +22,9 @@ use serde::{Deserialize, Serialize};
 
 /// The admin rights of a chat member, mirroring grammers' [`Permissions`] (TL `chatAdminRights`).
 ///
-/// Only the ten rights grammers exposes as accessors are projected. The layer's `other`,
-/// `manage_topics` and story rights have no accessor, so they are absent rather than guessed.
-///
-/// A missing field decodes as its default, so a caller that only wants to grant one right does not
-/// have to spell out the nine it does not.
+/// Every right the pinned layer carries is projected, not just the ten grammers exposes as
+/// accessors. A missing field decodes as its default, so a caller that only wants to grant one
+/// right does not have to spell out the rest.
 #[derive(Serialize, Deserialize, Default)]
 #[serde(default, rename_all = "camelCase")]
 pub(crate) struct ChatPermissionsDto {
@@ -36,6 +38,15 @@ pub(crate) struct ChatPermissionsDto {
     pub(crate) add_admins: bool,
     pub(crate) anonymous: bool,
     pub(crate) manage_call: bool,
+    pub(crate) manage_topics: bool,
+    pub(crate) post_stories: bool,
+    pub(crate) edit_stories: bool,
+    pub(crate) delete_stories: bool,
+    pub(crate) manage_direct_messages: bool,
+    pub(crate) manage_ranks: bool,
+    pub(crate) manage_linked_peers: bool,
+    pub(crate) manage_welcome_messages: bool,
+    pub(crate) other: bool,
 }
 
 /// The restrictions applied to a banned or restricted member, mirroring grammers'
@@ -59,6 +70,17 @@ pub(crate) struct ChatRestrictionsDto {
     pub(crate) change_info: bool,
     pub(crate) invite_users: bool,
     pub(crate) pin_messages: bool,
+    pub(crate) manage_topics: bool,
+    pub(crate) send_photos: bool,
+    pub(crate) send_videos: bool,
+    pub(crate) send_roundvideos: bool,
+    pub(crate) send_audios: bool,
+    pub(crate) send_voices: bool,
+    pub(crate) send_docs: bool,
+    pub(crate) send_plain: bool,
+    pub(crate) edit_rank: bool,
+    pub(crate) send_reactions: bool,
+    pub(crate) manage_linked_peers: bool,
     /// Epoch milliseconds from `Restrictions::due()`; the epoch itself means "forever".
     pub(crate) until_date: i64,
 }
@@ -76,24 +98,24 @@ impl From<&tl::types::ChatAdminRights> for ChatPermissionsDto {
             add_admins: rights.add_admins,
             anonymous: rights.anonymous,
             manage_call: rights.manage_call,
+            manage_topics: rights.manage_topics,
+            post_stories: rights.post_stories,
+            edit_stories: rights.edit_stories,
+            delete_stories: rights.delete_stories,
+            manage_direct_messages: rights.manage_direct_messages,
+            manage_ranks: rights.manage_ranks,
+            manage_linked_peers: rights.manage_linked_peers,
+            manage_welcome_messages: rights.manage_welcome_messages,
+            other: rights.other,
         }
     }
 }
 
+/// Projects grammers' accessor wrapper by reading the full raw rights it carries; the ten
+/// accessors would drop the newer flags.
 impl From<&Permissions> for ChatPermissionsDto {
     fn from(permissions: &Permissions) -> Self {
-        Self {
-            change_info: permissions.change_info(),
-            post_messages: permissions.post_messages(),
-            edit_messages: permissions.edit_messages(),
-            delete_messages: permissions.delete_messages(),
-            ban_users: permissions.ban_users(),
-            invite_users: permissions.invite_users(),
-            pin_messages: permissions.pin_messages(),
-            add_admins: permissions.add_admins(),
-            anonymous: permissions.anonymous(),
-            manage_call: permissions.manage_call(),
-        }
+        Self::from(&permissions.raw)
     }
 }
 
@@ -112,35 +134,31 @@ impl From<&tl::types::ChatBannedRights> for ChatRestrictionsDto {
             change_info: rights.change_info,
             invite_users: rights.invite_users,
             pin_messages: rights.pin_messages,
+            manage_topics: rights.manage_topics,
+            send_photos: rights.send_photos,
+            send_videos: rights.send_videos,
+            send_roundvideos: rights.send_roundvideos,
+            send_audios: rights.send_audios,
+            send_voices: rights.send_voices,
+            send_docs: rights.send_docs,
+            send_plain: rights.send_plain,
+            edit_rank: rights.edit_rank,
+            send_reactions: rights.send_reactions,
+            manage_linked_peers: rights.manage_linked_peers,
             until_date: i64::from(rights.until_date) * 1_000,
         }
     }
 }
 
+/// Projects grammers' accessor wrapper by reading the full raw rights it carries; the accessors
+/// would drop the newer flags.
 impl From<&Restrictions> for ChatRestrictionsDto {
     fn from(restrictions: &Restrictions) -> Self {
-        Self {
-            view_messages: restrictions.view_messages(),
-            send_messages: restrictions.send_messages(),
-            send_media: restrictions.send_media(),
-            send_stickers: restrictions.send_stickers(),
-            send_gifs: restrictions.send_gifs(),
-            send_games: restrictions.send_games(),
-            send_inline: restrictions.send_inline(),
-            embed_links: restrictions.embed_links(),
-            send_polls: restrictions.send_polls(),
-            change_info: restrictions.change_info(),
-            invite_users: restrictions.invite_users(),
-            pin_messages: restrictions.pin_messages(),
-            until_date: restrictions.due().as_millisecond(),
-        }
+        Self::from(&restrictions.raw)
     }
 }
 
 /// The other direction: the grants a caller asked for, as the layer's `chatAdminRights`.
-///
-/// The layer's `other`, `manage_topics` and story rights are not exposed by this bridge, so they
-/// are cleared rather than carried over.
 impl From<&ChatPermissionsDto> for tl::types::ChatAdminRights {
     fn from(rights: &ChatPermissionsDto) -> Self {
         Self {
@@ -154,24 +172,22 @@ impl From<&ChatPermissionsDto> for tl::types::ChatAdminRights {
             add_admins: rights.add_admins,
             anonymous: rights.anonymous,
             manage_call: rights.manage_call,
-            other: false,
-            manage_topics: false,
-            post_stories: false,
-            edit_stories: false,
-            delete_stories: false,
-            manage_direct_messages: false,
-            manage_ranks: false,
-            manage_linked_peers: false,
-            manage_welcome_messages: false,
+            other: rights.other,
+            manage_topics: rights.manage_topics,
+            post_stories: rights.post_stories,
+            edit_stories: rights.edit_stories,
+            delete_stories: rights.delete_stories,
+            manage_direct_messages: rights.manage_direct_messages,
+            manage_ranks: rights.manage_ranks,
+            manage_linked_peers: rights.manage_linked_peers,
+            manage_welcome_messages: rights.manage_welcome_messages,
         }
     }
 }
 
 /// The other direction: the bans a caller asked for, as the layer's `chatBannedRights`.
 ///
-/// The millisecond wire date is turned back into the layer's whole seconds; the layer's own
-/// media-granular flags are left clear, exactly as grammers' `Restrictions` accessors cannot
-/// report them.
+/// The millisecond wire date is turned back into the layer's whole seconds.
 impl From<&ChatRestrictionsDto> for tl::types::ChatBannedRights {
     fn from(rights: &ChatRestrictionsDto) -> Self {
         Self {
@@ -187,17 +203,17 @@ impl From<&ChatRestrictionsDto> for tl::types::ChatBannedRights {
             change_info: rights.change_info,
             invite_users: rights.invite_users,
             pin_messages: rights.pin_messages,
-            manage_topics: false,
-            send_photos: false,
-            send_videos: false,
-            send_roundvideos: false,
-            send_audios: false,
-            send_voices: false,
-            send_docs: false,
-            send_plain: false,
-            edit_rank: false,
-            send_reactions: false,
-            manage_linked_peers: false,
+            manage_topics: rights.manage_topics,
+            send_photos: rights.send_photos,
+            send_videos: rights.send_videos,
+            send_roundvideos: rights.send_roundvideos,
+            send_audios: rights.send_audios,
+            send_voices: rights.send_voices,
+            send_docs: rights.send_docs,
+            send_plain: rights.send_plain,
+            edit_rank: rights.edit_rank,
+            send_reactions: rights.send_reactions,
+            manage_linked_peers: rights.manage_linked_peers,
             until_date: (rights.until_date / 1_000) as i32,
         }
     }
@@ -205,8 +221,10 @@ impl From<&ChatRestrictionsDto> for tl::types::ChatBannedRights {
 
 #[cfg(test)]
 mod tests {
-    //! Wire-contract tests for the two request directions of the rights projections.
+    //! Wire-contract tests for the two request directions of the rights projections, plus the
+    //! projection of grammers' accessor wrappers from the raw rights they carry.
 
+    use grammers_client::peer::{Permissions, Restrictions};
     use grammers_client::tl;
     use serde_json::json;
 
@@ -216,6 +234,59 @@ mod tests {
         let text = serde_json::to_string(dto).expect("a projection always encodes");
         let actual: serde_json::Value = serde_json::from_str(&text).expect("the encoding is JSON");
         assert_eq!(actual, expected);
+    }
+
+    fn raw_admin_rights() -> tl::types::ChatAdminRights {
+        tl::types::ChatAdminRights {
+            change_info: true,
+            post_messages: false,
+            edit_messages: true,
+            delete_messages: false,
+            ban_users: true,
+            invite_users: false,
+            pin_messages: true,
+            add_admins: false,
+            anonymous: true,
+            manage_call: false,
+            other: true,
+            manage_topics: true,
+            post_stories: true,
+            edit_stories: true,
+            delete_stories: true,
+            manage_direct_messages: true,
+            manage_ranks: true,
+            manage_linked_peers: true,
+            manage_welcome_messages: true,
+        }
+    }
+
+    fn raw_banned_rights() -> tl::types::ChatBannedRights {
+        tl::types::ChatBannedRights {
+            view_messages: true,
+            send_messages: false,
+            send_media: true,
+            send_stickers: false,
+            send_gifs: true,
+            send_games: false,
+            send_inline: true,
+            embed_links: false,
+            send_polls: true,
+            change_info: false,
+            invite_users: true,
+            pin_messages: false,
+            manage_topics: true,
+            send_photos: true,
+            send_videos: true,
+            send_roundvideos: true,
+            send_audios: true,
+            send_voices: true,
+            send_docs: true,
+            send_plain: true,
+            edit_rank: true,
+            send_reactions: true,
+            manage_linked_peers: true,
+            until_date: 1_700_000_000,
+        }
     }
 
     #[test]
@@ -233,12 +304,25 @@ mod tests {
             change_info: false,
             invite_users: true,
             pin_messages: false,
+            manage_topics: true,
+            send_photos: true,
+            send_videos: false,
+            send_roundvideos: true,
+            send_audios: false,
+            send_voices: true,
+            send_docs: false,
+            send_plain: true,
+            edit_rank: false,
+            send_reactions: true,
+            manage_linked_peers: false,
             until_date: 1_700_000_000_000,
         };
 
         let raw = tl::types::ChatBannedRights::from(&dto);
         // The layer keeps the denied flags as given, and the millisecond date becomes seconds.
         assert!(raw.view_messages && !raw.send_messages && raw.send_media);
+        assert!(raw.manage_topics && raw.send_photos && !raw.send_videos);
+        assert!(raw.send_reactions && !raw.manage_linked_peers);
         assert_eq!(raw.until_date, 1_700_000_000);
 
         // Projecting back reproduces the exact document a caller sent.
@@ -257,6 +341,17 @@ mod tests {
                 "changeInfo": false,
                 "inviteUsers": true,
                 "pinMessages": false,
+                "manageTopics": true,
+                "sendPhotos": true,
+                "sendVideos": false,
+                "sendRoundvideos": true,
+                "sendAudios": false,
+                "sendVoices": true,
+                "sendDocs": false,
+                "sendPlain": true,
+                "editRank": false,
+                "sendReactions": true,
+                "manageLinkedPeers": false,
                 "untilDate": 1_700_000_000_000i64,
             }),
         );
@@ -286,13 +381,22 @@ mod tests {
             add_admins: false,
             anonymous: true,
             manage_call: false,
+            manage_topics: true,
+            post_stories: false,
+            edit_stories: true,
+            delete_stories: false,
+            manage_direct_messages: true,
+            manage_ranks: false,
+            manage_linked_peers: true,
+            manage_welcome_messages: false,
+            other: true,
         };
 
         let raw = tl::types::ChatAdminRights::from(&dto);
         assert!(raw.change_info && !raw.post_messages && raw.edit_messages);
         assert!(raw.anonymous && !raw.manage_call);
-        // The layer rights this bridge does not model stay clear.
-        assert!(!raw.other && !raw.manage_topics && !raw.post_stories);
+        assert!(raw.manage_topics && !raw.post_stories && raw.edit_stories);
+        assert!(raw.manage_direct_messages && raw.manage_linked_peers && raw.other);
 
         assert_json(
             &ChatPermissionsDto::from(&raw),
@@ -307,8 +411,89 @@ mod tests {
                 "addAdmins": false,
                 "anonymous": true,
                 "manageCall": false,
+                "manageTopics": true,
+                "postStories": false,
+                "editStories": true,
+                "deleteStories": false,
+                "manageDirectMessages": true,
+                "manageRanks": false,
+                "manageLinkedPeers": true,
+                "manageWelcomeMessages": false,
+                "other": true,
             }),
         );
+    }
+
+    #[test]
+    fn every_new_admin_flag_round_trips_through_the_layer_struct() {
+        let raw = raw_admin_rights();
+        let dto = ChatPermissionsDto::from(&raw);
+        assert!(
+            dto.other
+                && dto.manage_topics
+                && dto.post_stories
+                && dto.edit_stories
+                && dto.delete_stories
+                && dto.manage_direct_messages
+                && dto.manage_ranks
+                && dto.manage_linked_peers
+                && dto.manage_welcome_messages
+        );
+
+        let back = tl::types::ChatAdminRights::from(&dto);
+        assert!(back.other && back.manage_topics && back.post_stories && back.edit_stories);
+        assert!(back.delete_stories && back.manage_direct_messages && back.manage_ranks);
+        assert!(back.manage_linked_peers && back.manage_welcome_messages);
+    }
+
+    #[test]
+    fn every_new_ban_flag_round_trips_through_the_layer_struct() {
+        let raw = raw_banned_rights();
+        let dto = ChatRestrictionsDto::from(&raw);
+        assert!(
+            dto.manage_topics
+                && dto.send_photos
+                && dto.send_videos
+                && dto.send_roundvideos
+                && dto.send_audios
+                && dto.send_voices
+                && dto.send_docs
+                && dto.send_plain
+                && dto.edit_rank
+                && dto.send_reactions
+                && dto.manage_linked_peers
+        );
+
+        let back = tl::types::ChatBannedRights::from(&dto);
+        assert!(back.manage_topics && back.send_photos && back.send_videos);
+        assert!(back.send_roundvideos && back.send_audios && back.send_voices);
+        assert!(back.send_docs && back.send_plain && back.edit_rank);
+        assert!(back.send_reactions && back.manage_linked_peers);
+        assert_eq!(back.until_date, 1_700_000_000);
+    }
+
+    #[test]
+    fn a_grammers_accessor_wrapper_projects_every_raw_admin_flag() {
+        // `Permissions`/`Restrictions` only expose ten accessors, so the projection must read the
+        // public raw struct instead of the accessor surface.
+        let dto = ChatPermissionsDto::from(&Permissions {
+            raw: raw_admin_rights(),
+        });
+        assert!(dto.other && dto.manage_topics && dto.post_stories && dto.edit_stories);
+        assert!(dto.delete_stories && dto.manage_direct_messages && dto.manage_ranks);
+        assert!(dto.manage_linked_peers && dto.manage_welcome_messages);
+    }
+
+    #[test]
+    fn a_grammers_accessor_wrapper_projects_every_raw_ban_flag() {
+        let dto = ChatRestrictionsDto::from(&Restrictions {
+            raw: raw_banned_rights(),
+        });
+        assert!(dto.manage_topics && dto.send_photos && dto.send_videos);
+        assert!(dto.send_roundvideos && dto.send_audios && dto.send_voices);
+        assert!(dto.send_docs && dto.send_plain && dto.edit_rank);
+        assert!(dto.send_reactions && dto.manage_linked_peers);
+        assert_eq!(dto.until_date, 1_700_000_000_000);
     }
 
     #[test]
@@ -317,6 +502,7 @@ mod tests {
             serde_json::from_str(r#"{"sendMessages": true}"#).expect("a partial ban");
         assert!(dto.send_messages);
         assert!(!dto.view_messages);
+        assert!(!dto.manage_topics && !dto.send_photos && !dto.manage_linked_peers);
         assert_eq!(dto.until_date, 0);
     }
 }

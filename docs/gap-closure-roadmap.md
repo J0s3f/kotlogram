@@ -281,3 +281,37 @@ markup attachable everywhere, full edit parity, stream/bytes uploads with send-b
 GuestChatQuery, inline send + media answers, and the four curated raw families — with both test
 suites, the operation drift gate and the JNI export check green, delivered as one squashed commit
 on `main`.
+
+## Delivery record
+
+Landed on integration branch `feat/gap-closure`, delivered as one squashed commit to `main`.
+
+| task | branch | state |
+| --- | --- | --- |
+| T0 | `feat/t0-pin-grammers-rev` | merged |
+| T1 | `feat/t1-rights-roundtrip` | merged |
+| T2 | `feat/t2-message-projection` | merged |
+| T3 | `feat/t3-markup-attach` | merged |
+| T4 | `feat/t4-edit-parity` | merged |
+| T5 | `feat/t5-uploads` | merged |
+| T6 | `feat/t6-guestchat-query` | merged |
+| T7 | `feat/t7-inline` | merged |
+| T8a | `feat/t8a-contacts` | merged |
+| T8b | `feat/t8b-account` | merged |
+| T8c | `feat/t8c-folders` | merged |
+| T8d | `feat/t8d-stickers` | merged |
+| T9 | this documentation pass | done |
+
+Deviations from the plan, each recorded in the relevant code:
+
+- T6 answers a guest-chat query with `messages.SetBotGuestChatResult`; the planned
+  `messages.GetBotChatAnswer` does not exist at this layer.
+- T8b uses `auth.ResetAuthorizations`; `account.resetAuthorizations` does not exist at this layer.
+- T8c names the reorder operation after its constructor, `messages.UpdateDialogFiltersOrder`.
+- T5 stores `{ name, data }` per in-progress stream, because `uploadStreamFinish` receives only the
+  id while `upload_stream` needs the name.
+- T3's album payloads carry no markup: `messages.SendMultiMedia` has none.
+- T4 adds the entity input spec for send and edit; projecting entities on received messages and
+  rendering markdown/html stay the documented follow-up (see `compatibility.md`).
+
+Final state: 96 operations, 240 Rust tests, 249 JVM tests, the 7 frozen JNI exports verified.

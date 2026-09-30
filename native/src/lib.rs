@@ -134,7 +134,7 @@ pub extern "system" fn Java_org_kotlogramme_TelegramClient_00024Native_sendMessa
             .runtime
             .block_on(native.client.send_message(peer, text))
             .map_err(invocation_error)?;
-        json_string(message_dto(&message))
+        json_string(message_dto(&native, &message))
     })();
     java_string(&mut env, result.unwrap_or_else(error))
 }

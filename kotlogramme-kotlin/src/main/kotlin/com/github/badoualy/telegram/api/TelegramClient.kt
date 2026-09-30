@@ -9,8 +9,8 @@ import org.kotlogramme.TelegramClient as GrammersClient
  * `*Api.kt` plus one supertype here. Each domain declares its methods with default implementations
  * that delegate to the direct grammers bridge.
  */
-interface TelegramClient : AutoCloseable, BridgeApi, AuthApi, MessagesApi, ChatsApi, DialogsApi, UpdatesApi,
-    MediaApi, FilesApi, InlineApi, ActionsApi, MarkupApi, RawApi {
+interface TelegramClient : AutoCloseable, BridgeApi, AuthApi, MessagesApi, ChatsApi, ContactsApi, DialogsApi,
+    UpdatesApi, MediaApi, FilesApi, InlineApi, ActionsApi, MarkupApi, AccountApi, StickersApi, FoldersApi, RawApi {
     fun isAuthorized(): Boolean = bridge.isAuthorized()
     fun isClosed(): Boolean
 

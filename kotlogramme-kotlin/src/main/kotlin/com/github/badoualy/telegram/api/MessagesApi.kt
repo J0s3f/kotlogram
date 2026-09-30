@@ -1,6 +1,10 @@
 package com.github.badoualy.telegram.api
 
+import org.kotlogramme.protocol.CopyOfSpec
+import org.kotlogramme.protocol.EditMediaSpec
+import org.kotlogramme.protocol.EntitySpec
 import org.kotlogramme.protocol.OutgoingMedia as BridgeOutgoingMedia
+import org.kotlogramme.protocol.PeerTarget
 import java.nio.file.Path
 
 /** Sending, editing, deleting, reading, searching, forwarding, pinning and reacting to messages. */
@@ -13,12 +17,18 @@ interface MessagesApi : BridgeApi {
         replyToMsgId: Int? = null,
         silent: Boolean = false,
         noWebpage: Boolean = false,
+        replyMarkup: ReplyMarkup? = null,
+        parseMode: CaptionParseMode = CaptionParseMode.NONE,
+        entities: List<MessageEntity>? = null,
     ): Message = bridge.sendMessage(
         peer.native,
         message,
         replyToMessageId = replyToMsgId,
         silent = silent,
         linkPreview = !noWebpage,
+        replyMarkup = replyMarkup?.asSpec(),
+        parseMode = parseMode.wireName,
+        entities = entities?.map { it.asSpec() },
     ).toCompatibility()
 
     /** Uploads and sends a local file; set [asPhoto] to let Telegram compress it as a photo. */
@@ -29,14 +39,82 @@ interface MessagesApi : BridgeApi {
         asPhoto: Boolean = false,
         replyToMsgId: Int? = null,
         silent: Boolean = false,
-    ): Message = bridge.sendFile(peer.native, path, caption, asPhoto, replyToMsgId, silent).toCompatibility()
+        replyMarkup: ReplyMarkup? = null,
+    ): Message = bridge.sendFile(
+        peer.native,
+        path,
+        caption,
+        asPhoto,
+        replyToMsgId,
+        silent,
+        replyMarkup = replyMarkup?.asSpec(),
+    ).toCompatibility()
 
+    /**
+     * Sends a file already uploaded by this client, referencing it by [UploadedFile.handle] so it
+     * is not uploaded a second time. The rest of the options are those [messagesSendFile] takes.
+     */
+    fun messagesSendFile(
+        peer: TelegramPeer,
+        file: UploadedFile,
+        caption: String = "",
+        asPhoto: Boolean = false,
+        replyToMsgId: Int? = null,
+        silent: Boolean = false,
+        replyMarkup: ReplyMarkup? = null,
+    ): Message = bridge.sendFile(
+        peer.native,
+        path = null,
+        caption = caption,
+        asPhoto = asPhoto,
+        replyToMessageId = replyToMsgId,
+        silent = silent,
+        replyMarkup = replyMarkup?.asSpec(),
+        fileHandle = requireNotNull(file.handle) { "the uploaded file carries no handle" },
+    ).toCompatibility()
+
+    /**
+     * Sends one to ten files as an album. Each [OutgoingMedia] names a local path to upload or an
+     * already-uploaded file's handle.
+     */
     fun messagesSendAlbum(peer: TelegramPeer, items: List<OutgoingMedia>): List<Message?> =
-        bridge.sendAlbum(peer.native, items.map { BridgeOutgoingMedia(it.path, it.caption, it.asPhoto) })
-            .map { it?.toCompatibility() }
+        bridge.sendAlbum(
+            peer.native,
+            items.map { BridgeOutgoingMedia(it.path, it.caption, it.asPhoto, it.fileHandle) },
+        ).map { it?.toCompatibility() }
 
-    fun messagesEditMessage(peer: TelegramPeer, id: Int, message: String, noWebpage: Boolean = false) {
-        bridge.editMessage(peer.native, id, message, linkPreview = !noWebpage)
+    /**
+     * Edits the message [id], replacing its text, its reply markup or its media.
+     *
+     * Every option defaults to "leave the message's own", so an edit that only changes one of them
+     * carries nothing else. [message] is null on a media-only edit; the native side drops an empty
+     * text, exactly as grammers does. [media] replaces the message's media and may name a local
+     * file, a URL or another message's media.
+     */
+    fun messagesEditMessage(
+        peer: TelegramPeer,
+        id: Int,
+        message: String? = null,
+        noWebpage: Boolean = false,
+        parseMode: CaptionParseMode = CaptionParseMode.NONE,
+        entities: List<MessageEntity>? = null,
+        invertMedia: Boolean = false,
+        ttlSeconds: Int? = null,
+        replyMarkup: ReplyMarkup? = null,
+        media: EditMedia? = null,
+    ) {
+        bridge.editMessage(
+            peer.native,
+            id,
+            text = message,
+            linkPreview = !noWebpage,
+            parseMode = parseMode.wireName,
+            entities = entities?.map { it.asSpec() },
+            invertMedia = invertMedia,
+            ttlSeconds = ttlSeconds,
+            replyMarkup = replyMarkup?.asSpec(),
+            media = media?.asSpec(),
+        )
     }
 
     fun messagesDeleteMessages(peer: TelegramPeer, ids: Collection<Int>): Int =
@@ -135,4 +213,24 @@ interface MessagesApi : BridgeApi {
     fun messagesRemoveReaction(peer: TelegramPeer, id: Int) {
         bridge.removeReaction(peer.native, id)
     }
+}
+
+/** Converts this entity to the wire spec a send or edit payload carries. */
+internal fun MessageEntity.asSpec(): EntitySpec =
+    EntitySpec(
+        offset = offset,
+        length = length,
+        type = type,
+        url = url,
+        userId = userId,
+        language = language,
+        customEmojiId = customEmojiId,
+    )
+
+/** Converts this media source to the wire spec an edit payload carries. */
+internal fun EditMedia.asSpec(): EditMediaSpec = when (this) {
+    is EditMedia.File -> EditMediaSpec(path = path.toAbsolutePath().toString(), kind = kind.wireName)
+    is EditMedia.Url -> EditMediaSpec(url = url, kind = kind.wireName)
+    is EditMedia.CopyOf ->
+        EditMediaSpec(copyOf = CopyOfSpec(PeerTarget(peer.native.nativeHandle), messageId))
 }

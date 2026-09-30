@@ -164,3 +164,8 @@ the Phase 0 baseline, 35 / 56 after `updates`, 59 / 80 after `markup`, 65 / 89 a
 `cargo fmt` pass). The 7 frozen JNI export names were dumped and verified against the release DLL
 after the final merge.
 
+The post-parity gap-closure work is recorded in
+[`gap-closure-roadmap.md`](gap-closure-roadmap.md): it closed the rights round-trip, markup-on-send,
+full edit parity, message-projection, guest-chat, inline, upload and typed-raw-family gaps, bringing
+the surface to **96 operations / 240 Rust tests / 249 Kotlin tests**.
+

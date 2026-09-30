@@ -12,7 +12,7 @@ use super::Handler;
 use crate::client::{resolve_peer, NativeClient};
 use crate::dto::markup::{markup_dto, reply_markup_dto};
 use crate::error::{invocation_error, json_string, parse_payload};
-use crate::payload::PeerTarget;
+use crate::payload::{InlineButtonSpec, KeyboardButtonSpec, MarkupSpec, PeerTarget};
 
 /// Telegram accepts at most 64 bytes of callback data, and grammers requires the payload to be
 /// non-empty, so the bridge checks both rather than letting the server reject the markup.
@@ -31,39 +31,6 @@ struct InlineMarkupPayload {
     rows: Vec<Vec<InlineButtonSpec>>,
 }
 
-/// A button an inline markup may carry, one variant per grammers `button` function usable there.
-///
-/// grammers' `button::Inline` covers `inline` (the callback button), `switch_inline`,
-/// `switch_inline_elsewhere`, `url` and `webview`, and nothing else: `Key::text` returns a
-/// `button::Keyboard`, so a plain label cannot go in an inline markup at all.
-#[derive(Deserialize)]
-#[serde(
-    tag = "type",
-    rename_all = "camelCase",
-    rename_all_fields = "camelCase"
-)]
-enum InlineButtonSpec {
-    Url {
-        text: String,
-        url: String,
-    },
-    WebView {
-        text: String,
-        url: String,
-    },
-    Callback {
-        text: String,
-        data: String,
-    },
-    SwitchInline {
-        text: String,
-        query: String,
-        /// Absent means grammers' `switch_inline`, which keeps the current peer; `false` is
-        /// `switch_inline_elsewhere`, which asks the user to pick one.
-        same_peer: Option<bool>,
-    },
-}
-
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ReplyKeyboardPayload {
@@ -74,33 +41,6 @@ struct ReplyKeyboardPayload {
     single_use: bool,
     #[serde(default)]
     selective: bool,
-}
-
-/// A button a custom reply keyboard may carry, one variant per grammers `button` function usable
-/// there. The inline kinds are absent because grammers' `reply_markup::keyboard` takes a matrix of
-/// `button::Keyboard`, which they are not.
-#[derive(Deserialize)]
-#[serde(
-    tag = "type",
-    rename_all = "camelCase",
-    rename_all_fields = "camelCase"
-)]
-enum KeyboardButtonSpec {
-    Text {
-        text: String,
-    },
-    RequestPhone {
-        text: String,
-    },
-    RequestGeo {
-        text: String,
-    },
-    RequestPoll {
-        text: String,
-        /// grammers' `request_quiz`; absent is its `request_poll`.
-        #[serde(default)]
-        quiz: bool,
-    },
 }
 
 #[derive(Deserialize)]
@@ -163,62 +103,109 @@ fn get_reply_markup(native: &NativeClient, payload: &str) -> Result<String, Stri
 /// Builds the markup grammers' `ReplyMarkup::from_buttons` builds: buttons attached to the message.
 fn build_inline_markup(_native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: InlineMarkupPayload = parse_payload(payload)?;
-    let rows = inline_rows(&data.rows)?;
-    json_string(markup_dto(&ReplyMarkup::from_buttons(&rows)))
+    let spec = MarkupSpec::Inline { rows: data.rows };
+    json_string(markup_dto(&reply_markup_from_spec(&spec)?))
 }
 
 /// Builds the markup grammers' `ReplyMarkup::from_keys` builds, with the options its inherent
 /// methods offer.
 fn build_reply_keyboard(_native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: ReplyKeyboardPayload = parse_payload(payload)?;
-    let rows = keyboard_rows(&data.rows)?;
-    json_string(markup_dto(&reply_keyboard_markup(&data, rows)))
+    let spec = MarkupSpec::Keyboard {
+        rows: data.rows,
+        fit_size: data.fit_size,
+        single_use: data.single_use,
+        selective: data.selective,
+    };
+    json_string(markup_dto(&reply_markup_from_spec(&spec)?))
 }
 
 /// Builds the markup grammers' `ReplyMarkup::force_reply` builds.
 fn build_force_reply(_native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: ForceReplyPayload = parse_payload(payload)?;
-    json_string(markup_dto(&force_reply_markup(&data)))
+    let spec = MarkupSpec::ForceReply {
+        single_use: data.single_use,
+        selective: data.selective,
+    };
+    json_string(markup_dto(&reply_markup_from_spec(&spec)?))
 }
 
 /// Builds the markup grammers' `ReplyMarkup::hide` builds, which removes a keyboard this bot sent
 /// earlier.
 fn build_hide_keyboard(_native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: HideKeyboardPayload = parse_payload(payload)?;
-    json_string(markup_dto(&hide_keyboard_markup(&data)))
+    let spec = MarkupSpec::Hide {
+        selective: data.selective,
+    };
+    json_string(markup_dto(&reply_markup_from_spec(&spec)?))
+}
+
+/// Builds the grammers `ReplyMarkup` a [`MarkupSpec`] names, which is what every send and edit
+/// payload attaches through `InputMessage::reply_markup`.
+///
+/// The four build operations above delegate to this, so the markup a payload sends is always the
+/// markup the matching build operation projects.
+pub(crate) fn reply_markup_from_spec(spec: &MarkupSpec) -> Result<ReplyMarkup, String> {
+    match spec {
+        MarkupSpec::Inline { rows } => Ok(ReplyMarkup::from_buttons(&inline_rows(rows)?)),
+        MarkupSpec::Keyboard {
+            rows,
+            fit_size,
+            single_use,
+            selective,
+        } => {
+            let rows = keyboard_rows(rows)?;
+            Ok(reply_keyboard_markup(
+                *fit_size,
+                *single_use,
+                *selective,
+                rows,
+            ))
+        }
+        MarkupSpec::ForceReply {
+            single_use,
+            selective,
+        } => Ok(force_reply_markup(*single_use, *selective)),
+        MarkupSpec::Hide { selective } => Ok(hide_keyboard_markup(*selective)),
+    }
 }
 
 /// Applies the requested options to grammers' `ReplyMarkup::from_keys`.
-fn reply_keyboard_markup(data: &ReplyKeyboardPayload, rows: Vec<Vec<Key>>) -> ReplyMarkup {
+fn reply_keyboard_markup(
+    fit_size: bool,
+    single_use: bool,
+    selective: bool,
+    rows: Vec<Vec<Key>>,
+) -> ReplyMarkup {
     let mut markup = ReplyMarkup::from_keys(&rows);
-    if data.fit_size {
+    if fit_size {
         markup = markup.fit_size();
     }
-    if data.single_use {
+    if single_use {
         markup = markup.single_use();
     }
-    if data.selective {
+    if selective {
         markup = markup.selective();
     }
     markup
 }
 
 /// Applies the requested options to grammers' `ReplyMarkup::force_reply`.
-fn force_reply_markup(data: &ForceReplyPayload) -> ReplyMarkup {
+fn force_reply_markup(single_use: bool, selective: bool) -> ReplyMarkup {
     let mut markup = ReplyMarkup::force_reply();
-    if data.single_use {
+    if single_use {
         markup = markup.single_use();
     }
-    if data.selective {
+    if selective {
         markup = markup.selective();
     }
     markup
 }
 
 /// Applies the requested options to grammers' `ReplyMarkup::hide`.
-fn hide_keyboard_markup(data: &HideKeyboardPayload) -> ReplyMarkup {
+fn hide_keyboard_markup(selective: bool) -> ReplyMarkup {
     let mut markup = ReplyMarkup::hide();
-    if data.selective {
+    if selective {
         markup = markup.selective();
     }
     markup
@@ -329,16 +316,20 @@ mod tests {
     //! between the payload and the grammers call.
 
     use grammers_client::message::ReplyMarkup;
+    use grammers_client::tl;
     use serde_json::json;
 
-    use crate::dto::markup::{inline_button_dto, keyboard_button_dto, markup_dto};
+    use crate::dto::markup::{
+        inline_button_dto, keyboard_button_dto, markup_dto, reply_markup_dto,
+    };
     use crate::error::{json_string, parse_payload};
+    use crate::payload::{InlineButtonSpec, KeyboardButtonSpec, MarkupSpec};
 
     use super::{
         build_rows, callback_data, force_reply_markup, hide_keyboard_markup, inline_button,
         inline_rows, keyboard_button, keyboard_rows, label, reply_keyboard_markup,
-        ForceReplyPayload, HideKeyboardPayload, InlineButtonSpec, InlineMarkupPayload,
-        KeyboardButtonSpec, ReplyKeyboardPayload,
+        reply_markup_from_spec, ForceReplyPayload, HideKeyboardPayload, InlineMarkupPayload,
+        ReplyKeyboardPayload,
     };
 
     /// Builds a markup the way `buildInlineMarkup` does, returning the JSON the handler answers.
@@ -352,19 +343,27 @@ mod tests {
     fn build_keyboard(payload: serde_json::Value) -> Result<String, String> {
         let data: ReplyKeyboardPayload = parse_payload(&payload.to_string())?;
         let rows = keyboard_rows(&data.rows)?;
-        json_string(markup_dto(&reply_keyboard_markup(&data, rows)))
+        json_string(markup_dto(&reply_keyboard_markup(
+            data.fit_size,
+            data.single_use,
+            data.selective,
+            rows,
+        )))
     }
 
     /// Builds a force reply the way `buildForceReply` does.
     fn build_force_reply(payload: serde_json::Value) -> Result<String, String> {
         let data: ForceReplyPayload = parse_payload(&payload.to_string())?;
-        json_string(markup_dto(&force_reply_markup(&data)))
+        json_string(markup_dto(&force_reply_markup(
+            data.single_use,
+            data.selective,
+        )))
     }
 
     /// Builds a hide markup the way `buildHideKeyboard` does.
     fn build_hide(payload: serde_json::Value) -> Result<String, String> {
         let data: HideKeyboardPayload = parse_payload(&payload.to_string())?;
-        json_string(markup_dto(&hide_keyboard_markup(&data)))
+        json_string(markup_dto(&hide_keyboard_markup(data.selective)))
     }
 
     #[test]
@@ -592,5 +591,178 @@ mod tests {
     fn a_row_matrix_of_nothing_is_refused() {
         let empty: Vec<Vec<KeyboardButtonSpec>> = Vec::new();
         assert!(build_rows(&empty, keyboard_button).is_err());
+    }
+
+    #[test]
+    fn a_spec_decodes_each_kind_into_the_grammers_constructor_it_names() {
+        let inline: MarkupSpec = parse_payload(
+            r#"{"kind":"inline","rows":[[{"type":"callback","text":"Yes","data":"vote:yes"}]]}"#,
+        )
+        .expect("a spec");
+        match &reply_markup_from_spec(&inline).expect("a markup").raw {
+            tl::enums::ReplyMarkup::ReplyInlineMarkup(markup) => {
+                assert_eq!(markup.rows.len(), 1);
+                match &markup.rows[0] {
+                    tl::enums::KeyboardInlineButtonRow::Row(row) => {
+                        assert_eq!(row.buttons.len(), 1);
+                    }
+                }
+            }
+            other => panic!("expected an inline markup, got {other:?}"),
+        }
+
+        let keyboard: MarkupSpec = parse_payload(
+            r#"{"kind":"keyboard","rows":[[{"type":"text","text":"Go"}]],"fitSize":true,"singleUse":true,"selective":true}"#,
+        )
+        .expect("a spec");
+        match &reply_markup_from_spec(&keyboard).expect("a markup").raw {
+            tl::enums::ReplyMarkup::ReplyKeyboardMarkup(markup) => {
+                assert!(markup.resize && markup.single_use && markup.selective);
+            }
+            other => panic!("expected a keyboard markup, got {other:?}"),
+        }
+
+        let force: MarkupSpec =
+            parse_payload(r#"{"kind":"forceReply","singleUse":true,"selective":true}"#)
+                .expect("a spec");
+        match &reply_markup_from_spec(&force).expect("a markup").raw {
+            tl::enums::ReplyMarkup::ReplyKeyboardForceReply(markup) => {
+                assert!(markup.single_use && markup.selective);
+            }
+            other => panic!("expected a force reply, got {other:?}"),
+        }
+
+        let hide: MarkupSpec =
+            parse_payload(r#"{"kind":"hide","selective":true}"#).expect("a spec");
+        match &reply_markup_from_spec(&hide).expect("a markup").raw {
+            tl::enums::ReplyMarkup::ReplyKeyboardHide(markup) => {
+                assert!(markup.selective);
+            }
+            other => panic!("expected a hide markup, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_spec_defaults_the_options_a_build_payload_leaves_out() {
+        let hide: MarkupSpec = parse_payload(r#"{"kind":"hide"}"#).expect("a spec");
+        match &reply_markup_from_spec(&hide).expect("a markup").raw {
+            tl::enums::ReplyMarkup::ReplyKeyboardHide(markup) => {
+                assert!(!markup.selective);
+            }
+            other => panic!("expected a hide markup, got {other:?}"),
+        }
+
+        let keyboard: MarkupSpec =
+            parse_payload(r#"{"kind":"keyboard","rows":[[{"type":"text","text":"Go"}]]}"#)
+                .expect("a spec");
+        match &reply_markup_from_spec(&keyboard).expect("a markup").raw {
+            tl::enums::ReplyMarkup::ReplyKeyboardMarkup(markup) => {
+                assert!(!markup.resize && !markup.single_use && !markup.selective);
+            }
+            other => panic!("expected a keyboard markup, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn a_spec_refuses_the_buttons_grammers_excludes_from_a_kind() {
+        // `text` is a keyboard button, which an inline markup cannot hold, and the inline kinds
+        // are `button::Inline`, which a custom keyboard does not take.
+        for (_kind, spec) in [
+            (
+                "inline",
+                r#"{"kind":"inline","rows":[[{"type":"text","text":"Go"}]]}"#,
+            ),
+            (
+                "keyboard",
+                r#"{"kind":"keyboard","rows":[[{"type":"url","text":"Docs","url":"x"}]]}"#,
+            ),
+        ] {
+            let error = parse_payload::<MarkupSpec>(spec)
+                .expect_err("the button is not one grammers can put in this markup");
+            assert!(
+                error.starts_with("invalid request payload:"),
+                "unexpected error: {error}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_spec_builds_a_markup_whose_projection_converts_back_to_the_same_spec() {
+        // The full loop a send performs: the spec builds the markup, the markup projects the
+        // document `getReplyMarkup` returns, and that document converts back to a spec — the
+        // projection's button `kind` becomes the spec's button `type` — which rebuilds the same
+        // markup.
+        for spec in [
+            r#"{"kind":"inline","rows":[[{"type":"url","text":"Docs","url":"https://example.org"},{"type":"callback","text":"Yes","data":"vote:yes"}]]}"#,
+            r#"{"kind":"keyboard","rows":[[{"type":"text","text":"Go"}]],"fitSize":true}"#,
+            r#"{"kind":"forceReply","singleUse":true}"#,
+            r#"{"kind":"hide","selective":true}"#,
+        ] {
+            let spec: MarkupSpec = parse_payload(spec).expect("a spec");
+            let markup = reply_markup_from_spec(&spec).expect("a markup");
+            let projection = reply_markup_dto(&markup.raw);
+            let round_tripped =
+                parse_payload::<MarkupSpec>(&projection_to_spec_json(&projection).to_string())
+                    .expect("the projection converts back to a spec");
+            let rebuilt = reply_markup_from_spec(&round_tripped).expect("a markup");
+            assert_eq!(rebuilt.raw, markup.raw, "the spec did not round-trip");
+        }
+    }
+
+    /// Converts a markup projection back to the spec shape, the way Kotlin's `asSpec()` does: the
+    /// projection's button `kind` becomes the spec's button `type`, and only the fields the spec
+    /// carries survive.
+    fn projection_to_spec_json(
+        projection: &crate::dto::markup::ReplyMarkupDto,
+    ) -> serde_json::Value {
+        let rows: Vec<serde_json::Value> = projection
+            .rows
+            .iter()
+            .map(|row| {
+                row.iter()
+                    .map(|button| {
+                        let mut spec = json!({ "type": button.kind, "text": button.text });
+                        match button.kind {
+                            "url" | "webView" => {
+                                spec["url"] = json!(button.url);
+                            }
+                            "callback" => {
+                                spec["data"] = json!(button.data);
+                            }
+                            "switchInline" => {
+                                spec["query"] = json!(button.query);
+                                if let Some(same_peer) = button.same_peer {
+                                    spec["samePeer"] = json!(same_peer);
+                                }
+                            }
+                            "requestPoll" => {
+                                if let Some(quiz) = button.quiz {
+                                    spec["quiz"] = json!(quiz);
+                                }
+                            }
+                            _ => {}
+                        }
+                        spec
+                    })
+                    .collect()
+            })
+            .collect();
+        match projection.kind {
+            "inline" => json!({ "kind": "inline", "rows": rows }),
+            "keyboard" => json!({
+                "kind": "keyboard",
+                "rows": rows,
+                "fitSize": projection.fit_size,
+                "singleUse": projection.single_use,
+                "selective": projection.selective,
+            }),
+            "forceReply" => json!({
+                "kind": "forceReply",
+                "singleUse": projection.single_use,
+                "selective": projection.selective,
+            }),
+            "hide" => json!({ "kind": "hide", "selective": projection.selective }),
+            other => panic!("unknown markup kind {other}"),
+        }
     }
 }

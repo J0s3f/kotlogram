@@ -1,11 +1,14 @@
 package com.github.badoualy.telegram.api
 
 import kotlinx.serialization.json.Json
+import org.kotlogramme.protocol.EditMediaSpec
+import org.kotlogramme.protocol.EntitySpec
 import org.kotlogramme.protocol.Message as BridgeMessage
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import java.nio.file.Path
 
 /**
  * Tests that the message compatibility facade carries the whole projection and that the search
@@ -42,6 +45,68 @@ class MessagesCompatibilityTest {
     }
 
     @Test
+    fun `a message keeps the enriched fields the facade gained`() {
+        val message = json.decodeFromString<BridgeMessage>(MESSAGE).toCompatibility()
+
+        // Forward header.
+        val forward = message.forwardHeader
+        assertEquals(true, forward?.imported)
+        assertEquals(true, forward?.savedOut)
+        assertEquals(7L, forward?.fromId)
+        assertEquals("Some One", forward?.fromName)
+        assertEquals(1_700_000_000_000L, forward?.date)
+        assertEquals(42, forward?.channelPost)
+        assertEquals("Author", forward?.postAuthor)
+        assertEquals(-1_000_007L, forward?.savedFromPeer)
+        assertEquals(30, forward?.savedFromMsgId)
+        assertEquals(8L, forward?.savedFromId)
+        assertEquals("Original", forward?.savedFromName)
+        assertEquals(1_700_000_060_000L, forward?.savedDate)
+        assertEquals("psa_type", forward?.psaType)
+
+        // Reply header.
+        val reply = message.replyHeader
+        assertEquals("header", reply?.kind)
+        assertEquals(true, reply?.replyToScheduled)
+        assertEquals(true, reply?.forumTopic)
+        assertEquals(true, reply?.quote)
+        assertEquals(true, reply?.replyToEphemeral)
+        assertEquals(30, reply?.replyToMsgId)
+        assertEquals(-1_000_007L, reply?.replyToPeerId)
+        assertEquals("quoted", reply?.quoteText)
+        assertEquals(3, reply?.quoteOffset)
+        assertEquals(5, reply?.todoItemId)
+        assertEquals("AQID", reply?.pollOption)
+
+        // Restriction reasons.
+        assertEquals(1, message.restrictionReasons.size)
+        assertEquals(listOf("all", "ios"), message.restrictionReasons[0].platforms)
+        assertEquals("spam", message.restrictionReasons[0].reason)
+        assertEquals("Reported as spam", message.restrictionReasons[0].text)
+
+        // Action.
+        assertEquals(31, message.action?.messageId)
+        assertEquals(7L, message.action?.senderId)
+        assertEquals("pinMessage", message.action?.kind)
+
+        // Reply markup.
+        val markup = message.replyMarkup
+        assertEquals("inline", markup?.kind)
+        val inline = markup as? ReplyMarkup.Inline
+        assertEquals(1, inline?.rows?.size)
+        val button = inline?.rows?.get(0)?.get(0) as? Button.Url
+        assertEquals("url", button?.kind)
+        assertEquals("Open", button?.text)
+        assertEquals("https://example.org", button?.url)
+
+        // Peer and sender.
+        assertEquals(-1_000_007L, message.peer?.id)
+        assertEquals("channel", message.peer?.kind)
+        assertEquals(7L, message.sender?.id)
+        assertEquals("someone", message.sender?.username)
+    }
+
+    @Test
     fun `every search filter names the same wire name the native side reads`() {
         assertEquals(
             listOf(
@@ -53,6 +118,31 @@ class MessagesCompatibilityTest {
         )
     }
 
+    @Test
+    fun `an entity and a media source become the specs the bridge sends`() {
+        assertEquals(
+            EntitySpec(
+                offset = 0,
+                length = 2,
+                type = "textUrl",
+                url = "https://example.org",
+                userId = null,
+                language = null,
+                customEmojiId = null,
+            ),
+            MessageEntity(type = "textUrl", offset = 0, length = 2, url = "https://example.org").asSpec(),
+        )
+
+        assertEquals(
+            EditMediaSpec(path = Path.of("/tmp/a.pdf").toAbsolutePath().toString(), kind = "file"),
+            EditMedia.File(Path.of("/tmp/a.pdf"), MediaKind.FILE).asSpec(),
+        )
+        assertEquals(
+            EditMediaSpec(url = "https://example.org/a.jpg", kind = "photo"),
+            EditMedia.Url("https://example.org/a.jpg", MediaKind.PHOTO).asSpec(),
+        )
+    }
+
     private companion object {
         val MESSAGE = """
             {"id": 31, "text": "hello", "outgoing": true, "replyToMessageId": 30,
@@ -61,7 +151,52 @@ class MessagesCompatibilityTest {
              "fromChannelPost": false, "fromScheduled": true, "editHide": false, "viaBotId": 99,
              "postAuthor": "Author", "groupedId": 88, "viewCount": 5, "forwardCount": 4,
              "replyCount": 3, "reactionCount": 2,
-             "media": {"kind": "document", "id": 5150, "name": "report.pdf"}}
+             "media": {"kind": "document", "id": 5150, "name": "report.pdf"},
+             "forwardHeader": {
+                 "imported": true, "savedOut": true, "fromId": 7, "fromName": "Some One",
+                 "date": 1700000000000, "channelPost": 42, "postAuthor": "Author",
+                 "savedFromPeer": -1000007, "savedFromMsgId": 30, "savedFromId": 8,
+                 "savedFromName": "Original", "savedDate": 1700000060000,
+                 "psaType": "psa_type"},
+             "replyHeader": {
+                 "kind": "header", "replyToScheduled": true, "forumTopic": true,
+                 "quote": true, "replyToEphemeral": true, "replyToMsgId": 30,
+                 "replyToPeerId": -1000007, "replyFrom": {
+                     "imported": true, "savedOut": true, "fromId": 7, "fromName": "Some One",
+                     "date": 1700000000000, "channelPost": 42, "postAuthor": "Author",
+                     "savedFromPeer": -1000007, "savedFromMsgId": 30, "savedFromId": 8,
+                     "savedFromName": "Original", "savedDate": 1700000060000,
+                     "psaType": "psa_type"},
+                 "replyMedia": null, "replyToTopId": 29, "quoteText": "quoted",
+                 "quoteOffset": 3, "todoItemId": 5, "pollOption": "AQID",
+                 "storyPeer": null, "storyId": null},
+             "restrictionReasons": [
+                 {"platforms": ["all", "ios"], "reason": "spam", "text": "Reported as spam"}],
+             "action": {"messageId": 31, "senderId": 7, "kind": "pinMessage"},
+             "replyMarkup": {
+                 "kind": "inline",
+                 "rows": [[{"kind": "url", "text": "Open", "url": "https://example.org",
+                            "data": null, "requiresPassword": null, "fwdText": null,
+                            "buttonId": null, "query": null, "samePeer": null,
+                            "peerTypes": null, "quiz": null, "userId": null,
+                            "copyText": null, "maxQuantity": null,
+                            "requestWriteAccess": null}]],
+                 "fitSize": false, "singleUse": false, "selective": false,
+                 "persistent": false, "placeholder": null},
+             "peer": {"nativeHandle": 12, "id": -1000007, "kind": "channel",
+                      "username": "channel", "name": "A Channel",
+                      "usernames": ["channel_alt"], "isMegagroup": null,
+                      "hasPhoto": true, "permissions": null},
+             "sender": {"id": 7, "username": "someone", "firstName": "Some", "lastName": "One",
+                        "fullName": "Some One", "usernames": ["someone_alt"], "phone": null,
+                        "photoId": null, "status": "offline", "statusExpires": null,
+                        "lastSeen": null, "statusByMe": false, "langCode": null,
+                        "isSelf": false, "contact": false, "mutualContact": false,
+                        "deleted": false, "isBot": true, "botPrivacy": false,
+                        "botSupportsChats": false, "botInlineGeo": false,
+                        "botInlinePlaceholder": null, "verified": false,
+                        "restricted": false, "support": false, "scam": false,
+                        "restrictionReasons": []}}
         """.trimIndent()
     }
 }

@@ -67,13 +67,16 @@ data class Media(
  * [PeerTarget] shape. A field left at its default is omitted, so the native side fills in
  * grammers' own default: `document`, a plain caption, no spoiler, no TTL and no schedule.
  * [kind] is `photo`, `document` or `file`; [parseMode] is `html`, `markdown` or absent.
+ *
+ * Exactly one of [path] and [fileHandle] is set: a path uploads the local file now, a handle
+ * reuses an upload a `uploadBytes` or `uploadStreamFinish` already produced.
  */
 @Serializable
 internal data class SendMediaPayload(
     val peerHandle: Long? = null,
     val username: String? = null,
-    /** The local file to upload and attach. */
-    val path: String,
+    /** The local file to upload and attach, when the send names a path rather than a handle. */
+    val path: String? = null,
     val kind: String = "document",
     val caption: String = "",
     val parseMode: String? = null,
@@ -86,6 +89,9 @@ internal data class SendMediaPayload(
     /** Epoch milliseconds at which to schedule the message. */
     val scheduleDate: Long? = null,
     val scheduleOnceOnline: Boolean = false,
+    val markup: MarkupSpec? = null,
+    /** The handle of an upload that already ran, as an alternative to [path]. */
+    val fileHandle: Long? = null,
 )
 
 /**
@@ -110,6 +116,7 @@ internal data class SendMediaUrlPayload(
     val replyToMessageId: Int? = null,
     val scheduleDate: Long? = null,
     val scheduleOnceOnline: Boolean = false,
+    val markup: MarkupSpec? = null,
 )
 
 /**
@@ -127,4 +134,5 @@ internal data class CopyMediaPayload(
     val parseMode: String? = null,
     val silent: Boolean = false,
     val replyToMessageId: Int? = null,
+    val markup: MarkupSpec? = null,
 )

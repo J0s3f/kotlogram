@@ -20,7 +20,7 @@ use grammers_client::peer::{Peer, User as ClientUser};
 use grammers_client::tl;
 use grammers_client::tl::Serializable;
 use grammers_client::update::Update;
-use grammers_client::update::{CallbackQuery, InlineQuery, InlineSend};
+use grammers_client::update::{CallbackQuery, GuestChatQuery, InlineQuery, InlineSend};
 use grammers_session::updates::MessageBox;
 use grammers_session::updates::State;
 use serde::Serialize;
@@ -55,6 +55,7 @@ pub(crate) struct UpdateDto {
     pub(crate) callback_query: Option<CallbackQueryDto>,
     pub(crate) inline_query: Option<InlineQueryDto>,
     pub(crate) inline_send: Option<InlineSendDto>,
+    pub(crate) guest_chat_query: Option<GuestChatQueryDto>,
 
     /// The TL update itself, for the variants that carry no typed payload.
     pub(crate) raw_update: Option<RawUpdateDto>,
@@ -73,6 +74,7 @@ impl UpdateDto {
             callback_query: None,
             inline_query: None,
             inline_send: None,
+            guest_chat_query: None,
             raw_update: None,
         }
     }
@@ -149,6 +151,23 @@ pub(crate) struct InlineSendDto {
     pub(crate) message_id: Option<InlineMessageIdDto>,
 }
 
+/// A guest-chat query, mirroring grammers' `GuestChatQuery`.
+///
+/// grammers exposes the query id, the message that mentioned the bot and the reference messages
+/// the update carried; the raw update and the state are already covered by [UpdateDto]'s own
+/// fields.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GuestChatQueryDto {
+    /// The identifier an answer is sent to.
+    pub(crate) query_id: i64,
+    /// The message that mentioned the bot.
+    pub(crate) message: MessageDto,
+    /// The reference messages the update carried, which the layer only sends when the mention is
+    /// a reply or a forwarded message.
+    pub(crate) reference_messages: Vec<MessageDto>,
+}
+
 /// The identifier of an inline message, which has to be sent back to edit it.
 ///
 /// grammers keeps both the 32-bit and the 64-bit constructor in one enum and only exposes the
@@ -183,8 +202,8 @@ pub(crate) fn update_dto(native: &NativeClient, update: &Update) -> Result<Updat
     // Every variant carries a state, so it is filled in before the payload is.
     dto.state = Some(update_state_dto(update.state()));
     match update {
-        Update::NewMessage(message) => dto.message = Some(message_dto(message)),
-        Update::MessageEdited(message) => dto.message = Some(message_dto(message)),
+        Update::NewMessage(message) => dto.message = Some(message_dto(native, message)),
+        Update::MessageEdited(message) => dto.message = Some(message_dto(native, message)),
         Update::MessageDeleted(deletion) => {
             dto.deleted_message_ids = Some(deletion.messages().to_vec());
             dto.deleted_channel_id = deletion.channel_id();
@@ -194,6 +213,9 @@ pub(crate) fn update_dto(native: &NativeClient, update: &Update) -> Result<Updat
         }
         Update::InlineQuery(query) => dto.inline_query = Some(inline_query_dto(query)?),
         Update::InlineSend(send) => dto.inline_send = Some(inline_send_dto(send)?),
+        Update::GuestChatQuery(query) => {
+            dto.guest_chat_query = Some(guest_chat_query_dto(native, query)?)
+        }
         // A raw update has no typed payload, so the TL bytes are all it is. `Update` is
         // `#[non_exhaustive]`, so a variant grammers adds after this bridge was written lands
         // here too, reporting `unknown` and carrying the same bytes rather than turning into an
@@ -212,6 +234,7 @@ fn update_kind(update: &Update) -> &'static str {
         Update::CallbackQuery(_) => "callbackQuery",
         Update::InlineQuery(_) => "inlineQuery",
         Update::InlineSend(_) => "inlineSend",
+        Update::GuestChatQuery(_) => "guestChatQuery",
         Update::Raw(_) => "raw",
         _ => "unknown",
     }
@@ -305,6 +328,21 @@ fn inline_send_dto(send: &InlineSend) -> Result<InlineSendDto, String> {
         text: send.text().to_owned(),
         result_id: send.result_id().to_owned(),
         message_id: send.message_id().as_ref().map(inline_message_id_dto),
+    })
+}
+
+fn guest_chat_query_dto(
+    native: &NativeClient,
+    query: &GuestChatQuery,
+) -> Result<GuestChatQueryDto, String> {
+    Ok(GuestChatQueryDto {
+        query_id: query.query_id(),
+        message: message_dto(native, &query.message),
+        reference_messages: query
+            .reference_messages
+            .iter()
+            .map(|message| message_dto(native, message))
+            .collect(),
     })
 }
 
@@ -457,6 +495,7 @@ mod tests {
                     id: 88,
                 }),
             }),
+            guest_chat_query: None,
             raw_update: Some(RawUpdateDto {
                 name: "updateUserTyping",
                 data: "SQkAGg==".to_owned(),
@@ -501,6 +540,7 @@ mod tests {
         "callbackQuery",
         "deletedChannelId",
         "deletedMessageIds",
+        "guestChatQuery",
         "inlineQuery",
         "inlineSend",
         "kind",
@@ -555,6 +595,7 @@ mod tests {
                     "resultId": "result-1",
                     "messageId": {"dcId": 2, "accessHash": 77, "id": 88},
                 },
+                "guestChatQuery": null,
                 "rawUpdate": {"name": "updateUserTyping", "data": "SQkAGg=="},
             }),
         );
@@ -606,6 +647,13 @@ mod tests {
                 reply_count: None,
                 reaction_count: None,
                 media: None,
+                forward_header: None,
+                reply_header: None,
+                restriction_reasons: Vec::new(),
+                action: None,
+                reply_markup: None,
+                peer: None,
+                sender: None,
             }),
             state: Some(update_state_dto(&State {
                 date: 1_700_000_000,

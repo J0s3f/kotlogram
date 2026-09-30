@@ -1,6 +1,8 @@
 //! User projection.
 
-use grammers_client::peer::{Platform, User as ClientUser};
+use grammers_client::peer::{
+    Platform, RestrictionReason as ClientRestrictionReason, User as ClientUser,
+};
 use grammers_client::tl;
 use serde::Serialize;
 
@@ -91,12 +93,17 @@ pub(crate) fn user_dto(user: &ClientUser) -> UserDto {
         restriction_reasons: user
             .restriction_reason()
             .iter()
-            .map(|reason| RestrictionReasonDto {
-                platforms: reason.platforms.iter().map(platform_name).collect(),
-                reason: reason.reason.clone(),
-                text: reason.text.clone(),
-            })
+            .map(restriction_reason_dto)
             .collect(),
+    }
+}
+
+/// Projects one restriction reason, shared by the user and message projections.
+pub(crate) fn restriction_reason_dto(reason: &ClientRestrictionReason) -> RestrictionReasonDto {
+    RestrictionReasonDto {
+        platforms: reason.platforms.iter().map(platform_name).collect(),
+        reason: reason.reason.clone(),
+        text: reason.text.clone(),
     }
 }
 

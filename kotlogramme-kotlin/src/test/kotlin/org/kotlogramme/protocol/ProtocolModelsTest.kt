@@ -162,7 +162,10 @@ class ProtocolModelsTest {
         val PERMISSIONS_OWNER = """
             {"changeInfo": true, "postMessages": true, "editMessages": false,
              "deleteMessages": false, "banUsers": false, "inviteUsers": false,
-             "pinMessages": false, "addAdmins": false, "anonymous": false, "manageCall": false}
+             "pinMessages": false, "addAdmins": false, "anonymous": false, "manageCall": false,
+             "manageTopics": false, "postStories": false, "editStories": false,
+             "deleteStories": false, "manageDirectMessages": false, "manageRanks": false,
+             "manageLinkedPeers": false, "manageWelcomeMessages": false, "other": false}
         """.trimIndent()
 
         val USER = """
@@ -225,7 +228,9 @@ class ProtocolModelsTest {
              "mentioned": true, "mediaUnread": false, "silent": true, "pinned": true,
              "fromChannelPost": false, "fromScheduled": true, "editHide": false, "viaBotId": 99,
              "postAuthor": "Author", "groupedId": 88, "viewCount": 5, "forwardCount": 4,
-             "replyCount": 3, "reactionCount": 2, "media": ${MEDIA_DOCUMENT.trimIndent()}}
+             "replyCount": 3, "reactionCount": 2, "media": ${MEDIA_DOCUMENT.trimIndent()},
+             "forwardHeader": null, "replyHeader": null, "restrictionReasons": [],
+             "action": null, "replyMarkup": null, "peer": null, "sender": null}
         """.trimIndent()
 
         val MESSAGE_WITHOUT_MEDIA = """
@@ -234,7 +239,9 @@ class ProtocolModelsTest {
              "mediaUnread": false, "silent": false, "pinned": false, "fromChannelPost": false,
              "fromScheduled": false, "editHide": false, "viaBotId": null, "postAuthor": null,
              "groupedId": null, "viewCount": null, "forwardCount": null, "replyCount": null,
-             "reactionCount": null, "media": null}
+             "reactionCount": null, "media": null,
+             "forwardHeader": null, "replyHeader": null, "restrictionReasons": [],
+             "action": null, "replyMarkup": null, "peer": null, "sender": null}
         """.trimIndent()
 
         val DIALOG = """
@@ -265,6 +272,10 @@ class ProtocolModelsTest {
                               "sendStickers": false, "sendGifs": true, "sendGames": false,
                               "sendInline": true, "embedLinks": false, "sendPolls": true,
                               "changeInfo": false, "inviteUsers": true, "pinMessages": false,
+                              "manageTopics": false, "sendPhotos": false, "sendVideos": false,
+                              "sendRoundvideos": false, "sendAudios": false, "sendVoices": false,
+                              "sendDocs": false, "sendPlain": false, "editRank": false,
+                              "sendReactions": false, "manageLinkedPeers": false,
                               "untilDate": 1700000000000}}
         """.trimIndent()
 

@@ -29,6 +29,16 @@ interface UpdatesApi : BridgeApi {
     fun syncUpdateState() = bridge.syncUpdateState()
 
     /**
+     * Answers the guest-chat query [queryId] with the article [result].
+     *
+     * This is the send behind grammers' own `GuestChatQuery::answer`. The query id is read off a
+     * projected `GuestChatQueryUpdate`. The result is the identifier of the inline message the
+     * answer produced, which a caller can edit later.
+     */
+    fun answerGuestChatQuery(queryId: Long, result: InlineArticle): InlineMessageId =
+        bridge.answerGuestChatQuery(queryId, result.asArticleSpec()).toCompatibility()
+
+    /**
      * Waits for one update and hands it to [callback].
      *
      * A stream that stays quiet for [timeoutMillis] is not an error and reaches no callback, so a

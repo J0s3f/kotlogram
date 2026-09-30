@@ -3,6 +3,7 @@ package org.kotlogramme.bridge
 import org.kotlogramme.Operation
 import org.kotlogramme.Transport
 import org.kotlogramme.protocol.CopyMediaPayload
+import org.kotlogramme.protocol.MarkupSpec
 import org.kotlogramme.protocol.Message
 import org.kotlogramme.protocol.Peer
 import org.kotlogramme.protocol.PeerTarget
@@ -33,7 +34,7 @@ internal interface MediaBridge {
     @Operation("sendMedia")
     fun sendMedia(
         peer: Peer,
-        path: Path,
+        path: Path? = null,
         kind: String = "document",
         caption: String = "",
         parseMode: String? = null,
@@ -45,11 +46,13 @@ internal interface MediaBridge {
         replyToMessageId: Int? = null,
         scheduleDate: Long? = null,
         scheduleOnceOnline: Boolean = false,
+        replyMarkup: MarkupSpec? = null,
+        fileHandle: Long? = null,
     ): Message = transport.request(
         "sendMedia",
         SendMediaPayload(
             peerHandle = peer.nativeHandle,
-            path = path.toAbsolutePath().toString(),
+            path = path?.toAbsolutePath()?.toString(),
             kind = kind,
             caption = caption,
             parseMode = parseMode,
@@ -61,6 +64,8 @@ internal interface MediaBridge {
             replyToMessageId = replyToMessageId,
             scheduleDate = scheduleDate,
             scheduleOnceOnline = scheduleOnceOnline,
+            markup = replyMarkup,
+            fileHandle = fileHandle,
         ),
     )
 
@@ -80,6 +85,7 @@ internal interface MediaBridge {
         replyToMessageId: Int? = null,
         scheduleDate: Long? = null,
         scheduleOnceOnline: Boolean = false,
+        replyMarkup: MarkupSpec? = null,
     ): Message = transport.request(
         "sendMediaUrl",
         SendMediaUrlPayload(
@@ -96,6 +102,7 @@ internal interface MediaBridge {
             replyToMessageId = replyToMessageId,
             scheduleDate = scheduleDate,
             scheduleOnceOnline = scheduleOnceOnline,
+            markup = replyMarkup,
         ),
     )
 
@@ -112,6 +119,7 @@ internal interface MediaBridge {
         parseMode: String? = null,
         silent: Boolean = false,
         replyToMessageId: Int? = null,
+        replyMarkup: MarkupSpec? = null,
     ): Message = transport.request(
         "copyMedia",
         CopyMediaPayload(
@@ -122,6 +130,7 @@ internal interface MediaBridge {
             parseMode,
             silent,
             replyToMessageId,
+            replyMarkup,
         ),
     )
 }

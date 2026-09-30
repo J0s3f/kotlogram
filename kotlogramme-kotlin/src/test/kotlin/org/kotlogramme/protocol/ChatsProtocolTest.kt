@@ -78,6 +78,50 @@ class ChatsProtocolTest {
         assertEquals(1, page.total)
     }
 
+    @Test
+    fun `new admin rights default to false and decode from the wire`() {
+        val blank = json.decodeFromString<ChatPermissions>("{}")
+        assertTrue(
+            !blank.manageTopics && !blank.postStories && !blank.editStories && !blank.deleteStories &&
+                !blank.manageDirectMessages && !blank.manageRanks && !blank.manageLinkedPeers &&
+                !blank.manageWelcomeMessages && !blank.other,
+        )
+
+        val full = json.decodeFromString<ChatPermissions>(
+            """{"manageTopics": true, "postStories": true, "editStories": true,
+                "deleteStories": true, "manageDirectMessages": true, "manageRanks": true,
+                "manageLinkedPeers": true, "manageWelcomeMessages": true, "other": true}""",
+        )
+        assertTrue(
+            full.manageTopics && full.postStories && full.editStories && full.deleteStories &&
+                full.manageDirectMessages && full.manageRanks && full.manageLinkedPeers &&
+                full.manageWelcomeMessages && full.other,
+        )
+    }
+
+    @Test
+    fun `new ban rights default to false and decode from the wire`() {
+        val blank = json.decodeFromString<ChatRestrictions>("{}")
+        assertTrue(
+            !blank.manageTopics && !blank.sendPhotos && !blank.sendVideos &&
+                !blank.sendRoundvideos && !blank.sendAudios && !blank.sendVoices &&
+                !blank.sendDocs && !blank.sendPlain && !blank.editRank && !blank.sendReactions &&
+                !blank.manageLinkedPeers,
+        )
+
+        val full = json.decodeFromString<ChatRestrictions>(
+            """{"manageTopics": true, "sendPhotos": true, "sendVideos": true,
+                "sendRoundvideos": true, "sendAudios": true, "sendVoices": true, "sendDocs": true,
+                "sendPlain": true, "editRank": true, "sendReactions": true,
+                "manageLinkedPeers": true}""",
+        )
+        assertTrue(
+            full.manageTopics && full.sendPhotos && full.sendVideos && full.sendRoundvideos &&
+                full.sendAudios && full.sendVoices && full.sendDocs && full.sendPlain &&
+                full.editRank && full.sendReactions && full.manageLinkedPeers,
+        )
+    }
+
     private companion object {
         val PARTICIPANTS = """
             {"participants": [{"user": {"id": 7}, "role": "member", "date": 1700000000000,

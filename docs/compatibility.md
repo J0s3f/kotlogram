@@ -37,7 +37,7 @@ its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 | `channelsJoinChannel` / `channelsLeaveChannel` | `join_chat` / `delete_dialog` |
 | `channelsGetParticipants` / `channelsKickParticipant` | `iter_participants` / `kick_participant` |
 | `channelsGetParticipantPermissions` | `get_permissions` |
-| `channelsEditBanned` / `channelsEditAdmin` | `set_banned_rights` / `set_admin_rights` |
+| `channelsEditBanned` / `channelsEditAdmin` | `set_banned_rights` / `set_admin_rights` for the ten rights the builders expose; the remaining Layer-216 rights are written with raw `channels.EditBanned` / `channels.EditAdmin` (or `messages.EditChatAdmin` / `DeleteChatUser` in a basic group), merging the current rights via `channels.GetParticipant` |
 | `messagesImportChatInvite` / `messagesParseInviteLink` | `accept_invite_link` / `parse_invite_link` (rebuilt on the same requests, see below) |
 | `channelsResolvePeer` | `resolve_peer` by Bot API dialog id |
 | `mediaSend` / `mediaSendUrl` / `mediaCopy` | `upload_file`/URL + `InputMessage::{photo,document,file,photo_url,document_url,copy_media}` with `html`/`markdown` captions, `media_ttl`, `mime_type`, spoiler and scheduling |
@@ -47,14 +47,28 @@ its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 | `syncUpdateState` | `UpdateStream::sync_update_state` |
 | `inlineQuery` | `messages.GetInlineBotResults` (`Client::inline_query`, keeping the query id and next offset) |
 | `answerCallbackQuery` | `messages.SetBotCallbackAnswer` (the request behind `CallbackQuery::answer`) |
-| `answerInlineQuery` | `messages.SetInlineBotResults` (the request behind `InlineQuery::answer`) |
+| `answerInlineQuery` | `messages.SetInlineBotResults` (the request behind `InlineQuery::answer`), extended with raw media results (`photo`/`gif`/`video`/`voice`/`document`) |
 | `editInlineMessage` | `edit_inline_message` (the send behind `InlineSend::edit_message`) |
 | `markupBuildInline` / `markupBuildKeyboard` / `markupBuildForceReply` / `markupBuildHide` | `reply_markup::{inline,keyboard,force_reply,hide}` + `button::*` |
 | `markupGetReplyMarkup` | `Message::reply_markup` |
 | `actionsSendChatAction` / `actionsCancelChatAction` | `ActionSender` / `SendMessageAction` |
 | `actionsGetMessageAction` | `Message::action` (projected name/message/sender) |
+| `messagesSendMessage` / `messagesSendFile` / `mediaSend` / `mediaSendUrl` / `mediaCopy` with a `replyMarkup` | `send_message` / `send_file` / `send_media` plus the shared `MarkupSpec` (`reply_markup::*`) |
+| `messagesSendMessage` with a `parseMode` | `send_message` with `html` / `markdown` / explicit entities |
+| `messagesEditMessage` | `edit_message` with media replacement, parse modes, explicit entities, reply markup and TTL (the inline edit adds the same to `messages.EditInlineBotMessage`) |
+| `accountUpdateProfile` / `accountUpdateUsername` / `accountCheckUsername` | raw `account.UpdateProfile` / `UpdateUsername` / `CheckUsername` |
+| `accountGetAuthorizations` / `accountResetAuthorization` / `accountResetAuthorizations` | raw `account.GetAuthorizations` / `account.ResetAuthorization` / `auth.ResetAuthorizations` |
+| `accountGetPassword` | raw `account.GetPassword` (a settings summary; no key material is projected) |
+| `accountGetPrivacy` / `accountSetPrivacy` / `accountUpdateStatus` | raw `account.GetPrivacy` / `SetPrivacy` / `UpdateStatus` |
+| `contactsGetContacts` / `contactsImportContacts` / `contactsDeleteContacts` / `contactsSearch` | raw `contacts.GetContacts` / `ImportContacts` / `DeleteContacts` / `Search` |
+| `contactsBlock` / `contactsUnblock` / `contactsGetBlocked` | raw `contacts.Block` / `Unblock` / `GetBlocked` |
+| `messagesGetDialogFilters` / `messagesUpdateDialogFilter` / `messagesUpdateDialogFiltersOrder` | raw `messages.GetDialogFilters` / `UpdateDialogFilter` / `UpdateDialogFiltersOrder` |
+| `messagesGetStickerSet` / `messagesGetAllStickers` / `messagesGetRecentStickers` / `messagesGetFavedStickers` | raw `messages.GetStickerSet` / `GetAllStickers` / `GetRecentStickers` / `GetFavedStickers` |
+| `uploadBytes` / `uploadStreamBegin` / `uploadStreamChunk` / `uploadStreamFinish` | `Client::upload_stream` with a client-side upload registry; a later send or album item references the upload by `fileHandle` instead of a path |
+| `sendInlineBotResult` | raw `messages.SendInlineBotResult` |
+| `answerGuestChatQuery` | raw `messages.SetBotGuestChatResult` |
 
-Two of those rows deserve a note. `accept_invite_link` and `parse_invite_link` are behind a grammers
+Three of those rows deserve a note. `accept_invite_link` and `parse_invite_link` are behind a grammers
 optional feature this crate does not enable, so the bridge rebuilds the same surface: the
 `messages.ImportChatInvite` request for the invite and a URL parser that follows grammers' own
 host and path rules (verified against its source). Similarly, grammers' `Client::edit_inline_message`
@@ -74,17 +88,20 @@ missing capabilities through a versioned raw API that uses the grammers layer in
 ## Facade shape
 
 `TelegramClient` is composed of one interface per domain — `AuthApi`, `MessagesApi`, `ChatsApi`,
-`DialogsApi`, `UpdatesApi`, `MediaApi`, `FilesApi`, `InlineApi`, `ActionsApi`, `MarkupApi` and
-`RawApi` — each declaring its methods with default implementations that delegate to the grammers
-bridge. `RawApi` stays a placeholder: grammers 0.8.1 exposes no typed contacts or account API, so
-those families stay behind `RawTelegramApi`. A new capability is one `*Api.kt` file plus one
-supertype, so domains can be developed and reviewed independently.
+`ContactsApi`, `AccountApi`, `DialogsApi`, `UpdatesApi`, `MediaApi`, `FilesApi`, `InlineApi`,
+`ActionsApi`, `MarkupApi`, `FoldersApi`, `StickersApi` and `RawApi` — each declaring its methods
+with default implementations that delegate to the grammers bridge. The typed contacts, account,
+folder and sticker families are hand-written operations over grammers' TL layer, because grammers
+exposes no high-level client API for them; `RawApi` remains the empty escape hatch for everything
+those do not cover. A new capability is one `*Api.kt` file plus one supertype, so domains can be
+developed and reviewed independently.
 
 `native/operations.txt` is the shared contract listing every operation the native crate answers.
 The Rust unit tests and `OperationParityTest` on the JVM both assert against it, so the bridge
 cannot declare a capability the native side does not implement, or the reverse. It currently
-lists 66 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
-analysis and how each domain was closed.
+lists 96 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
+analysis behind the layout, and [`docs/gap-closure-roadmap.md`](gap-closure-roadmap.md) the work
+that closed the post-parity gaps.
 
 ## Raw API contract
 
@@ -100,8 +117,15 @@ upgrade must create a new `telegram-tl-<layer>` API version instead of mutating 
 
 ## Not mapped yet
 
-grammers 0.8.1 exposes no typed contacts or account API, so `account.*` (password settings,
-username changes, authorizations, notifications) stays behind `invokeRaw`. The legacy
-`UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` rather than by a
-background loop. Everything in `native/operations.txt` is reachable from Kotlin; anything beyond
-it is a grammers capability this layer has not added yet.
+Everything in `native/operations.txt` is reachable from Kotlin. What stays outside the facade:
+
+- TL methods this layer has not added: chatlist folder creation, sticker install/archive,
+  per-peer notification settings, the story and paid-media surfaces, and most `messages.*` utility
+  calls. `invokeRaw` reaches all of them with a Layer-216 codec.
+- Formatting-entity projection on received messages and rendered `markdownText`/`htmlText`; the
+  send and edit directions carry explicit entities, the read direction reports plain text.
+- The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` rather
+  than by a background loop.
+- A few grammers capabilities have no request/response shape the bridge can carry: the
+  `ActionSender` repeat loop, and `upload_stream` from a caller-supplied async reader (the bridge
+  buffers chunks instead).

@@ -1,30 +1,64 @@
 package com.github.badoualy.telegram.api
 
 import org.kotlogramme.TelegramException
+import org.kotlogramme.protocol.Authorization as BridgeAuthorization
+import org.kotlogramme.protocol.AuthorizationsResult as BridgeAuthorizationsResult
 import org.kotlogramme.protocol.Button as BridgeButton
 import org.kotlogramme.protocol.CallbackQueryUpdate as BridgeCallbackQueryUpdate
 import org.kotlogramme.protocol.ChatPermissions as BridgeChatPermissions
 import org.kotlogramme.protocol.ChatRestrictions as BridgeChatRestrictions
+import org.kotlogramme.protocol.BlockedContacts as BridgeBlockedContacts
+import org.kotlogramme.protocol.BlockedPeer as BridgeBlockedPeer
+import org.kotlogramme.protocol.ContactEntry as BridgeContactEntry
+import org.kotlogramme.protocol.ContactImport as BridgeContactImport
+import org.kotlogramme.protocol.ContactPeer as BridgeContactPeer
+import org.kotlogramme.protocol.ContactUser as BridgeContactUser
+import org.kotlogramme.protocol.ContactsPage as BridgeContactsPage
 import org.kotlogramme.protocol.Dialog as BridgeDialog
+import org.kotlogramme.protocol.DialogFilterSpec as BridgeDialogFilterSpec
+import org.kotlogramme.protocol.DialogFolder as BridgeDialogFolder
+import org.kotlogramme.protocol.DialogFoldersResult as BridgeDialogFoldersResult
+import org.kotlogramme.protocol.PeerTarget as BridgePeerTarget
+import org.kotlogramme.protocol.FoundContacts as BridgeFoundContacts
+import org.kotlogramme.protocol.ImportedContact as BridgeImportedContact
+import org.kotlogramme.protocol.ImportedContacts as BridgeImportedContacts
+import org.kotlogramme.protocol.PopularInvite as BridgePopularInvite
+import org.kotlogramme.protocol.AllStickers as BridgeAllStickers
+import org.kotlogramme.protocol.FavedStickers as BridgeFavedStickers
+import org.kotlogramme.protocol.RecentStickers as BridgeRecentStickers
+import org.kotlogramme.protocol.StickerPack as BridgeStickerPack
+import org.kotlogramme.protocol.StickerSet as BridgeStickerSet
+import org.kotlogramme.protocol.StickerSetResult as BridgeStickerSetResult
 import org.kotlogramme.protocol.DialogNotifySettings as BridgeDialogNotifySettings
 import org.kotlogramme.protocol.DownloadResult as BridgeDownloadResult
+import org.kotlogramme.protocol.ForwardHeader as BridgeForwardHeader
+import org.kotlogramme.protocol.GuestChatAnswerResult as BridgeGuestChatAnswerResult
+import org.kotlogramme.protocol.GuestChatQueryUpdate as BridgeGuestChatQueryUpdate
 import org.kotlogramme.protocol.InlineMessageId as BridgeInlineMessageId
 import org.kotlogramme.protocol.InlineQueryResults as BridgeInlineQueryResults
 import org.kotlogramme.protocol.InlineQueryUpdate as BridgeInlineQueryUpdate
 import org.kotlogramme.protocol.InlineResult as BridgeInlineResult
 import org.kotlogramme.protocol.InlineSendUpdate as BridgeInlineSendUpdate
+import org.kotlogramme.protocol.InlineSwitchPm as BridgeInlineSwitchPm
+import org.kotlogramme.protocol.InlineSwitchWebview as BridgeInlineSwitchWebview
 import org.kotlogramme.protocol.InlineWebDocument as BridgeInlineWebDocument
 import org.kotlogramme.protocol.Me as BridgeMe
 import org.kotlogramme.protocol.Media as BridgeMedia
 import org.kotlogramme.protocol.MediaChunk as BridgeMediaChunk
 import org.kotlogramme.protocol.Message as BridgeMessage
+import org.kotlogramme.protocol.MessageAction
 import org.kotlogramme.protocol.Participant as BridgeParticipant
 import org.kotlogramme.protocol.ParticipantPermissions as BridgeParticipantPermissions
 import org.kotlogramme.protocol.ParticipantsResult as BridgeParticipantsResult
+import org.kotlogramme.protocol.PasswordSettings as BridgePasswordSettings
 import org.kotlogramme.protocol.Peer as BridgePeer
+import org.kotlogramme.protocol.PrivacyRuleResult as BridgePrivacyRuleResult
+import org.kotlogramme.protocol.PrivacyRulesResult as BridgePrivacyRulesResult
+import org.kotlogramme.protocol.PrivacyRuleSpec as BridgePrivacyRuleSpec
 import org.kotlogramme.protocol.ProfilePhoto as BridgeProfilePhoto
 import org.kotlogramme.protocol.RawUpdate as BridgeRawUpdate
 import org.kotlogramme.protocol.RawUpdateEntry as BridgeRawUpdateEntry
+import org.kotlogramme.protocol.ReplyHeader as BridgeReplyHeader
 import org.kotlogramme.protocol.ReplyMarkup as BridgeReplyMarkup
 import org.kotlogramme.protocol.RestrictionReason as BridgeRestrictionReason
 import org.kotlogramme.protocol.Update as BridgeUpdate
@@ -207,12 +241,66 @@ data class Media(
 )
 
 /**
+ * The header of a forwarded message, mirroring grammers' `MessageFwdHeader`.
+ *
+ * The peer references are Bot API dialog ids rather than full objects. [date] and [savedDate]
+ * are epoch milliseconds.
+ */
+data class ForwardHeader(
+    val imported: Boolean = false,
+    val savedOut: Boolean = false,
+    val fromId: Long? = null,
+    val fromName: String? = null,
+    val date: Long = 0,
+    val channelPost: Int? = null,
+    val postAuthor: String? = null,
+    val savedFromPeer: Long? = null,
+    val savedFromMsgId: Int? = null,
+    val savedFromId: Long? = null,
+    val savedFromName: String? = null,
+    val savedDate: Long? = null,
+    val psaType: String? = null,
+)
+
+/**
+ * The header of a reply, mirroring grammers' `MessageReplyHeader`.
+ *
+ * The layer has two reply-header constructors: a normal reply and a reply to a story. They share
+ * no fields, so this is the same flat shape [Media] uses: [kind] names the constructor and says
+ * which of the other fields are populated, the rest being the defaults.
+ */
+data class ReplyHeader(
+    /** `header` for a normal reply, `storyHeader` for a reply to a story. */
+    val kind: String,
+    // Normal reply fields.
+    val replyToScheduled: Boolean = false,
+    val forumTopic: Boolean = false,
+    val quote: Boolean = false,
+    val replyToEphemeral: Boolean = false,
+    val replyToMsgId: Int? = null,
+    val replyToPeerId: Long? = null,
+    val replyFrom: ForwardHeader? = null,
+    val replyMedia: Media? = null,
+    val replyToTopId: Int? = null,
+    val quoteText: String? = null,
+    val quoteOffset: Int? = null,
+    val todoItemId: Int? = null,
+    val pollOption: String? = null,
+    // Story reply fields.
+    val storyPeer: Long? = null,
+    val storyId: Int? = null,
+)
+
+/**
  * A Telegram message, as far as grammers projects one.
  *
- * The raw-layer-only accessors — the format entities, the reply markup, the service action, the
- * forward header and the restriction reason — are left for a later phase. grammers has no caption
- * accessor, so the text of a captioned attachment is [text]. [date] and [editDate] are epoch
- * milliseconds, and [peerId] and [senderId] are `null` for a message grammers could not place.
+ * The raw-layer-only accessors — the format entities and the rendered markdown/html text — are
+ * left for a later phase. grammers has no caption accessor, so the text of a captioned attachment
+ * is [text]. [date] and [editDate] are epoch milliseconds, and [peerId] and [senderId] are `null`
+ * for a message grammers could not place.
+ *
+ * [peer] and [sender] are the full objects for [peerId] and [senderId]. [sender] is `null` when
+ * the sender is not a user (a group or channel posting anonymously).
  */
 data class Message(
     val id: Int,
@@ -240,6 +328,20 @@ data class Message(
     val replyCount: Int? = null,
     val reactionCount: Int? = null,
     val media: Media? = null,
+    /** The forward header, if this message was forwarded from another. */
+    val forwardHeader: ForwardHeader? = null,
+    /** The reply header, if this message is a reply to another. */
+    val replyHeader: ReplyHeader? = null,
+    /** The reasons this message is restricted, empty when it is not. */
+    val restrictionReasons: List<RestrictionReason> = emptyList(),
+    /** The service action, if this is a service message. */
+    val action: MessageAction? = null,
+    /** The reply markup, if this message carries one (bot messages). */
+    val replyMarkup: ReplyMarkup? = null,
+    /** The full peer object for [peerId], registered so the facade can send to it. */
+    val peer: TelegramPeer? = null,
+    /** The full sender object for [senderId], when the sender is a user. */
+    val sender: User? = null,
 )
 
 /** A current-layer Telegram update delivered by grammers' ordered update stream. */
@@ -248,11 +350,60 @@ data class TelegramUpdate(
     val message: Message? = null,
 )
 
+/**
+ * One item of an album being sent.
+ *
+ * Exactly one of [path] and [fileHandle] is set: a path uploads the local file now, a handle
+ * reuses an upload a `FilesApi.uploadBytes` or `FilesApi.uploadStream` already produced.
+ */
 data class OutgoingMedia(
-    val path: Path,
+    val path: Path? = null,
     val caption: String = "",
     val asPhoto: Boolean = false,
+    val fileHandle: Long? = null,
 )
+
+/**
+ * One formatting entity an outgoing message carries.
+ *
+ * [type] is the layer's entity constructor without its `messageEntity` prefix, for example `bold`,
+ * `pre` or `textUrl`. The variant-specific fields default to null and are only meaningful on the
+ * types that accept them; a type whose required field is missing makes the native side refuse the
+ * request rather than guess.
+ */
+data class MessageEntity(
+    val type: String,
+    val offset: Int,
+    val length: Int,
+    val url: String? = null,
+    val userId: Long? = null,
+    val language: String? = null,
+    val customEmojiId: Long? = null,
+)
+
+/**
+ * The media an edit replaces a message's media with.
+ *
+ * Exactly one source is named: [File] uploads a local file, [Url] hands a URL to Telegram to
+ * download and [CopyOf] reuses the media of an existing message without a re-upload.
+ */
+sealed interface EditMedia {
+    /** A local file, uploaded and sent with the given [kind]. */
+    data class File(val path: Path, val kind: MediaKind = MediaKind.DOCUMENT) : EditMedia
+
+    /** A URL Telegram downloads; only a photo or a document, never a verbatim file. */
+    data class Url(val url: String, val kind: MediaKind = MediaKind.DOCUMENT) : EditMedia
+
+    /** The media of [messageId] in [peer], reused without a re-upload. */
+    data class CopyOf(val peer: TelegramPeer, val messageId: Int) : EditMedia
+}
+
+/**
+ * The URL media an inline edit attaches.
+ *
+ * An inline message has no local file to upload, so [EditMedia.File] has no inline counterpart.
+ */
+data class InlineEditMedia(val url: String, val kind: MediaKind = MediaKind.DOCUMENT)
 
 /**
  * A dialog with its most recent message.
@@ -618,6 +769,20 @@ internal fun BridgeMessage.toCompatibility() = Message(
     id, text, outgoing, replyToMessageId, peerId, senderId, date, editDate, mentioned, mediaUnread,
     silent, pinned, fromChannelPost, fromScheduled, editHide, viaBotId, postAuthor, groupedId,
     viewCount, forwardCount, replyCount, reactionCount, media?.toCompatibility(),
+    forwardHeader?.toCompatibility(), replyHeader?.toCompatibility(),
+    restrictionReasons.map { it.toCompatibility() }, action,
+    replyMarkup?.toCompatibility(), peer?.toCompatibility(), sender?.toCompatibility(),
+)
+
+internal fun BridgeForwardHeader.toCompatibility() = ForwardHeader(
+    imported, savedOut, fromId, fromName, date, channelPost, postAuthor, savedFromPeer,
+    savedFromMsgId, savedFromId, savedFromName, savedDate, psaType,
+)
+
+internal fun BridgeReplyHeader.toCompatibility() = ReplyHeader(
+    kind, replyToScheduled, forumTopic, quote, replyToEphemeral, replyToMsgId, replyToPeerId,
+    replyFrom?.toCompatibility(), replyMedia?.toCompatibility(), replyToTopId, quoteText,
+    quoteOffset, todoItemId, pollOption, storyPeer, storyId,
 )
 
 internal fun BridgeUpdate.toCompatibility() = TelegramUpdate(kind, message?.toCompatibility())
@@ -657,6 +822,7 @@ data class TypedUpdate(
     val callbackQuery: CallbackQueryUpdate? = null,
     val inlineQuery: InlineQueryUpdate? = null,
     val inlineSend: InlineSendUpdate? = null,
+    val guestChatQuery: GuestChatQueryUpdate? = null,
     val rawUpdate: RawUpdate? = null,
 )
 
@@ -727,16 +893,31 @@ data class InlineSendUpdate(
 )
 
 /**
+ * A guest-chat query, mirroring grammers' `GuestChatQuery`.
+ *
+ * [queryId] is what an answer is sent to, [message] is the message that mentioned the bot, and
+ * [referenceMessages] are the messages the update carried.
+ */
+data class GuestChatQueryUpdate(
+    val queryId: Long,
+    val message: Message,
+    val referenceMessages: List<Message> = emptyList(),
+)
+
+/**
  * One page of results an inline bot answered a query with.
  *
  * [queryId] identifies the query, which an inline answer or a chosen result is sent with, and
  * [nextOffset] is the offset that asks for the page after this one; it is null on the last page.
- * [gallery] asks the client to show the results as a grid rather than a list.
+ * [gallery] asks the client to show the results as a grid rather than a list. [switchPm] and
+ * [switchWebview] are the prompts the bot answered with, when it sent any.
  */
 data class InlineQueryResults(
     val queryId: Long,
     val nextOffset: String? = null,
     val gallery: Boolean = false,
+    val switchPm: InlineSwitchPm? = null,
+    val switchWebview: InlineSwitchWebview? = null,
     val results: List<InlineResult> = emptyList(),
 )
 
@@ -746,7 +927,8 @@ data class InlineQueryResults(
  * The layer's two result constructors share an id, a type name and an optional title and
  * description, and differ in how they point at their content: [kind] names which one this is,
  * `result` carries [url], [thumb] and [content] and `mediaResult` carries [photoId] or
- * [documentId]. A field the other variant cannot answer is null.
+ * [documentId]. A field the other variant cannot answer is null. [sendMessageText] is the text the
+ * result's message would post when it is a text message, and null for a media-carrying one.
  */
 data class InlineResult(
     /** `result` for a plain result, `mediaResult` for one that carries a photo or a document. */
@@ -761,6 +943,7 @@ data class InlineResult(
     val content: InlineWebDocument? = null,
     val photoId: Long? = null,
     val documentId: Long? = null,
+    val sendMessageText: String? = null,
 )
 
 /**
@@ -792,10 +975,34 @@ data class InlineArticle(
     val thumbUrl: String? = null,
     val linkPreview: Boolean = true,
     val invertMedia: Boolean = false,
-)
+) : InlineAnswerResult
+
+/**
+ * A media result an inline answer carries: the content URL Telegram renders as [kind], an optional
+ * JPEG [thumbUrl] and the [caption] its message posts.
+ *
+ * grammers' builder only covers articles, so this is built on the native side from the raw layer
+ * constructors. [kind] is `photo`, `gif`, `video`, `voice` or `document`.
+ */
+data class InlineMediaResult(
+    val kind: String,
+    val contentUrl: String,
+    val id: String? = null,
+    val title: String? = null,
+    val description: String? = null,
+    val url: String? = null,
+    val thumbUrl: String? = null,
+    val caption: String? = null,
+) : InlineAnswerResult
+
+/** One result an inline answer carries: an [InlineArticle] or an [InlineMediaResult]. */
+sealed interface InlineAnswerResult
 
 /** The prompt that offers to switch an inline query to the bot's private chat. */
 data class InlineSwitchPm(val text: String, val startParam: String)
+
+/** The prompt that offers to open an inline query's result in a webview. */
+data class InlineSwitchWebview(val text: String, val url: String)
 
 /**
  * The update exactly as Telegram sent it, which is all grammers exposes for an event it does not
@@ -825,7 +1032,7 @@ data class RawUpdateEntry(
 internal fun BridgeUpdate.toTypedCompatibility() = TypedUpdate(
     kind, message?.toCompatibility(), state?.toCompatibility(), deletedMessageIds, deletedChannelId,
     callbackQuery?.toCompatibility(), inlineQuery?.toCompatibility(), inlineSend?.toCompatibility(),
-    rawUpdate?.toCompatibility(),
+    guestChatQuery?.toCompatibility(), rawUpdate?.toCompatibility(),
 )
 
 internal fun BridgeUpdateState.toCompatibility() =
@@ -840,6 +1047,19 @@ internal fun BridgeCallbackQueryUpdate.toCompatibility() = CallbackQueryUpdate(
 
 internal fun BridgeInlineMessageId.toCompatibility() = InlineMessageId(dcId, accessHash, id)
 
+internal fun BridgeGuestChatQueryUpdate.toCompatibility() = GuestChatQueryUpdate(
+    queryId, message.toCompatibility(), referenceMessages.map { it.toCompatibility() },
+)
+
+/**
+ * The identifier of the inline message a guest-chat answer produced.
+ *
+ * The native projection also carries the owner id of the layer's 64-bit constructor; the compat
+ * [InlineMessageId] does not surface it yet, so an answer addressed that way is not editable
+ * through the facade until it does.
+ */
+internal fun BridgeGuestChatAnswerResult.toCompatibility() = InlineMessageId(dcId, accessHash, id)
+
 internal fun BridgeInlineQueryUpdate.toCompatibility() =
     InlineQueryUpdate(sender.toCompatibility(), text, offset, queryId, peerType)
 
@@ -847,11 +1067,22 @@ internal fun BridgeInlineSendUpdate.toCompatibility() =
     InlineSendUpdate(sender.toCompatibility(), text, resultId, messageId?.toCompatibility())
 
 internal fun BridgeInlineQueryResults.toCompatibility() =
-    InlineQueryResults(queryId, nextOffset, gallery, results.map { it.toCompatibility() })
+    InlineQueryResults(
+        queryId,
+        nextOffset,
+        gallery,
+        switchPm?.toCompatibility(),
+        switchWebview?.toCompatibility(),
+        results.map { it.toCompatibility() },
+    )
+
+internal fun BridgeInlineSwitchPm.toCompatibility() = InlineSwitchPm(text, startParam)
+
+internal fun BridgeInlineSwitchWebview.toCompatibility() = InlineSwitchWebview(text, url)
 
 internal fun BridgeInlineResult.toCompatibility() = InlineResult(
     kind, id, type, title, description, url, thumb?.toCompatibility(), content?.toCompatibility(),
-    photoId, documentId,
+    photoId, documentId, sendMessageText,
 )
 
 internal fun BridgeInlineWebDocument.toCompatibility() = InlineWebDocument(url, size, mimeType)
@@ -915,6 +1146,105 @@ data class AccountIdentity(
 
 internal fun BridgeMe.toCompatibility() = AccountIdentity(user.toCompatibility(), dataCentreId)
 
+/**
+ * One active Telegram session on the account.
+ *
+ * [hash] identifies the session for `accountResetAuthorization`, [current] marks the session this
+ * call was made from, and [dateCreated]/[dateActive] are epoch milliseconds.
+ */
+data class AccountAuthorization(
+    val hash: Long,
+    val deviceModel: String,
+    val platform: String,
+    val systemVersion: String,
+    val apiId: Int,
+    val appName: String,
+    val appVersion: String,
+    val dateCreated: Long,
+    val dateActive: Long,
+    val ip: String,
+    val country: String,
+    val region: String,
+    val current: Boolean = false,
+    val officialApp: Boolean = false,
+    val passwordPending: Boolean = false,
+    val encryptedRequestsDisabled: Boolean = false,
+    val callRequestsDisabled: Boolean = false,
+    val unconfirmed: Boolean = false,
+)
+
+/** The account's active sessions and Telegram's inactivity window for them. */
+data class Authorizations(
+    val authorizationTtlDays: Int,
+    val authorizations: List<AccountAuthorization>,
+)
+
+/**
+ * Whether the account has a two-factor password and what Telegram shows about it.
+ *
+ * The layer's key material is deliberately absent, because a caller that can read it can compute
+ * the password hash.
+ */
+data class PasswordSettings(
+    val hasPassword: Boolean = false,
+    val hasRecovery: Boolean = false,
+    val hasSecureValues: Boolean = false,
+    val hint: String? = null,
+    val emailUnconfirmedPattern: String? = null,
+    val loginEmailPattern: String? = null,
+    /** Epoch milliseconds at which a pending password reset becomes effective. */
+    val pendingResetDate: Long? = null,
+)
+
+/** A privacy rule a caller asks to set, named by the layer constructor less its prefix. */
+data class PrivacyRule(
+    val kind: String,
+    val chats: List<Long> = emptyList(),
+)
+
+/** One privacy rule that is in place, with the bare ids it references. */
+data class PrivacyRuleValue(
+    val kind: String,
+    val users: List<Long> = emptyList(),
+    val chats: List<Long> = emptyList(),
+)
+
+/** The rules a privacy setting holds, together with the entities they reference. */
+data class PrivacyRules(
+    val key: String,
+    val rules: List<PrivacyRuleValue> = emptyList(),
+    val chats: List<Long> = emptyList(),
+    val users: List<Long> = emptyList(),
+)
+
+/** The privacy keys this bridge curates; the layer knows more and they stay behind `invokeRaw`. */
+enum class AccountPrivacyKey(val wire: String) {
+    StatusTimestamp("statusTimestamp"),
+    ChatInvite("chatInvite"),
+    PhoneNumber("phoneNumber"),
+}
+
+internal fun BridgeAuthorization.toCompatibility() = AccountAuthorization(
+    hash, deviceModel, platform, systemVersion, apiId, appName, appVersion, dateCreated,
+    dateActive, ip, country, region, current, officialApp, passwordPending,
+    encryptedRequestsDisabled, callRequestsDisabled, unconfirmed,
+)
+
+internal fun BridgeAuthorizationsResult.toCompatibility() =
+    Authorizations(authorizationTtlDays, authorizations.map { it.toCompatibility() })
+
+internal fun BridgePasswordSettings.toCompatibility() = PasswordSettings(
+    hasPassword, hasRecovery, hasSecureValues, hint, emailUnconfirmedPattern, loginEmailPattern,
+    pendingResetDate,
+)
+
+internal fun PrivacyRule.toBridge() = BridgePrivacyRuleSpec(kind, chats)
+
+internal fun BridgePrivacyRuleResult.toCompatibility() = PrivacyRuleValue(kind, users, chats)
+
+internal fun BridgePrivacyRulesResult.toCompatibility() =
+    PrivacyRules(key, rules.map { it.toCompatibility() }, chats, users)
+
 /** Where a download wrote the file and how many bytes it holds. */
 data class DownloadedMedia(
     val path: String,
@@ -949,6 +1279,12 @@ data class UploadedFile(
     val parts: Int,
     val md5Checksum: String? = null,
     val isBig: Boolean = false,
+    /**
+     * The per-client registry handle a later send references this upload by, as an alternative to
+     * a local path. It is distinct from [id], the TL file id, and is only valid for the client
+     * that produced it.
+     */
+    val handle: Long? = null,
 )
 
 /**
@@ -972,7 +1308,7 @@ internal fun BridgeDownloadResult.toCompatibility() = DownloadedMedia(path, size
 internal fun BridgeMediaChunk.toCompatibility() = MediaChunk(offset, size, Base64.getDecoder().decode(data))
 
 internal fun BridgeUploadedFile.toCompatibility() =
-    UploadedFile(id, name, size, parts, md5Checksum, isBig)
+    UploadedFile(id, name, size, parts, md5Checksum, isBig, handle)
 
 internal fun BridgeProfilePhoto.toCompatibility() =
     ProfilePhoto(id, dcId, size, width, height, spoiler, ttlSeconds)
@@ -1061,6 +1397,276 @@ internal fun BridgeParticipantPermissions.toCompatibility() = ParticipantPermiss
     isCreator, isAdmin, isBanned, hasLeft, hasDefaultPermissions, canAddAdmins,
 )
 
+/** A user together with the registered peer it projects to. */
+data class ContactUser(val user: User, val peer: TelegramPeer)
+
+/** One saved contact, enriched with the user it names. */
+data class ContactEntry(
+    val userId: Long,
+    val mutual: Boolean,
+    /** The account the id names, when the answer carried its user object. */
+    val user: User?,
+    val peer: TelegramPeer?,
+)
+
+/**
+ * A page of saved contacts.
+ *
+ * [notModified] is the layer's `contactsNotModified`, which carries no list at all.
+ */
+data class ContactsPage(
+    val contacts: List<ContactEntry>,
+    val savedCount: Int,
+    val notModified: Boolean,
+    /** The user objects the entries referenced, each with its registered peer. */
+    val users: List<ContactUser>,
+)
+
+/** One phone contact to import. */
+data class ContactImport(
+    val clientId: Long,
+    val phone: String,
+    val firstName: String,
+    val lastName: String = "",
+)
+
+/** One entry of [ImportedContacts.imported]. */
+data class ImportedContact(
+    val userId: Long,
+    val clientId: Long,
+    val user: User?,
+    val peer: TelegramPeer?,
+)
+
+/** One entry of [ImportedContacts.popularInvites]. */
+data class PopularInvite(val clientId: Long, val importers: Int)
+
+/** The imported, retried and popular contacts of one import. */
+data class ImportedContacts(
+    val imported: List<ImportedContact>,
+    /** The client ids Telegram could not import; the caller may retry them. */
+    val retryContacts: List<Long>,
+    val popularInvites: List<PopularInvite>,
+    val users: List<ContactUser>,
+)
+
+/** A peer an answer referenced, resolved against the users the answer carried. */
+data class ContactPeer(
+    /** The account description when the peer is a user; null for a chat or channel. */
+    val user: User?,
+    val peer: TelegramPeer,
+)
+
+/** One blocked peer with the layer's block date, in epoch milliseconds. */
+data class BlockedPeer(val date: Long, val user: User?, val peer: TelegramPeer)
+
+/** The account's blocked peers; [count] is only present on the sliced answer. */
+data class BlockedContacts(
+    val count: Int?,
+    val blocked: List<BlockedPeer>,
+    val users: List<ContactUser>,
+)
+
+/** The matches of a contacts search: the viewer's contacts and the global results. */
+data class FoundContacts(
+    val myResults: List<ContactPeer>,
+    val results: List<ContactPeer>,
+    val users: List<ContactUser>,
+)
+
+internal fun BridgeContactUser.toCompatibility() =
+    ContactUser(user.toCompatibility(), peer.toCompatibility())
+
+internal fun BridgeContactEntry.toCompatibility() =
+    ContactEntry(userId, mutual, user?.toCompatibility(), peer?.toCompatibility())
+
+internal fun BridgeContactsPage.toCompatibility() = ContactsPage(
+    contacts.map { it.toCompatibility() },
+    savedCount,
+    notModified,
+    users.map { it.toCompatibility() },
+)
+
+internal fun BridgeImportedContact.toCompatibility() =
+    ImportedContact(userId, clientId, user?.toCompatibility(), peer?.toCompatibility())
+
+internal fun BridgePopularInvite.toCompatibility() = PopularInvite(clientId, importers)
+
+internal fun BridgeImportedContacts.toCompatibility() = ImportedContacts(
+    imported.map { it.toCompatibility() },
+    retryContacts,
+    popularInvites.map { it.toCompatibility() },
+    users.map { it.toCompatibility() },
+)
+
+internal fun BridgeContactPeer.toCompatibility() =
+    ContactPeer(user?.toCompatibility(), peer.toCompatibility())
+
+internal fun BridgeBlockedPeer.toCompatibility() =
+    BlockedPeer(date, user?.toCompatibility(), peer.toCompatibility())
+
+internal fun BridgeBlockedContacts.toCompatibility() = BlockedContacts(
+    count,
+    blocked.map { it.toCompatibility() },
+    users.map { it.toCompatibility() },
+)
+
+internal fun BridgeFoundContacts.toCompatibility() = FoundContacts(
+    myResults.map { it.toCompatibility() },
+    results.map { it.toCompatibility() },
+    users.map { it.toCompatibility() },
+)
+
+/** The request shape crosses to the bridge unchanged. */
+internal fun ContactImport.toBridge() = BridgeContactImport(clientId, phone, firstName, lastName)
+
+/** One sticker pack: an emoticon and the sticker ids it groups. */
+data class StickerPack(val emoticon: String, val documents: List<Long>)
+
+/**
+ * A sticker set summary.
+ *
+ * [installedDate] is epoch milliseconds, and the thumbnail travels as the identifiers the layer
+ * reports rather than as bytes.
+ */
+data class StickerSet(
+    val id: Long,
+    val accessHash: Long,
+    val title: String,
+    val shortName: String,
+    val count: Int,
+    val hash: Int,
+    val archived: Boolean = false,
+    val official: Boolean = false,
+    val masks: Boolean = false,
+    val emojis: Boolean = false,
+    val textColor: Boolean = false,
+    val channelEmojiStatus: Boolean = false,
+    val creator: Boolean = false,
+    val installedDate: Long? = null,
+    val thumbDocumentId: Long? = null,
+    val thumbDcId: Int? = null,
+    val thumbVersion: Int? = null,
+    /** The packs the answer carried; empty for the list operations. */
+    val packs: List<StickerPack> = emptyList(),
+    /** The ids of the documents (stickers) the answer carried. */
+    val documents: List<Long> = emptyList(),
+)
+
+/** The set `messagesGetStickerSet` answered with, or the not-modified marker. */
+data class StickerSetResult(val notModified: Boolean, val set: StickerSet?)
+
+/** The account's sticker sets. */
+data class AllStickers(val notModified: Boolean, val hash: Long, val sets: List<StickerSet>)
+
+/** The stickers the account recently used; [dates] matches [stickers] by index. */
+data class RecentStickers(
+    val notModified: Boolean,
+    val hash: Long,
+    val packs: List<StickerPack>,
+    val stickers: List<Long>,
+    val dates: List<Long>,
+)
+
+/** The stickers the account has favourited. */
+data class FavedStickers(
+    val notModified: Boolean,
+    val hash: Long,
+    val packs: List<StickerPack>,
+    val stickers: List<Long>,
+)
+
+internal fun BridgeStickerPack.toCompatibility() = StickerPack(emoticon, documents)
+
+internal fun BridgeStickerSet.toCompatibility() = StickerSet(
+    id, accessHash, title, shortName, count, hash, archived, official, masks, emojis, textColor,
+    channelEmojiStatus, creator, installedDate, thumbDocumentId, thumbDcId, thumbVersion,
+    packs.map { it.toCompatibility() }, documents,
+)
+
+internal fun BridgeStickerSetResult.toCompatibility() =
+    StickerSetResult(notModified, set?.toCompatibility())
+
+internal fun BridgeAllStickers.toCompatibility() =
+    AllStickers(notModified, hash, sets.map { it.toCompatibility() })
+
+internal fun BridgeRecentStickers.toCompatibility() =
+    RecentStickers(notModified, hash, packs.map { it.toCompatibility() }, stickers, dates)
+
+internal fun BridgeFavedStickers.toCompatibility() =
+    FavedStickers(notModified, hash, packs.map { it.toCompatibility() }, stickers)
+
+/**
+ * One dialog filter (folder).
+ *
+ * [kind] is `filter`, `chatlist` or `default`. Only a `filter` carries the contacts/bots/broadcasts
+ * flags, only a `chatlist` reports [hasMyInvites], and the peers are the registered handles the
+ * bridge resolved for it.
+ */
+data class DialogFolder(
+    val id: Int,
+    val kind: String,
+    val title: String,
+    val contacts: Boolean = false,
+    val nonContacts: Boolean = false,
+    val groups: Boolean = false,
+    val broadcasts: Boolean = false,
+    val bots: Boolean = false,
+    val excludeMuted: Boolean = false,
+    val excludeRead: Boolean = false,
+    val excludeArchived: Boolean = false,
+    val hasMyInvites: Boolean = false,
+    val pinnedPeers: List<TelegramPeer> = emptyList(),
+    val includePeers: List<TelegramPeer> = emptyList(),
+    val excludePeers: List<TelegramPeer> = emptyList(),
+)
+
+/** The account's dialog filters and the layer's tags flag. */
+data class DialogFolders(
+    val tagsEnabled: Boolean,
+    val filters: List<DialogFolder>,
+)
+
+/**
+ * A dialog filter a caller asks to create or replace.
+ *
+ * The peer lists take the registered peers a previous read reported, so a filter can be read and
+ * written back unchanged.
+ */
+data class DialogFolderSpec(
+    val title: String,
+    val contacts: Boolean = false,
+    val nonContacts: Boolean = false,
+    val groups: Boolean = false,
+    val broadcasts: Boolean = false,
+    val bots: Boolean = false,
+    val excludeMuted: Boolean = false,
+    val excludeRead: Boolean = false,
+    val excludeArchived: Boolean = false,
+    val pinnedPeers: List<TelegramPeer> = emptyList(),
+    val includePeers: List<TelegramPeer> = emptyList(),
+    val excludePeers: List<TelegramPeer> = emptyList(),
+)
+
+internal fun BridgeDialogFolder.toCompatibility() = DialogFolder(
+    id, kind, title, contacts, nonContacts, groups, broadcasts, bots, excludeMuted,
+    excludeRead, excludeArchived, hasMyInvites,
+    pinnedPeers.map { it.toCompatibility() },
+    includePeers.map { it.toCompatibility() },
+    excludePeers.map { it.toCompatibility() },
+)
+
+internal fun BridgeDialogFoldersResult.toCompatibility() =
+    DialogFolders(tagsEnabled, filters.map { it.toCompatibility() })
+
+internal fun DialogFolderSpec.toBridge() = BridgeDialogFilterSpec(
+    title, contacts, nonContacts, groups, broadcasts, bots, excludeMuted, excludeRead,
+    excludeArchived,
+    pinnedPeers.map { BridgePeerTarget(it.native.nativeHandle) },
+    includePeers.map { BridgePeerTarget(it.native.nativeHandle) },
+    excludePeers.map { BridgePeerTarget(it.native.nativeHandle) },
+)
+
 /** The "can do" rights a caller asks for, in the shape grammers' `set_admin_rights` takes. */
 internal fun ChatPermissions.toBridge() = BridgeChatPermissions(
     changeInfo, postMessages, editMessages, deleteMessages, banUsers, inviteUsers, pinMessages,
@@ -1075,5 +1681,5 @@ internal fun ChatPermissions.toBridge() = BridgeChatPermissions(
  */
 internal fun ChatRestrictions.toBridge() = BridgeChatRestrictions(
     viewMessages, sendMessages, sendMedia, sendStickers, sendGifs, sendGames, sendInline,
-    embedLinks, sendPolls, changeInfo, inviteUsers, pinMessages, untilDate,
+    embedLinks, sendPolls, changeInfo, inviteUsers, pinMessages, untilDate = untilDate,
 )

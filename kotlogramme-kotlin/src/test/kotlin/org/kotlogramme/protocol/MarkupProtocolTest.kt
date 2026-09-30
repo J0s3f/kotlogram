@@ -5,6 +5,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -38,8 +40,6 @@ class MarkupProtocolTest {
         assertEquals("callback", markup.rows[1][0].kind)
         assertEquals("vote:yes", markup.rows[1][0].data)
         assertEquals(false, markup.rows[1][0].requiresPassword)
-        assertEquals("text", markup.rows[1][1].kind)
-        assertEquals("Vote no", markup.rows[1][1].text)
         // An inline markup has no keyboard option, so all four are reported at their defaults.
         assertTrue(!markup.fitSize && !markup.singleUse && !markup.selective && !markup.persistent)
         assertNull(markup.placeholder)
@@ -227,6 +227,81 @@ class MarkupProtocolTest {
         assertEquals("""{"selective":true}""", requests.encodeToString(HideKeyboardPayload(selective = true)))
     }
 
+    @Test
+    fun `a markup spec encodes every kind the native side builds`() {
+        val inline: MarkupSpec = MarkupSpec.Inline(
+            listOf(
+                listOf(
+                    InlineButtonSpec.Url("Docs", "https://example.org"),
+                    InlineButtonSpec.Callback("Vote", "vote:yes"),
+                ),
+            ),
+        )
+        assertEquals(
+            """{"kind":"inline","rows":[[{"type":"url","text":"Docs","url":"https://example.org"},""" +
+                """{"type":"callback","text":"Vote","data":"vote:yes"}]]}""",
+            requests.encodeToString(inline),
+        )
+
+        val keyboard: MarkupSpec = MarkupSpec.Keyboard(
+            rows = listOf(listOf(KeyboardButtonSpec.Text("Go"))),
+            fitSize = true,
+            singleUse = true,
+            selective = true,
+        )
+        assertEquals(
+            """{"kind":"keyboard","rows":[[{"type":"text","text":"Go"}]],""" +
+                """"fitSize":true,"singleUse":true,"selective":true}""",
+            requests.encodeToString(keyboard),
+        )
+
+        val forceReply: MarkupSpec = MarkupSpec.ForceReply(singleUse = true, selective = true)
+        assertEquals(
+            """{"kind":"forceReply","singleUse":true,"selective":true}""",
+            requests.encodeToString(forceReply),
+        )
+        val hide: MarkupSpec = MarkupSpec.Hide(selective = true)
+        assertEquals(
+            """{"kind":"hide","selective":true}""",
+            requests.encodeToString(hide),
+        )
+    }
+
+    @Test
+    fun `a markup spec leaves a default option out for the native default to fill`() {
+        // The transport leaves a field at its default out, and every such field is `#[serde(default)]`
+        // on the native side, so a hide with no options and a force reply with none are bare kinds.
+        val hide: MarkupSpec = MarkupSpec.Hide()
+        val forceReply: MarkupSpec = MarkupSpec.ForceReply()
+        assertEquals("""{"kind":"hide"}""", requests.encodeToString(hide))
+        assertEquals("""{"kind":"forceReply"}""", requests.encodeToString(forceReply))
+    }
+
+    @Test
+    fun `a projected markup converts to the spec a send carries`() {
+        val keyboard = assertIs<MarkupSpec.Keyboard>(json.decodeFromString<ReplyMarkup>(KEYBOARD).asSpec())
+        assertTrue(keyboard.fitSize && keyboard.singleUse && keyboard.selective)
+        assertEquals(KeyboardButtonSpec.RequestPoll("Quiz", quiz = true), keyboard.rows[0][0])
+
+        val inline = assertIs<MarkupSpec.Inline>(json.decodeFromString<ReplyMarkup>(INLINE).asSpec())
+        assertEquals(InlineButtonSpec.Url("Open docs", "https://example.org/docs"), inline.rows[0][0])
+        assertEquals(InlineButtonSpec.Callback("Vote yes", "vote:yes"), inline.rows[1][0])
+
+        val force = assertIs<MarkupSpec.ForceReply>(
+            json.decodeFromString<ReplyMarkup>(FORCE_REPLY).asSpec(),
+        )
+        assertTrue(force.singleUse && force.selective)
+
+        val hide = assertIs<MarkupSpec.Hide>(json.decodeFromString<ReplyMarkup>(HIDE).asSpec())
+        assertTrue(!hide.selective)
+    }
+
+    @Test
+    fun `a projected markup of an unknown kind cannot become a spec`() {
+        val markup = json.decodeFromString<ReplyMarkup>(MARKUP_UNKNOWN)
+        assertFailsWith<IllegalArgumentException> { markup.asSpec() }
+    }
+
     /** Decodes a native document and asserts that re-encoding it reproduces the same document. */
     private inline fun <reified T> roundTrips(document: String): T {
         val decoded = json.decodeFromString<T>(document)
@@ -278,10 +353,6 @@ class MarkupProtocolTest {
                       [{"kind": "callback", "text": "Vote yes", "url": null, "data": "vote:yes",
                         "requiresPassword": false, "fwdText": null, "buttonId": null, "query": null,
                         "samePeer": null, "peerTypes": null, "quiz": null, "userId": null,
-                        "copyText": null, "maxQuantity": null, "requestWriteAccess": null},
-                       {"kind": "text", "text": "Vote no", "url": null, "data": null,
-                        "requiresPassword": null, "fwdText": null, "buttonId": null, "query": null,
-                        "samePeer": null, "peerTypes": null, "quiz": null, "userId": null,
                         "copyText": null, "maxQuantity": null, "requestWriteAccess": null}]],
              "fitSize": false, "singleUse": false, "selective": false, "persistent": false,
              "placeholder": null}
@@ -305,6 +376,11 @@ class MarkupProtocolTest {
         val HIDE = """
             {"kind": "hide", "rows": [], "fitSize": false, "singleUse": false, "selective": false,
              "persistent": false, "placeholder": null}
+        """.trimIndent()
+
+        val MARKUP_UNKNOWN = """
+            {"kind": "someNewMarkup", "rows": [], "fitSize": false, "singleUse": false,
+             "selective": false, "persistent": false, "placeholder": null}
         """.trimIndent()
 
         /** The names a markup document carries, kept in step with the native projection. */
