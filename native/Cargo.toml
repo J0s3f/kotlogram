@@ -25,28 +25,34 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1.47.1", features = ["rt-multi-thread", "sync", "fs", "io-util"] }
 
-# Size optimisation for the published native libraries, which dominate the jar: the six of them are
-# ~88 MiB raw and compress to ~32 MB, and the jar is almost entirely that.
-#
-# `lto` and `codegen-units = 1` are the substantial part. Measured on the Windows x86_64 library they
-# shrink the compiled code by 31.9% raw and 24.2% packed - code compresses less than symbol names do,
-# so most of that reaches the jar. Both cover every platform, unlike UPX which cannot pack the Linux or
-# macOS libraries at all.
+# The published native libraries dominate the jar: the six of them are ~88 MiB raw and ~32 MB
+# compressed, and the jar is almost entirely that. `lto` and `codegen-units = 1` shrink the compiled
+# code by 31.9% raw and 24.2% packed (measured on the Windows x86_64 library), and because code
+# compresses less than symbol names do most of that reaches the jar. Unlike UPX, which cannot pack the
+# Linux or macOS libraries at all, this applies to every platform.
 #
 # This is deliberately NOT `strip` or `opt-level = "z"`:
 #
-#   * `strip` buys nothing here. Cargo 1.77+ already strips debug info in release builds, and the shipped
-#     Windows libraries were confirmed to have zero symbols and no `.debug_*` sections, so `strip
-#     --strip-all` removed exactly 0 bytes. On Linux and macOS a symbol table does remain, but symbol
-#     names compress well, so stripping 22.9% of raw bytes would remove only about 8.8% of that library's
-#     jar contribution - while destroying stack traces for anyone debugging a crash inside the native code.
+#   * `strip` buys nothing here. Cargo 1.77+ already strips debug info in release builds, and the
+#     shipped Windows libraries were confirmed to have zero symbols and no `.debug_*` sections, so
+#     `strip --strip-all` removed exactly 0 bytes. On Linux and macOS a symbol table does remain, but
+#     symbol names compress well, so stripping 22.9% of raw bytes would remove only about 8.8% of that
+#     library's jar contribution - while destroying stack traces for anyone diagnosing a crash inside
+#     the native code.
 #   * `lto` and `codegen-units = 1` have no debuggability cost at all: symbols and panic locations are
 #     unaffected. Panics still unwind, so `catch_unwind` callers keep working.
 #
-# The cost is build time. Clean release builds go from roughly 35 s to several minutes per target, and the
-# macOS matrix entry builds two targets in one job, so it is the slowest. LTO is memory-hungry as well -
-# one combined run died silently, most likely OOM, on a development machine. If a CI runner starts failing
-# here, that is the first thing to suspect.
-[profile.release]
+# It is a *named* profile rather than `[profile.release]` so that the slow settings apply only where
+# the artifact is actually shipped. The `check` job runs on every push to main and every PR and builds
+# the library purely so the JVM tests have something to load; it has no interest in its size, and
+# `cargo test` would otherwise pay the LTO cost too. The `native` job, which produces the released
+# libraries, builds with `--profile release-shipped`.
+#
+# The cost is build time: clean release builds go from roughly 35 s to several minutes per target, and
+# the macOS matrix entry builds two targets in one job. LTO is memory-hungry as well - one combined run
+# died silently, most likely OOM, on a development machine. If a CI runner starts failing here, that is
+# the first thing to suspect.
+[profile.release-shipped]
+inherits = "release"
 lto = true
 codegen-units = 1

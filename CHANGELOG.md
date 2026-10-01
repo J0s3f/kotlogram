@@ -12,12 +12,18 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
 
 ### Changed
 
-- **The release profile now enables `lto` and `codegen-units = 1`.** The six bundled native libraries
-  are ~88 MiB raw and ~32 MB compressed, and they are almost the whole jar, so the compiler's inlining
-  decisions are the dominant factor in the published size. Measured on the Windows x86_64 library these
-  two flags shrink the compiled code by **31.9% raw and 24.2% packed**, and because code compresses
-  less than symbol names do, most of that reaches the jar rather than being eaten by Deflate. Unlike
-  UPX, which cannot pack the Linux or macOS libraries at all, this applies to every platform.
+- **The shipped native libraries are now built with `lto` and `codegen-units = 1`.** The six bundled
+  native libraries are ~88 MiB raw and ~32 MB compressed, and they are almost the whole jar, so the
+  compiler's inlining decisions are the dominant factor in the published size. Measured on the Windows
+  x86_64 library these two flags shrink the compiled code by **31.9% raw and 24.2% packed**, and because
+  code compresses less than symbol names do, most of that reaches the jar rather than being eaten by
+  Deflate. Unlike UPX, which cannot pack the Linux or macOS libraries at all, this applies to every
+  platform.
+
+  They live in a named `release-shipped` profile rather than `[profile.release]`, so only the `native`
+  job that produces the released libraries pays the cost. The `check` job runs on every push to main and
+  every PR and builds the library purely so the JVM tests have something to load, and `cargo test` would
+  otherwise pay it too; both stay on the default release profile.
 
   `strip` is deliberately not used: Cargo 1.77+ already strips debug info in release builds, and the
   shipped Windows libraries were confirmed to carry zero symbols and no `.debug_*` sections, so
