@@ -1,10 +1,9 @@
 //! Update-stream operations.
 
-use std::sync::MutexGuard;
 use std::time::Duration;
 
-use grammers_client::client::UpdateStream;
 use grammers_client::tl;
+use grammers_client::update::Update;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -12,10 +11,11 @@ use super::Handler;
 use crate::client::NativeClient;
 use crate::dto::peer::{peer_dto, PeerDto};
 use crate::dto::update::{
-    raw_update_dto, update_dto, update_state_dto, RawUpdateDto, UpdateStateDto,
+    raw_update_dto, update_dto, update_state_dto, RawUpdateDto, UpdateDto, UpdateStateDto,
 };
 use crate::error::{invocation_error, json_string, parse_payload};
 use crate::ops::inline::{article_result, InlineArticleSpec};
+use crate::update_pump::PolledUpdate;
 
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -81,32 +81,27 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
 
 fn next_update(native: &NativeClient, payload: &str) -> Result<String, String> {
     let timeout = timeout_of(payload)?;
-    let mut updates = stream(native)?;
-    let update = native.runtime.block_on(async {
-        match tokio::time::timeout(timeout, updates.next()).await {
-            Ok(Ok(update)) => Ok(Some(update)),
-            Ok(Err(error)) => Err(invocation_error(error)),
-            Err(_) => Ok(None),
-        }
-    })?;
-    let update = update
-        .map(|update| update_dto(native, &update))
-        .transpose()?;
+    // The wait is on the pump's own channel, so giving up on it costs nothing: the update is already
+    // built and buffered, and the next poll takes it. See [`crate::update_pump`] for why grammers'
+    // own poll cannot be waited on this way.
+    let polled = native.runtime.block_on(native.update_pump.next(timeout));
+    let update = match polled {
+        Some(polled) => Some(typed_dto(native, polled?)?),
+        None => None,
+    };
     json_string(json!({ "update": update }))
 }
 
 fn next_raw_update(native: &NativeClient, payload: &str) -> Result<String, String> {
     let timeout = timeout_of(payload)?;
-    let mut updates = stream(native)?;
-    let update = native.runtime.block_on(async {
-        match tokio::time::timeout(timeout, updates.next_raw()).await {
-            Ok(Ok(update)) => Ok(Some(update)),
-            Ok(Err(error)) => Err(invocation_error(error)),
-            Err(_) => Ok(None),
-        }
-    })?;
-    let update = match update {
-        Some((update, state, peers)) => {
+    let polled = native.runtime.block_on(native.update_pump.next(timeout));
+    let update = match polled {
+        Some(polled) => {
+            let PolledUpdate {
+                update,
+                state,
+                peers,
+            } = polled?;
             // The peer map is a hash map, so its order is whatever the hash gave; sorting by id
             // makes the document stable for a caller that compares it.
             let mut projected = Vec::new();
@@ -125,14 +120,32 @@ fn next_raw_update(native: &NativeClient, payload: &str) -> Result<String, Strin
     json_string(json!({ "update": update }))
 }
 
+/// Projects a polled update as the typed view, which is what grammers' `UpdateStream::next` does
+/// with the output of `next_raw`.
+///
+/// Building the typed payload here rather than in the pump is what lets the two read operations
+/// share one stream: the pump hands the same raw triple to whichever of them reads next, so a caller
+/// alternating them alternates between the two views of the same updates instead of racing for the
+/// stream.
+fn typed_dto(native: &NativeClient, polled: PolledUpdate) -> Result<UpdateDto, String> {
+    let PolledUpdate {
+        update,
+        state,
+        peers,
+    } = polled;
+    update_dto(
+        native,
+        &Update::from_raw(&native.client, update, state, peers),
+    )
+}
+
 fn sync_update_state(native: &NativeClient, _payload: &str) -> Result<String, String> {
-    let updates = stream(native)?;
-    // grammers writes the state again when the stream is dropped; doing it on demand lets a client
-    // persist it before the session is closed, or without closing at all.
-    native
-        .runtime
-        .block_on(updates.sync_update_state())
-        .map_err(|error| error.to_string())?;
+    // grammers only lends its stream immutably for this, and a poll needs it mutably for as long as
+    // it waits for Telegram, so the pump carries the request out between two polls. A client that
+    // wants to persist the state without closing the session asks for it here; on a quiet stream the
+    // request waits for the next update, bounded by the pump so a JVM thread is never blocked for as
+    // long as Telegram takes to speak.
+    native.update_pump.sync_update_state(&native.runtime)?;
     json_string(json!({ "ok": true }))
 }
 
@@ -171,14 +184,6 @@ fn guest_chat_answer_result(id: &tl::enums::InputBotInlineMessageId) -> GuestCha
             tl::enums::InputBotInlineMessageId::Id64(id) => Some(id.owner_id),
         },
     }
-}
-
-/// The one update stream of a client, which every streaming operation polls in turn.
-fn stream(native: &NativeClient) -> Result<MutexGuard<'_, UpdateStream>, String> {
-    native
-        .updates
-        .lock()
-        .map_err(|_| "update stream is poisoned".to_owned())
 }
 
 /// The wait a streaming operation applies, taken from the `timeoutMillis` its payload carries.

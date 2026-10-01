@@ -7,6 +7,23 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
+## Unreleased
+
+### Fixed
+
+- An update read that times out no longer loses the update it was waiting for. grammers' update
+  stream takes a batch off its channel and only then resolves the batch's peers, so a wait that
+  ended in that window had already consumed the batch and dropped it for good;
+  `getNextUpdate`, `getNextTypedUpdate` and `getNextRawUpdate` now read from a background pump that
+  owns the stream, awaits every poll to completion and buffers the result, and a caller that gives
+  up leaves the update waiting for the next call.
+
+### Changed
+
+- `syncUpdateState` is carried out by the pump between two polls, because grammers lends the stream
+  immutably only for that call while a poll holds it mutably. It waits for the next update to arrive
+  and reports an error after 30 seconds instead of blocking a JVM thread until Telegram speaks.
+
 ## 0.8.0 - 2026-10-01
 
 ### Added

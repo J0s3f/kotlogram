@@ -43,8 +43,8 @@ its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 | `mediaSend` / `mediaSendUrl` / `mediaCopy` | `upload_file`/URL + `InputMessage::{photo,document,file,photo_url,document_url,copy_media}` with `html`/`markdown` captions, `media_ttl`, `mime_type`, spoiler and scheduling |
 | `downloadMedia` / `downloadMediaChunk` / `uploadFile` | `download_media` / `iter_download` chunk paging / `upload_file` |
 | `getProfilePhotos` | `iter_profile_photos` |
-| `getNextUpdate` / `getNextTypedUpdate` / `getNextRawUpdate` | `UpdateStream::next` / `next_raw` (typed projection and the raw TL update) |
-| `syncUpdateState` | `UpdateStream::sync_update_state` |
+| `getNextUpdate` / `getNextTypedUpdate` / `getNextRawUpdate` | one background pump reading `UpdateStream::next_raw` to completion and buffering it; the raw read hands over the triple and the typed read is `Update::from_raw` over it, both off that one ordered queue |
+| `syncUpdateState` | `UpdateStream::sync_update_state`, carried out by the pump between two polls (see below) |
 | `inlineQuery` | `messages.GetInlineBotResults` (`Client::inline_query`, keeping the query id and next offset) |
 | `answerCallbackQuery` | `messages.SetBotCallbackAnswer` (the request behind `CallbackQuery::answer`) |
 | `answerInlineQuery` | `messages.SetInlineBotResults` (the request behind `InlineQuery::answer`), extended with raw media results (`photo`/`gif`/`video`/`voice`/`document`) |
@@ -77,6 +77,18 @@ is crate-private, so editing an inline message invokes the `messages.EditInlineB
 directly. Date-bounded peer search, on the other hand, is back on grammers' own `SearchIter`: its
 date bounds take a `jiff::Timestamp`, which the bridge carries `jiff` for, so no raw request is
 needed there.
+
+The update rows need a note of their own. grammers' `UpdateStream::next_raw` cannot be cancelled:
+it takes a batch off the updates receiver and only then awaits the peer map, so a wait that gives
+up in that window has consumed the batch and lost it for good. The bridge therefore starts a pump
+with the client, lets it own the stream and await every poll to completion, and buffers each result
+in an unbounded channel of its own. `getNextUpdate`, `getNextTypedUpdate` and `getNextRawUpdate`
+time out on that channel rather than on the poll, so a caller that gives up waits for an update
+that is already buffered instead of losing one, and the three take turns on a single stream and a
+single queue. The cost is `syncUpdateState`: grammers lends the stream immutably only for that call
+while a poll holds it mutably, so the request is queued and performed between two polls. It waits for
+the next update to arrive and gives up with an error after 30 seconds rather than blocking a JVM
+thread for however long grammers would wait.
 
 `TelegramApiStorage` now provides a SQLite session path because grammers stores the auth key,
 datacenter data and peer cache as one atomic session database. The old per-field storage contract
@@ -125,8 +137,8 @@ Everything in `native/operations.txt` is reachable from Kotlin. What stays outsi
   calls. `invokeRaw` reaches all of them with a Layer-229 codec.
 - The formatting entities on a reply's quoted text; a message's own entities and its rendered
   `markdownText`/`htmlText` are projected, and the send and edit directions carry explicit entities.
-- The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` rather
-  than by a background loop.
+- The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate`, which pulls
+  from the pump's queue rather than being invoked by it.
 - A few grammers capabilities have no request/response shape the bridge can carry: the
   `ActionSender` repeat loop, and `upload_stream` from a caller-supplied async reader that does not
   know its length up front (grammers must be told the total before the first part, which is why

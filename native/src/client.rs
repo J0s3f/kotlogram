@@ -5,7 +5,6 @@ use std::path::PathBuf;
 use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
-use grammers_client::client::UpdateStream;
 use grammers_client::client::{LoginToken, PasswordToken};
 use grammers_client::media::Uploaded;
 use grammers_client::peer::Peer;
@@ -22,6 +21,7 @@ use tokio::task::JoinHandle;
 
 use crate::error::{error, invocation_error};
 use crate::payload::{FileSource, PeerTarget};
+use crate::update_pump::UpdatePump;
 use crate::upload::{stream_channel, ChannelReader, ProgressReader, UploadProgress};
 
 /// One live Telegram session: its Tokio runtime, its grammers client and its registries.
@@ -29,7 +29,7 @@ pub(crate) struct NativeClient {
     pub(crate) runtime: Runtime,
     pub(crate) client: Client,
     pub(crate) sender: SenderPoolHandle,
-    pub(crate) updates: Mutex<UpdateStream>,
+    pub(crate) update_pump: UpdatePump,
     pub(crate) session: Arc<SqliteSession>,
     pub(crate) api_hash: String,
     pub(crate) authentication: Mutex<AuthenticationState>,
@@ -299,12 +299,18 @@ pub(crate) fn create_client(
         Ok::<_, String>((client, pool.handle.thin, updates, session, pool.runner))
     })?;
     runtime.spawn(runner.run());
+    // The pump is started here rather than on the first poll: grammers' sender pool forwards each
+    // batch it reads over a channel that holds a hundred of them and drops what does not fit, so a
+    // stream nobody is reading loses updates on its own. Draining it from the first moment of the
+    // session is what keeps that from happening, and the pump is also the only safe reader of the
+    // stream, because grammers' own poll cannot be cancelled without losing the batch it holds.
+    let update_pump = UpdatePump::start(&runtime, updates);
 
     let native = Arc::new(NativeClient {
         runtime,
         client,
         sender,
-        updates: Mutex::new(updates),
+        update_pump,
         session,
         api_hash,
         authentication: Mutex::new(AuthenticationState::Idle),
@@ -321,6 +327,11 @@ pub(crate) fn create_client(
 }
 
 /// Drops a client from the registry and stops its sender pool. Closing an unknown handle succeeds.
+///
+/// The update pump is stopped first, and while the runtime is still alive, so the stream it owns is
+/// let go of before the pool it reads from is quit and before the session handle goes with the
+/// client: a pump left running would hold the session past the close and keep the runtime from
+/// shutting down.
 pub(crate) fn close_client(handle: jlong) -> String {
     let result = clients()
         .lock()
@@ -328,6 +339,7 @@ pub(crate) fn close_client(handle: jlong) -> String {
         .map(|mut map| map.remove(&handle));
     match result {
         Ok(Some(client)) => {
+            client.update_pump.stop(&client.runtime);
             client.sender.quit();
             "ok".to_owned()
         }
