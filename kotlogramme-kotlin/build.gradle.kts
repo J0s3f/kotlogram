@@ -36,7 +36,10 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    // Every `Live*` test class is opt-in: each is gated by its own environment check, but excluding
+    // them here keeps the normal suite from loading a client at all.
     exclude("**/LiveTelegramIntegrationTest.*")
+    exclude("**/LiveUpdatePollIntegrityTest.*")
 }
 
 val integrationTest by tasks.registering(Test::class) {
@@ -46,6 +49,7 @@ val integrationTest by tasks.registering(Test::class) {
     classpath = sourceSets.test.get().runtimeClasspath
     useJUnitPlatform()
     include("**/LiveTelegramIntegrationTest.*")
+    include("**/LiveUpdatePollIntegrityTest.*")
     shouldRunAfter(tasks.test)
     System.getProperty("kotlogramme.native.path")?.let { nativeLibrary ->
         systemProperty("kotlogramme.native.path", nativeLibrary)
