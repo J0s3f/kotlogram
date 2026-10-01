@@ -48,3 +48,35 @@ The pre-rewrite tags (`0.0.1`-`0.0.6`, `1.0.0-RC1`-`RC3`) and the branches `deve
 `master` were deleted from GitHub. They sorted above the `v0.x` series, so JitPack would have presented
 a 2017 artifact as the newest version. Their tips are archived locally under `refs/archive/tags/*` and
 `refs/archive/branches/*`; recover with `git branch <name> refs/archive/branches/<name>`.
+
+## JitPack: the release race, and why the tag matters
+
+A tag push triggers two things at once: the GitHub Actions run that **creates** the release, and
+JitPack's own build of that tag. JitPack can therefore ask for
+`releases/download/v<version>/kotlogramme-<version>.jar` before the release exists, get a 404, and fail
+the build. That is what happened to `v0.9.2`.
+
+`jitpack.yml` now waits for the asset (up to ~10 minutes) instead of failing on the first 404.
+**But `jitpack.yml` is read from the tagged commit**, so:
+
+- a retry added to `main` after a tag does **not** apply to that tag;
+- `v0.9.2` is tagged at `95be894c`, which predates the retry. Its build only works because its release
+  already exists by now - the first `curl` succeeds. The wait loop is for tags cut from `b76653da` or
+  later.
+
+This is the practical rule: **a packaging fix only takes effect on the next tag.** When changing
+`jitpack.yml`, expect the current release to need a rebuild rather than a retag, and check that the
+release its build reads from is already published before asking JitPack for it.
+
+### Rate limiting
+
+JitPack answers `429` per repository and version when the same artifact path is requested repeatedly.
+It is not IP-based - a different address hits the same limit. Polling a build log or an artifact URL in a
+loop will trip it, and a `429` says nothing about the build's state. Wait, and request once.
+
+### Rebuilding
+
+A failed or deleted build can be rebuilt by signing in at <https://jitpack.io/#J0s3f/kotlogram> and
+requesting the version again. Deleting the build in that UI is what allows a fresh one; without it the
+cached result is served. The GitHub Release is untouched either way.
+
