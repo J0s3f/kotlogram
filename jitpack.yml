@@ -21,13 +21,20 @@
 #   * A branch build exports VERSION as e.g. `main-SNAPSHOT`, for which no GitHub Release exists. Rather
 #     than fail on a missing asset, the build falls back to a released version's jar (see JITPACK_FALLBACK
 #     below). That makes a branch build a real test of everything on this page - the download, the native
-#     check, the local install and the signature mirroring - before any tag depends on it.
+#     check and the local install - before any tag depends on it.
 #
 # The release this reads from is created by the same tag push that triggers it, and the workflow runs
 # publish-jitpack after github-release for that reason.
 
 jdk:
   - openjdk21
+
+# JitPack's own /script/buildit.sh reads AFTER_INSTALL_CMD without a default, so leaving it unset makes
+# every build end with `line 140: AFTER_INSTALL_CMD: unbound variable` and `Exit code: 1` even though the
+# artifacts were installed and are served. Defining it as a no-op is the fix; there is nothing to do
+# after the install step here.
+env:
+  AFTER_INSTALL_CMD: "true"
 
 install:
   - |
