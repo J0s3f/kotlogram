@@ -76,7 +76,7 @@ install:
     # which is the case for any branch build (`main-SNAPSHOT` and friends). Unlike `requested` this one
     # is not waited for: it is a release that already exists, so a failure here is a real error rather
     # than a race. Bump it when the fallback release is superseded.
-    JITPACK_FALLBACK="0.9.4"
+    JITPACK_FALLBACK="0.9.5"
 
     requested="${VERSION#v}"
     source_version="${requested}"
@@ -100,15 +100,29 @@ install:
     echo "bundled native libraries found: ${count}"
     test "${count}" -ge 6
 
+    # The real POM from the GitHub Release, not one generated here. `-DgeneratePom=true` invents an empty
+    # POM with no <dependencies>, so a consumer resolved the facade without kotlin-stdlib and died at
+    # runtime with NoClassDefFoundError: kotlin/jvm/internal/Intrinsics. A release asset carries the POM
+    # Gradle generated from the publication, which is the same one Maven Central serves, so JitPack now
+    # serves it too - and without depending on Central, whose limits are why JitPack is recommended.
+    pom_asset="${base}/kotlogramme-${source_version}.pom"
+    echo "Fetching the published POM from ${pom_asset}"
+    curl -fsSL --output /tmp/kotlogramme.pom "${pom_asset}"
+
+    # A POM without its dependencies is the bug this replaces, so refuse to install one.
+    grep -q '<artifactId>kotlin-stdlib</artifactId>' /tmp/kotlogramme.pom
+    echo "POM declares kotlin-stdlib: ok"
+
     # The artifact is installed under the version JitPack asked for, not the one the jar came from, so a
-    # branch build resolves as main-SNAPSHOT while still serving the fallback's bytes.
+    # branch build resolves as main-SNAPSHOT while still serving the fallback's bytes. -DpomFile uses the
+    # real POM and rewrites its version to match `requested`.
     mvn --batch-mode install:install-file \
       -Dfile=/tmp/kotlogramme.jar \
+      -DpomFile=/tmp/kotlogramme.pom \
       -DgroupId="${GROUP}" \
       -DartifactId="${ARTIFACT}" \
       -Dversion="${requested}" \
-      -Dpackaging=jar \
-      -DgeneratePom=true
+      -Dpackaging=jar
 
     # The detached signature is deliberately NOT mirrored into ~/.m2 here. It was tried, and the build
     # log proves JitPack does not serve it: the signature was written to
