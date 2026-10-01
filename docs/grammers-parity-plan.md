@@ -7,11 +7,11 @@ the grammers 0.8.1 `Client` API it wraps.
 **Status: complete.** The work below was delivered on `feat/grammers-parity`, and the gap-closure work
 that followed it is in [`gap-closure-roadmap.md`](gap-closure-roadmap.md). The coverage and
 test-count figures quoted in this document are the ones recorded as each phase merged; the current
-figures are 101 operations, 257 Rust tests and 266 JVM tests.
+  figures are 116 operations, 310 Rust tests and 311 JVM tests as of the 0.9.0 release.
 
 ## Current coverage
 
-All ten Phase 1 domains are merged. The native crate routes 101
+All ten Phase 1 domains are merged. The native crate routes 116
 operations, listed in `native/operations.txt` (verified equal to the dispatcher by the Rust tests
 and to the annotated Kotlin bridge by `OperationParityTest`), and `docs/compatibility.md` maps the
 Kotlogram-shaped facade surface to the grammers calls behind it. The seven JNI exports

@@ -9,8 +9,8 @@ A Kotlin/JVM facade for the Telegram API, built on grammers and designed around 
 ## Status
 
 Released to Maven Central as `io.github.j0s3f:kotlogramme` and covered across every domain the plan
-scoped: 105 native operations, each reachable from Kotlin through a 278-test Rust suite and a
-285-test JVM suite.
+scoped: 116 native operations, each reachable from Kotlin through a 310-test Rust suite and a
+311-test JVM suite.
 
 - persistent SQLite sessions through grammers
 - bot and user authentication (2FA included), `signOut`, the full account identity and its data
@@ -36,9 +36,10 @@ scoped: 105 native operations, each reachable from Kotlin through a 278-test Rus
 Known limits, each reachable another way or listed in [`docs/compatibility.md`](docs/compatibility.md)
 under "Not mapped yet": the historical generated TL API is not recreated (only the versioned raw API is
 exposed); a message's own formatting entities and its rendered markdown/HTML are projected, and so are
-those on the text a reply quotes; sticker install/archive and per-peer notification settings are
-available; the story and paid-media surfaces stay behind `invokeRaw`; and `UpdateCallback` is delivered
-on demand by `dispatchNextUpdate` or by the background loop behind `startUpdateLoop`. Test the
+those on the text a reply quotes; sticker install/archive, per-peer notification settings and the dialog
+filters with their `chatlists.*` sharing surface are all mapped; the story and paid-media surfaces stay
+behind `invokeRaw`; and `UpdateCallback` is delivered on demand by `dispatchNextUpdate` or by the
+background loop behind `startUpdateLoop`. Test the
 operations you depend on in your own application.
 
 The original Kotlogram code base is archived and uses an old Telegram TL layer. This project is therefore deliberately not a source-code copy: it is a new compatibility-oriented Kotlin facade with grammers as its protocol and update layer.

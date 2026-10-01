@@ -116,7 +116,7 @@ domains can be developed and reviewed independently.
 `native/operations.txt` is the shared contract listing every operation the native crate answers.
 The Rust unit tests and `OperationParityTest` on the JVM both assert against it, so the bridge
 cannot declare a capability the native side does not implement, or the reverse. It currently
-lists 105 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
+lists 116 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
 analysis behind the layout, and [`docs/gap-closure-roadmap.md`](gap-closure-roadmap.md) the work
 that closed the post-parity gaps.
 
@@ -137,9 +137,7 @@ upgrade must create a new `telegram-tl-<layer>` API version instead of mutating 
 Everything in `native/operations.txt` is reachable from Kotlin. What stays outside the facade:
 
 - TL methods this layer has not added: the story and paid-media surfaces, and most `messages.*`
-  utility calls. `invokeRaw` reaches all of them with a Layer-229 codec. Folder creation and editing
-  are mapped through `messagesUpdateDialogFilter`, and the `chatlists.*` sharing and sync surface —
-  exporting a folder as an invite, its lifecycle, and the update-sync calls — is mapped too.
+  utility calls. `invokeRaw` reaches all of them with a Layer-229 codec.
 - The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` or by the
   background loop behind `UpdatesApi.startUpdateLoop`; both pull from the update pump's queue rather
   than being invoked by it.
@@ -147,3 +145,15 @@ Everything in `native/operations.txt` is reachable from Kotlin. What stays outsi
   `ActionSender` repeat loop, and `upload_stream` from a caller-supplied async reader that does not
   know its length up front (grammers must be told the total before the first part, which is why
   `uploadStream` takes the size and the unknown-length single-shot form is not offered).
+
+## Previously unmapped, now covered
+
+These were listed as gaps in earlier releases and are no longer:
+
+- **Dialog filters (folders), including creation and editing**, through
+  `FoldersApi.messagesUpdateDialogFilter` and `messagesUpdateDialogFiltersOrder`; a null filter is the
+  layer's own delete form.
+- **The `chatlists.*` sharing and sync surface** - exporting a folder as a joinable invite, the invite
+  lifecycle (`editExportedInvite`, `deleteExportedInvite`, `getExportedInvites`, `checkChatlistInvite`),
+  joining, and the update-sync calls (`getChatlistUpdates`, `joinChatlistUpdates`,
+  `hideChatlistUpdates`, `getLeaveChatlistSuggestions`, `leaveChatlist`).

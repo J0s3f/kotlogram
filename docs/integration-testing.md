@@ -2,7 +2,16 @@
 
 `LiveTelegramIntegrationTest` proves the public compatibility facade against Telegram itself. It authorizes a bot, verifies an already-authorized user session, has the user join a public test supergroup, and runs two scenarios. The first sends a unique user message, verifies that the bot receives it through `getNextUpdate`, sends a unique bot reply, and polls the user's channel history until that reply is received. The second has the bot upload and send a media document with a caption, has the user find it by search, download it whole and in chunks, and then verifies that plain messages answer `null` for the markup, service-action and reply-target operations. Telegram does not allow bot MTProto sessions to call `messages.getHistory`, so bot input is asserted through the ordered update stream instead.
 
-It is deliberately excluded from `test` and GitHub Actions. The test causes real Telegram activity and must use dedicated, disposable test accounts.
+`LiveUpdatePollIntegrityTest` is the second live class. It covers a defect that no offline test can
+reproduce faithfully: the native `nextUpdate` used to wrap a cancelling `tokio::time::timeout` around
+grammers' own update read, and grammers takes a batch off its channel before awaiting while it resolves
+the batch's peers, so a cancel in that window dropped an update for good. At the 30 s default poll that
+window is rare; the 250 ms poll the background update loop uses made it common. The test sends a known
+number of messages and then polls them back at the short timeout with repeated give-ups, so the window
+is entered many times, and asserts every one arrives exactly once. It also pins that the loop's poll is
+short and that starting the loop twice does not put a second reader on the stream.
+
+Both classes are deliberately excluded from `test` and GitHub Actions. They cause real Telegram activity and must use dedicated, disposable test accounts.
 
 ## Test chat requirements
 
@@ -36,4 +45,11 @@ Then run:
 ./gradlew :kotlogramme-kotlin:integrationTest
 ```
 
-The test creates a temporary bot session and removes it after completion. It does not delete the user session or the message posted to the dedicated test supergroup.
+`integrationTest` includes both `LiveTelegramIntegrationTest` and `LiveUpdatePollIntegrityTest`; the
+normal `test` task excludes both, so neither can run by accident. To run just one:
+
+```text
+./gradlew :kotlogramme-kotlin:integrationTest --tests "*LiveUpdatePollIntegrityTest*"
+```
+
+The test creates a temporary bot session and removes it after completion. It does not delete the user session or the message posted to the dedicated test supergroup. `LiveUpdatePollIntegrityTest` leaves the messages it sends in the test chat by design, so a run can be inspected afterwards.

@@ -11,14 +11,46 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 
 ### Added
 
+- A reply now projects the text it quotes: `Message.quote` carries the quoted `text`, the formatting
+  `entities` on it, and the same text rendered as `htmlText` and `markdownText` by grammers, grouped
+  into one value so a caller drawing the quoted line reads one object. It is `null` when the message
+  is not a reply and when the reply header carries no quoted text - a reply to a deleted message, a
+  scheduled or service reply, and a reply to a story all arrive that way - never four empty strings.
+  The entities are read from the layer's `messageReplyHeader`, whose offsets already count from the
+  start of the quoted text.
+- `StickersApi.messagesInstallStickerSet(shortName, id, accessHash, archived)` and
+  `messagesUninstallStickerSet(...)` install, archive and remove a sticker set, the last two of them
+  named exactly as `messagesGetStickerSet` names a set. Archiving is the same call with
+  `archived = true`, which is the layer's own toggle. The install answer is
+  `StickerSetInstall(installed, archivedSets)`: this layer's success constructor is empty, so a plain
+  install reports that it happened and names no set, and only an archive lists the sets it archived.
+- `AccountApi.accountGetNotifySettings(scope, peer, topMsgId)` and
+  `accountUpdateNotifySettings(scope, peer, topMsgId, settings)` read and write the notification
+  settings of one scope. `AccountNotifyScope.Account` asks for the account-wide settings, which
+  Telegram spells as the logged-in user; `Peer`, `ForumTopic` and `Community` address one chat,
+  `Users`, `Chats` and `Broadcasts` need no peer. `PeerNotifySettings` carries the preview and silent
+  flags, the mute expiry, the per-platform sound (Telegram's own `default`, `none`, local-file and
+  ringtone constructors) and the story flags, and the answer echoes the scope because Telegram's does
+  not. `NotifySettings` writes only the fields it is given, so one setting can change without
+  resetting the rest.
+- `UpdatesApi.startUpdateLoop(callback, pollTimeoutMillis, onError)` runs the legacy
+  `UpdateCallback` on a background thread, which is what closes the one gap the facade had against
+  Kotlogram's registered-handler shape. `stopUpdateLoop()` joins it and `isUpdateLoopRunning()`
+  reports whether it is live; a second `startUpdateLoop` reports false instead of adding a second
+  reader to the shared stream. The loop polls in a short 250 ms wait rather than the 30 s
+  `dispatchNextUpdate` default, so a stop costs one poll instead of half a minute, and the thread is
+  a daemon, so a forgotten loop cannot hold a host's shutdown open. A callback that throws ends the
+  loop and its cause is kept in `updateLoopFailure()` and handed to `onError`, or printed by the
+  thread's uncaught-exception handler when no handler was supplied. `close()` stops the loop before
+  the session goes away.
 - The `chatlists.*` sharing and sync surface, which grammers exposes no high-level API for: a folder
   can be exported as a joinable invite (`chatlistsExportChatlistInvite`), its invites listed, looked
   up, edited and deleted, and a joined folder's updates can be read, joined, hidden or left
   (`chatlistsGetChatlistUpdates`, `chatlistsJoinChatlistUpdates`, `chatlistsHideChatlistUpdates`,
   `chatlistsGetLeaveChatlistSuggestions`, `chatlistsLeaveChatlist`). An invite lookup keeps the
-  layer's two answers apart — a still-unjoined invite carries its title and roster, one already
-  joined names the folder and sorts the peers — and the `Updates`-returning calls project the chats
-  they touched alongside an acknowledgement.
+  layer's two answers apart - a still-unjoined invite carries its title and roster, one already
+  joined names the folder and sorts the peers - and the `Updates`-returning calls project the chats
+  they touched alongside an acknowledgement. 116 operations.
 
 ### Fixed
 
@@ -44,44 +76,12 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
   the memory an upload holds is a few chunks whatever the file size. It takes the stream's total
   `size` and an optional `onProgress` callback, because grammers has to know the size before it can
   send the first part.
-- `UpdatesApi.startUpdateLoop(callback, pollTimeoutMillis, onError)` runs the legacy
-  `UpdateCallback` on a background thread, which is what closes the one gap the facade had against
-  Kotlogram's registered-handler shape. `stopUpdateLoop()` joins it and `isUpdateLoopRunning()`
-  reports whether it is live; a second `startUpdateLoop` reports false instead of adding a second
-  reader to the shared stream. The loop polls in a short 250 ms wait rather than the 30 s
-  `dispatchNextUpdate` default, so a stop costs one poll instead of half a minute, and the thread is
-  a daemon, so a forgotten loop cannot hold a host's shutdown open. A callback that throws ends the
-  loop and its cause is kept in `updateLoopFailure()` and handed to `onError`, or printed by the
-  thread's uncaught-exception handler when no handler was supplied. `close()` stops the loop before
-  the session goes away.
 - `FilesApi.uploadProgressBegin(total)` and `FilesApi.uploadProgress(handle)` report an upload while
   it runs: bytes sent, the total, elapsed milliseconds and the average bytes per second, which is
   the shape a terminal render loop polls. `uploadFile(path)` and a path `MediaApi.mediaSend` accept
   an optional `progressHandle` from `uploadProgressBegin` and count their local file into it through
   the same counting reader, so a path upload can be observed from another thread although its own
   call blocks.
-- a reply now projects the text it quotes: `Message.quote` carries the quoted `text`, the formatting
-  `entities` on it, and the same text rendered as `htmlText` and `markdownText` by grammers, grouped
-  into one value so a caller drawing the quoted line reads one object. It is `null` when the message
-  is not a reply and when the reply header carries no quoted text - a reply to a deleted message, a
-  scheduled or service reply, and a reply to a story all arrive that way - never four empty strings.
-  The entities are read from the layer's `messageReplyHeader`, whose offsets already count from the
-  start of the quoted text.
-- `StickersApi.messagesInstallStickerSet(shortName, id, accessHash, archived)` and
-  `messagesUninstallStickerSet(...)` install, archive and remove a sticker set, the last two of them
-  named exactly as `messagesGetStickerSet` names a set. Archiving is the same call with
-  `archived = true`, which is the layer's own toggle. The install answer is
-  `StickerSetInstall(installed, archivedSets)`: this layer's success constructor is empty, so a plain
-  install reports that it happened and names no set, and only an archive lists the sets it archived.
-- `AccountApi.accountGetNotifySettings(scope, peer, topMsgId)` and
-  `accountUpdateNotifySettings(scope, peer, topMsgId, settings)` read and write the notification
-  settings of one scope. `AccountNotifyScope.Account` asks for the account-wide settings, which
-  Telegram spells as the logged-in user; `Peer`, `ForumTopic` and `Community` address one chat,
-  `Users`, `Chats` and `Broadcasts` need no peer. `PeerNotifySettings` carries the preview and silent
-  flags, the mute expiry, the per-platform sound (Telegram's own `default`, `none`, local-file and
-  ringtone constructors) and the story flags, and the answer echoes the scope because Telegram's does
-  not. `NotifySettings` writes only the fields it is given, so one setting can change without
-  resetting the rest. 105 operations.
 
 ### Changed
 

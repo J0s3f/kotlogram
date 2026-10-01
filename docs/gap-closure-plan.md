@@ -1,9 +1,14 @@
 # Closing the four remaining gaps
 
-Plan of record for the four limits [`compatibility.md`](compatibility.md) lists under "Not mapped yet",
-and which the README repeats. Successor to the completed
-[`gap-closure-roadmap.md`](gap-closure-roadmap.md) (T0-T9, all merged). Baseline at the time of
-writing: 101 operations, 257 Rust tests, 266 JVM tests, released as 0.8.0.
+Plan of record for the four limits [`compatibility.md`](compatibility.md) listed under "Not mapped yet",
+and which the README repeated.
+
+**Status: complete and merged on `main`.** G1, G2, G3 and the G4 update-poll fix all landed and are part
+of the 0.9.0 release; the measurements below are what each task in fact produced. Only the code
+generator - the item this plan scheduled last and deliberately left open - remains, and its first
+deliverable is a design decision rather than code.
+
+Baseline when this plan was written: 101 operations, 257 Rust tests, 266 JVM tests, released as 0.8.0.
 
 ## What each task actually needs, and why it is feasible
 
@@ -86,9 +91,9 @@ on nothing but must not start until 0.9.0 is released, because the generated cod
 published artifact's shape.
 
 ```
-G1 (quoted entities)  ─┐
-G2 (stickers + notify) ─┼─> release 0.9.0 ─> G3 (update loop) ─> release 0.10.0 ─> G4 (generator)
-G3 could ship earlier  ─┘
+G1 (quoted entities)  --+
+G2 (stickers + notify) --+--> release 0.9.0 --> G4 (update pump fix) --> release 0.10.0 --> generator
+G3 (update loop)      --+
 ```
 
 Recommended: G1 + G2 + G3 together as 0.9.0 (they are three small, independent changes and one release
@@ -131,7 +136,10 @@ cover it.
 
 ## Per-task release notes
 
-- **0.9.0** - G1, G2, G3. Adds quoted-reply entities, sticker install/uninstall, notification
-  settings, and a background update loop.
-- **0.10.0** - G4, only if its design decision settles. Otherwise 0.10.0 is skipped and the gap
-  remains documented.
+- **0.9.0** - G1, G2, G3, and the G4 poll fix. Adds quoted-reply entities, sticker install/uninstall,
+  notification settings, a background update loop, and an update pump that no longer loses an update
+  whose poll timed out. Measured on the release candidate: **116 operations** (was 101, the extra
+  eleven being the `chatlists.*` sharing surface), **310 Rust tests** (was 257) and **311 JVM tests**
+  (was 266).
+- **0.10.0** - the code generator, only if its design decision settles. Otherwise 0.10.0 is skipped and
+  the gap remains documented behind `invokeRaw`.
