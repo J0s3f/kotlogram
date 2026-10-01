@@ -8,6 +8,19 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## Unreleased
+
+### Fixed
+
+- **The `publish-jitpack` step no longer fails the release when JitPack throttles it.** It polled the
+  artifact path 60 times at 20-second intervals, and JitPack rate-limits repeated requests per
+  repository and version, so every attempt returned `429` and the job failed for a condition its own
+  loop had caused - a tight loop is self-defeating when the response it waits for is throttled by the
+  loop itself. It now requests the build once and checks six times, three minutes apart, handles `429`
+  distinctly from `404`, and reports the outcome in the job summary rather than failing. JitPack mirrors
+  an artifact the GitHub Release already carries in full, so a throttled mirror must not turn a good
+  release red - the same reasoning that makes `publish-central` best effort.
+
 ## 0.9.4 - 2026-10-01
 
 ### Fixed

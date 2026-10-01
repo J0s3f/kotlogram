@@ -541,6 +541,18 @@ jobs:
           gh release view "v$version" --repo "${{ github.repository }}" --json assets \
             --jq '.assets[].name' | sort
       - name: Trigger the JitPack build
+        id: jitpack
+        # Deliberately NOT a polling loop. JitPack throttles repeated requests to the same artifact path
+        # per repository and version, and answers 429 once that trips - which is what failed the v0.9.4
+        # release: 60 attempts at 20s intervals were all 429, so the build was never given a chance to be
+        # requested, let alone served. A tight loop is self-defeating here: it causes the condition it is
+        # waiting on.
+        #
+        # So: one request to trigger the build, then a small number of widely spaced checks. And the job
+        # reports rather than fails, because JitPack is a mirror of an artifact the GitHub Release already
+        # carries in full - a throttled mirror must not turn a good release red. This mirrors how
+        # publish-central reports a Central rejection.
+        continue-on-error: true
         shell: bash
         run: |
           version="${{ steps.release.outputs.version }}"
@@ -549,22 +561,63 @@ jobs:
           # back for the URL while the coordinate a consumer writes stays bare.
           tag="v$version"
           url="https://jitpack.io/com/github/J0s3f/kotlogram/$tag/kotlogram-$tag.pom"
-          echo "requesting $url"
-          # The first request triggers the build, which takes up to 15 minutes; poll generously.
-          for attempt in $(seq 1 60); do
+
+          echo "requesting $url (this triggers the build)"
+          # A single request is what asks JitPack to build the version. Its result does not matter yet.
+          curl -s -o /dev/null -w 'first request: HTTP %{http_code}\n' --location "$url" || true
+
+          # Six checks, three minutes apart: about 15 minutes, which is JitPack's stated maximum build
+          # time. Widely spaced on purpose, so the checks themselves do not trip the limit.
+          for attempt in $(seq 1 6); do
+            sleep 180
             code="$(curl -s -o /dev/null -w '%{http_code}' --location "$url" || true)"
-            if [ "$code" = "200" ]; then
-              echo "JitPack is serving the artifact (attempt $attempt)"
-              exit 0
-            fi
-            echo "attempt $attempt: HTTP $code, waiting"
-            sleep 20
+            echo "check $attempt/6: HTTP $code"
+            case "$code" in
+              200)
+                echo "JitPack is serving $tag"
+                echo "serving=true" >> "$GITHUB_OUTPUT"
+                exit 0
+                ;;
+              429)
+                echo "  throttled; JitPack rate-limits per repository and version. Backing off."
+                ;;
+              404)
+                echo "  not built or still building."
+                ;;
+            esac
           done
-          echo "JitPack did not serve the artifact within the wait window" >&2
-          echo "Build log: https://jitpack.io/com/github/J0s3f/kotlogram/$tag/build.log" >&2
-          exit 1
+
+          echo "serving=false" >> "$GITHUB_OUTPUT"
+          echo "JitPack was not serving $tag within the wait window."
+          echo "Build log: https://jitpack.io/com/github/J0s3f/kotlogram/$tag/build.log"
+      - name: Report the JitPack outcome
+        if: always() && steps.jitpack.outcome != 'skipped'
+        shell: bash
+        run: |
+          version="${{ steps.release.outputs.version }}"
+          tag="v$version"
+          {
+            if [ "${{ steps.jitpack.outputs.serving }}" = "true" ]; then
+              echo "### JitPack: serving \`$tag\`"
+              echo
+              echo "Consumers can resolve \`com.github.J0s3f:kotlogram:$version\`."
+            else
+              echo "### JitPack: not serving \`$tag\` yet"
+              echo
+              echo "The build was requested but the artifact did not appear within the wait window, either"
+              echo "because the build failed or because JitPack throttled the requests."
+              echo
+              echo "This is **not** a failure of the release. The GitHub Release carries the complete"
+              echo "artifact - the jar, its detached signature and the six native archives - and JitPack is"
+              echo "a mirror of it. JitPack builds a version when it is first requested, so a consumer's"
+              echo "first resolve may be slow but will trigger it."
+              echo
+              echo "Build log: https://jitpack.io/com/github/J0s3f/kotlogram/$tag/build.log"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
       - name: Verify the JitPack-served jar bundles the native libraries
-        # Two failures this guards against, both observed rather than imagined:
+        # Only runs once JitPack is actually serving the version, so a throttled or still-building mirror
+        # cannot fail the job. What it guards against, both observed rather than imagined:
         #   * the v0.6.0 jar compiled and linked fine but carried no native/ entries, failing at a
         #     consumer's runtime with UnsatisfiedLinkError;
         #   * the v0.9.1 build failed before installing anything, because VERSION arrives as the tag and
@@ -572,6 +625,7 @@ jobs:
         # The signature is deliberately not asserted here: JitPack publishes a fixed artifact set and
         # does not serve a .jar.asc, which was tested and confirmed from the build log. The signature
         # lives on the GitHub Release and `github-release` is what produces it.
+        if: always() && steps.jitpack.outputs.serving == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
