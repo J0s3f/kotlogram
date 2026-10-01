@@ -222,6 +222,7 @@ pub(crate) fn external_url_media(
     Ok(raw_external_media(media_kind(kind)?, url, false, None))
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 /// Operation names routed by this module.
 pub(crate) const OPERATIONS: &[&str] = &["sendMedia", "sendMediaUrl", "copyMedia"];
 

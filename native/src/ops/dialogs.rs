@@ -9,6 +9,7 @@ use crate::dto::dialog_meta::dialog_with_meta_dto;
 use crate::error::{invocation_error, json_string, parse_payload};
 use crate::payload::{LimitPayload, PeerTarget};
 
+#[cfg_attr(not(test), allow(dead_code))]
 /// Operation names routed by this module.
 pub(crate) const OPERATIONS: &[&str] = &[
     "getDialogs",

@@ -8,6 +8,28 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## 0.9.7 - 2026-10-01
+
+### Fixed
+
+- **The native libraries no longer emit 19 "never used" warnings.** Each `src/ops/*.rs` module declares
+  a `pub(crate) const OPERATIONS` listing the operations it routes, and `ops/mod.rs` aggregates them
+  into `INVENTORY` via `all_operations()`. Every reader of that chain is in `#[cfg(test)]` code, so a
+  plain library build saw the whole inventory as dead. It is not dead: those tests are the drift gate
+  that asserts every declared name routes, that names are unique, and that `native/operations.txt`
+  matches the inventory - and `tools/generate_operations.py` scrapes the `OPERATIONS` blocks as source
+  text to regenerate that shared Rust/Kotlin contract. The 19 warnings were one liveness root, not 19
+  independent defects, so the fix is `#[cfg_attr(not(test), allow(dead_code))]` on the three
+  aggregating items and the 17 per-module constants rather than deleting any of it.
+
+- **The Rust unit tests now run in CI.** The `check` job built the native library and ran the JVM tests,
+  but never `cargo test`, so the Rust half of the operations drift gate - the tests in
+  `native/src/ops/tests.rs` that verify the inventory against the routed names and the committed
+  `operations.txt` - never executed. Only the Kotlin `OperationParityTest` was enforcing the contract,
+  which meant a Rust-side drift could reach `main` unflagged. `cargo test --profile release` now runs in
+  `check`, on every push to `main` and every pull request, sharing the dependency build the job already
+  performs.
+
 ## 0.9.6 - 2026-10-01
 
 ### Changed

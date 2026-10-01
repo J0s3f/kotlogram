@@ -90,6 +90,7 @@ struct ResolvePeerPayload {
     access_hash: Option<i64>,
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 /// Operation names routed by this module.
 pub(crate) const OPERATIONS: &[&str] = &[
     "getParticipants",

@@ -52,6 +52,7 @@ const ROUTES: &[fn(&str) -> Option<Handler>] = &[
     users::route,
 ];
 
+#[cfg_attr(not(test), allow(dead_code))]
 /// Every module's [`OPERATIONS`], in the same order as [`ROUTES`].
 const INVENTORY: &[&[&str]] = &[
     account::OPERATIONS,
@@ -90,6 +91,7 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
     ROUTES.iter().find_map(|route| route(operation))
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 /// Every operation name routed through [`dispatch`].
 pub(crate) fn all_operations() -> Vec<&'static str> {
     INVENTORY

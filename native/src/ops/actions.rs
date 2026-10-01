@@ -49,6 +49,7 @@ struct GetMessageActionPayload {
     message_id: i32,
 }
 
+#[cfg_attr(not(test), allow(dead_code))]
 /// Operation names routed by this module.
 pub(crate) const OPERATIONS: &[&str] = &["sendChatAction", "getMessageAction"];
 

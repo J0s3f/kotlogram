@@ -93,6 +93,8 @@ jobs:
           key: check
       - name: Build the native library for this host
         run: cargo build --release --manifest-path native/Cargo.toml
+      - name: Rust unit tests
+        run: cargo test --manifest-path native/Cargo.toml --profile release
       - name: Stage it where Gradle expects it
         run: |
           mkdir -p generated/native/linux-x86_64
