@@ -4,8 +4,29 @@ All notable changes to kotlogramme, the Kotlin/JVM facade for Telegram built on
 [grammers](https://codeberg.org/Lonami/grammers) (tracked from its codeberg repository).
 
 The release process is tag-driven: publishing a `v<version>` tag builds the bundled native
-libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
-[`docs/publishing.md`](docs/publishing.md).
+libraries, signs the artifact, creates a GitHub Release and publishes it to JitPack, and uploads to
+Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
+recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
+
+## 0.9.1 - 2026-10-01
+
+### Changed
+
+- **JitPack is now the recommended install channel**, with Maven Central as a fallback. Central
+  enforces monthly publishing limits, so a release can be refused for reasons unrelated to the release
+  itself; JitPack has no such limits and always serves the latest version. The coordinates differ
+  because JitPack derives them from the repository name: `com.github.J0s3f:kotlogram` against
+  Central's `io.github.j0s3f:kotlogramme`. 0.9.0 itself is unchanged - this release carries no API
+  change, and exists so the signed artifact and the JitPack packaging are available under a tag that
+  contains them.
+
+### Added
+
+- The release jar is published with a **detached PGP signature**. JitPack does not sign artifacts, so
+  the signature is produced by CI and shipped beside the artifact - on the GitHub Release as
+  `kotlogramme-<version>.jar.asc` with the public key alongside it, and at the same path in the JitPack
+  repository so a consumer resolving from there can verify without leaving it. The signing key is
+  `D9F6 1805 A116 AB0A DB93 B750 66E5 BB1B 6FF3 C341`.
 
 ## 0.9.0 - 2026-10-01
 

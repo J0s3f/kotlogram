@@ -106,13 +106,21 @@ found`. A scratch consumer compiled against the real API but failed at runtime w
 
 ## Signing
 
-JitPack provides checksums but **not** artifact signing, so the signature is produced by this pipeline
-and published alongside the artifact:
+JitPack does not sign artifacts **for** you - its FAQ notes it provides checksums but no signing - so the
+signature is produced by this pipeline instead. The artifact is signed either way; what differs from
+Maven Central is only where the signature is delivered:
 
 - Gradle signs the publication whenever `SIGNING_KEY` and `SIGNING_PASSWORD` are present.
 - The detached ASCII-armored signature is attached to the GitHub Release as
   `kotlogramme-<version>.jar.asc` beside the jar, with the public key as `kotlogramme-<version>.jar.asc`'s
   partner, `SIGNING_KEY.pub.asc`, so the key can be fetched without leaving the release.
+
+The delivery point matters and is worth stating rather than glossing: JitPack's repository exposes the
+jar, the POM and JitPack's own md5/sha checksums, and nothing this repository controls can add an `.asc`
+there. A consumer resolving from JitPack therefore cannot have the signature verified automatically
+during dependency resolution, the way a Central consumer can; they fetch the `.asc` from the GitHub
+Release and check it by hand. That is the one respect in which the JitPack channel is weaker than
+Central, and it is a property of JitPack's artifact set rather than of the artifact.
 
 ```bash
 gpg --import SIGNING_KEY.pub.asc

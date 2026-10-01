@@ -19,14 +19,18 @@ jdk:
 install:
   - |
     set -euo pipefail
-    asset="https://github.com/J0s3f/kotlogram/releases/download/v${VERSION}/kotlogramme-${VERSION}.jar"
+    base="https://github.com/J0s3f/kotlogram/releases/download/v${VERSION}"
+    asset="${base}/kotlogramme-${VERSION}.jar"
+
     echo "Fetching the CI-built jar from ${asset}"
     curl --fail-with-body --silent --show-error --location --output /tmp/kotlogramme.jar "${asset}"
+
     # A sanity check that the artifact really carries the bundled natives. Without this the failure
     # would only surface at a consumer's runtime as UnsatisfiedLinkError.
     count="$(unzip -l /tmp/kotlogramme.jar | grep -c '^.*native/.*kotlogramme\(\.dll\|\.so\|\.dylib\)$' || true)"
     echo "bundled native libraries found: ${count}"
     test "${count}" -ge 6
+
     mvn --batch-mode install:install-file \
       -Dfile=/tmp/kotlogramme.jar \
       -DgroupId="${GROUP}" \
@@ -34,3 +38,19 @@ install:
       -Dversion="${VERSION}" \
       -Dpackaging=jar \
       -DgeneratePom=true
+
+    # JitPack serves whatever sits in ~/.m2/repository, so placing the detached signature beside the
+    # installed jar is what makes it available at kotlogram-<version>.jar.asc. JitPack does not sign
+    # artifacts itself, and this is the only way the signature can sit next to the artifact rather than
+    # only on the GitHub Release. The signature is public data - it is produced by CI from a key that
+    # never leaves GitHub secrets - so fetching it over HTTPS leaks nothing.
+    signed="${base}/kotlogramme-${VERSION}.jar.asc"
+    echo "Fetching the detached signature from ${signed}"
+    curl --fail-with-body --silent --show-error --location --output /tmp/kotlogramme.jar.asc "${signed}"
+
+    # The path maven installed into; mirror it for the signature.
+    repo="${HOME}/.m2/repository"
+    dir="$(dirname "$(find "${repo}" -type f -name "${ARTIFACT}-${VERSION}.jar" -print -quit)")"
+    test -n "${dir}"
+    cp /tmp/kotlogramme.jar.asc "${dir}/${ARTIFACT}-${VERSION}.jar.asc"
+    ls -l "${dir}"
