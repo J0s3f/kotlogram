@@ -21,7 +21,7 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
   the shape a terminal render loop polls. `uploadFile(path)` and a path `MediaApi.mediaSend` accept
   an optional `progressHandle` from `uploadProgressBegin` and count their local file into it through
   the same counting reader, so a path upload can be observed from another thread although its own
-  call blocks. 101 operations.
+  call blocks.
 - a reply now projects the text it quotes: `Message.quote` carries the quoted `text`, the formatting
   `entities` on it, and the same text rendered as `htmlText` and `markdownText` by grammers, grouped
   into one value so a caller drawing the quoted line reads one object. It is `null` when the message
@@ -29,6 +29,21 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
   scheduled or service reply, and a reply to a story all arrive that way - never four empty strings.
   The entities are read from the layer's `messageReplyHeader`, whose offsets already count from the
   start of the quoted text.
+- `StickersApi.messagesInstallStickerSet(shortName, id, accessHash, archived)` and
+  `messagesUninstallStickerSet(...)` install, archive and remove a sticker set, the last two of them
+  named exactly as `messagesGetStickerSet` names a set. Archiving is the same call with
+  `archived = true`, which is the layer's own toggle. The install answer is
+  `StickerSetInstall(installed, archivedSets)`: this layer's success constructor is empty, so a plain
+  install reports that it happened and names no set, and only an archive lists the sets it archived.
+- `AccountApi.accountGetNotifySettings(scope, peer, topMsgId)` and
+  `accountUpdateNotifySettings(scope, peer, topMsgId, settings)` read and write the notification
+  settings of one scope. `AccountNotifyScope.Account` asks for the account-wide settings, which
+  Telegram spells as the logged-in user; `Peer`, `ForumTopic` and `Community` address one chat,
+  `Users`, `Chats` and `Broadcasts` need no peer. `PeerNotifySettings` carries the preview and silent
+  flags, the mute expiry, the per-platform sound (Telegram's own `default`, `none`, local-file and
+  ringtone constructors) and the story flags, and the answer echoes the scope because Telegram's does
+  not. `NotifySettings` writes only the fields it is given, so one setting can change without
+  resetting the rest. 105 operations.
 
 ### Changed
 

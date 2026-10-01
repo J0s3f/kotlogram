@@ -5,7 +5,7 @@ package com.github.badoualy.telegram.api
  *
  * These operations have no high-level grammers equivalent, so the bridge builds the raw
  * `messages.*` requests; the facade keeps the same Kotlogram-shaped surface as the other domains.
- * Every operation here is get-only.
+ * Installing, archiving and removing a set are covered; editing a set's metadata is not.
  */
 interface StickersApi : BridgeApi {
     /**
@@ -33,6 +33,30 @@ interface StickersApi : BridgeApi {
     /** Lists the stickers the account has favourited. */
     fun messagesGetFavedStickers(hash: Long = 0): FavedStickers =
         bridge.messagesGetFavedStickers(hash).toCompatibility()
+
+    /**
+     * Installs a sticker set, or archives an installed one when [archived] is set.
+     *
+     * The set is named as in [messagesGetStickerSet]. Telegram answers an install with no set at
+     * all on this layer, so the result reports that the install happened; only an archive names the
+     * sets it archived.
+     */
+    fun messagesInstallStickerSet(
+        id: Long? = null,
+        accessHash: Long? = null,
+        shortName: String? = null,
+        archived: Boolean = false,
+    ): StickerSetInstall = bridge.installStickerSet(shortName, id, accessHash, archived)
+        .toCompatibility()
+
+    /** Removes an installed sticker set, named as in [messagesGetStickerSet]. */
+    fun messagesUninstallStickerSet(
+        id: Long? = null,
+        accessHash: Long? = null,
+        shortName: String? = null,
+    ) {
+        bridge.uninstallStickerSet(shortName, id, accessHash)
+    }
 
     /**
      * Sends one sticker of a set.

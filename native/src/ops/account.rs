@@ -11,6 +11,12 @@
 //! rule kinds, but those stay behind `invokeRaw` until a caller needs them. Setting a rule that
 //! names users (`allowUsers`/`disallowUsers`) is refused: the layer takes `InputUser` values,
 //! which need each user's access hash, and this operation takes bare user ids nowhere.
+//!
+//! Notification settings are scoped by name, because the layer's `inputNotifyPeer` has no
+//! "the whole account" constructor: [`NotifyScope::Account`] is the bridge's own scope and is sent
+//! as the logged-in user's `inputPeerSelf`, which is how the layer spells the account-wide
+//! settings. Making the scope explicit keeps an account-wide answer distinguishable from a
+//! peer-specific one, which the layer's answer cannot say on its own.
 
 use grammers_client::peer::User as ClientUser;
 use grammers_client::tl;
@@ -18,10 +24,12 @@ use serde::Deserialize;
 use serde_json::json;
 
 use super::Handler;
-use crate::client::NativeClient;
+use crate::client::{resolve_peer, NativeClient};
 use crate::dto::account::{authorizations_dto, password_settings_dto, privacy_rules_dto};
+use crate::dto::notifications::notify_settings_dto;
 use crate::dto::user_dto;
 use crate::error::{invocation_error, json_string, parse_payload};
+use crate::payload::PeerTarget;
 
 /// The privacy keys `accountGetPrivacy`/`accountSetPrivacy` accept, as a caller names them.
 const PRIVACY_KEYS: &[&str] = &["statusTimestamp", "chatInvite", "phoneNumber"];
@@ -82,6 +90,111 @@ struct PrivacyRuleSpec {
     chats: Vec<i64>,
 }
 
+/// Which notifications an operation addresses, named the way the layer's `inputNotifyPeer`
+/// constructors are.
+///
+/// [NotifyScope::Account] has no layer constructor of its own: it is the account-wide scope, sent as
+/// the logged-in user's `inputPeerSelf`.
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+enum NotifyScope {
+    Account,
+    Peer,
+    Users,
+    Chats,
+    Broadcasts,
+    ForumTopic,
+    Community,
+}
+
+impl NotifyScope {
+    /// The wire name of a scope, which is also what the answer echoes back.
+    fn name(self) -> &'static str {
+        match self {
+            NotifyScope::Account => "account",
+            NotifyScope::Peer => "peer",
+            NotifyScope::Users => "users",
+            NotifyScope::Chats => "chats",
+            NotifyScope::Broadcasts => "broadcasts",
+            NotifyScope::ForumTopic => "forumTopic",
+            NotifyScope::Community => "community",
+        }
+    }
+
+    /// True for the scopes that name a peer, and so need one resolved before the call.
+    fn names_a_peer(self) -> bool {
+        matches!(
+            self,
+            NotifyScope::Peer | NotifyScope::ForumTopic | NotifyScope::Community
+        )
+    }
+}
+
+/// Payload of `accountGetNotifySettings`: which notifications to read.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct GetNotifySettingsPayload {
+    scope: NotifyScope,
+    /// The peer a `peer`, `forumTopic` or `community` scope addresses; the other scopes ignore it.
+    #[serde(flatten)]
+    peer: PeerTarget,
+    /// The forum topic's top message id, which only a `forumTopic` scope reads.
+    #[serde(default)]
+    top_msg_id: Option<i32>,
+}
+
+/// Payload of `accountUpdateNotifySettings`: which notifications to write, and how.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UpdateNotifySettingsPayload {
+    #[serde(flatten)]
+    target: GetNotifySettingsPayload,
+    settings: NotifySettingsSpec,
+}
+
+/// The settings `accountUpdateNotifySettings` writes, named the way `inputPeerNotifySettings` names
+/// them.
+///
+/// Every field is optional because the layer's settings are flags: an absent one leaves whatever
+/// Telegram has in place alone, which is the only way to change one setting without resetting the
+/// others.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct NotifySettingsSpec {
+    #[serde(default)]
+    show_previews: Option<bool>,
+    #[serde(default)]
+    silent: Option<bool>,
+    /// Epoch milliseconds at which the mute lifts; `0` unmutes now. Absent leaves the mute alone.
+    #[serde(default)]
+    mute_until: Option<i64>,
+    #[serde(default)]
+    sound: Option<NotifySoundSpec>,
+    #[serde(default)]
+    stories_muted: Option<bool>,
+    #[serde(default)]
+    stories_hide_sender: Option<bool>,
+    #[serde(default)]
+    stories_sound: Option<NotifySoundSpec>,
+}
+
+/// One requested notification sound, named the way `notificationSound` names its constructors.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct NotifySoundSpec {
+    /// `default`, `none`, `local` or `ringtone`.
+    kind: String,
+    /// A ringtone's identifier; only a `ringtone` sound reads it.
+    #[serde(default)]
+    id: Option<i64>,
+    /// A local sound's shown title; only a `local` sound reads it.
+    #[serde(default)]
+    title: Option<String>,
+    /// A local sound's data blob; only a `local` sound reads it.
+    #[serde(default)]
+    data: Option<String>,
+}
+
 /// Operation names routed by this module.
 pub(crate) const OPERATIONS: &[&str] = &[
     "accountUpdateProfile",
@@ -94,6 +207,8 @@ pub(crate) const OPERATIONS: &[&str] = &[
     "accountGetPassword",
     "accountGetPrivacy",
     "accountSetPrivacy",
+    "accountGetNotifySettings",
+    "accountUpdateNotifySettings",
 ];
 
 /// Routes [operation] to its handler, or returns `None` when the name is not this module's.
@@ -112,6 +227,8 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
         "accountGetPassword" => get_password,
         "accountGetPrivacy" => get_privacy,
         "accountSetPrivacy" => set_privacy,
+        "accountGetNotifySettings" => get_notify_settings,
+        "accountUpdateNotifySettings" => update_notify_settings,
         _ => return None,
     })
 }
@@ -274,10 +391,157 @@ fn set_privacy(native: &NativeClient, payload: &str) -> Result<String, String> {
     json_string(privacy_rules_dto(&data.key, &rules))
 }
 
+/// Reads the notification settings of one scope.
+///
+/// The answer carries no scope of its own on this layer, so the scope name travels with it: an
+/// account-wide answer and a per-peer one are otherwise the same document.
+fn get_notify_settings(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: GetNotifySettingsPayload = parse_payload(payload)?;
+    let peer = notify_peer_input(native, &data)?;
+    let result = native
+        .runtime
+        .block_on(native.client.invoke(&tl::functions::account::GetNotifySettings {
+            peer,
+        }))
+        .map_err(invocation_error)?;
+    json_string(notify_settings_dto(data.scope.name(), &result))
+}
+
+/// Writes the notification settings of one scope, answering the layer's bare boolean.
+///
+/// The write is the same call as the read for both directions: the layer's settings are flags, so an
+/// absent field in [NotifySettingsSpec] is what leaves that one setting as it was.
+fn update_notify_settings(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: UpdateNotifySettingsPayload = parse_payload(payload)?;
+    let peer = notify_peer_input(native, &data.target)?;
+    let settings = tl::enums::InputPeerNotifySettings::Settings(notify_settings_input(&data.settings)?);
+    native
+        .runtime
+        .block_on(
+            native
+                .client
+                .invoke(&tl::functions::account::UpdateNotifySettings { peer, settings }),
+        )
+        .map_err(invocation_error)?;
+    json_string(json!({ "ok": true }))
+}
+
 /// Projects a layer user an account update answered with.
 fn project_user(native: &NativeClient, user: tl::enums::User) -> Result<String, String> {
     let user = ClientUser::from_raw(&native.client, user);
     json_string(user_dto(&user))
+}
+
+/// Builds the layer's `inputNotifyPeer` for the scope a payload names.
+///
+/// `account` resolves to no peer at all: the layer spells the account-wide settings as the
+/// logged-in user's `inputPeerSelf`. The scopes that do not name a peer map straight onto the
+/// layer's own peer-less constructors.
+fn notify_peer_input(
+    native: &NativeClient,
+    data: &GetNotifySettingsPayload,
+) -> Result<tl::enums::InputNotifyPeer, String> {
+    if !data.scope.names_a_peer() {
+        return Ok(match data.scope {
+            NotifyScope::Account => notify_peer_self(),
+            NotifyScope::Users => tl::enums::InputNotifyPeer::InputNotifyUsers,
+            NotifyScope::Chats => tl::enums::InputNotifyPeer::InputNotifyChats,
+            NotifyScope::Broadcasts => tl::enums::InputNotifyPeer::InputNotifyBroadcasts,
+            // Guarded by `names_a_peer`.
+            NotifyScope::Peer | NotifyScope::ForumTopic | NotifyScope::Community => {
+                unreachable!("these scopes name a peer and are resolved below")
+            }
+        });
+    }
+    let peer = native
+        .runtime
+        .block_on(resolve_peer(native, &data.peer))?;
+    let input = tl::enums::InputPeer::from(peer);
+    Ok(match data.scope {
+        NotifyScope::Peer => tl::enums::InputNotifyPeer::Peer(tl::types::InputNotifyPeer { peer: input }),
+        NotifyScope::ForumTopic => tl::enums::InputNotifyPeer::InputNotifyForumTopic(
+            tl::types::InputNotifyForumTopic {
+                peer: input,
+                top_msg_id: data
+                    .top_msg_id
+                    .ok_or("a forumTopic scope needs a topMsgId")?,
+            },
+        ),
+        NotifyScope::Community => {
+            let tl::enums::InputPeer::Channel(channel) = input else {
+                return Err("a community scope needs a broadcast channel".to_owned());
+            };
+            tl::enums::InputNotifyPeer::InputNotifyCommunity(tl::types::InputNotifyCommunity {
+                // The layer wants the bare channel here, not the peer form it resolved to.
+                community: tl::enums::InputChannel::Channel(tl::types::InputChannel {
+                    channel_id: channel.channel_id,
+                    access_hash: channel.access_hash,
+                }),
+            })
+        }
+        // Guarded by `names_a_peer`.
+        NotifyScope::Account | NotifyScope::Users | NotifyScope::Chats | NotifyScope::Broadcasts => {
+            unreachable!("these scopes name no peer and are mapped above")
+        }
+    })
+}
+
+/// The layer's spelling of the account's own settings: the logged-in user.
+fn notify_peer_self() -> tl::enums::InputNotifyPeer {
+    tl::enums::InputNotifyPeer::Peer(tl::types::InputNotifyPeer {
+        peer: tl::enums::InputPeer::PeerSelf,
+    })
+}
+
+/// Maps the requested settings onto the layer's `inputPeerNotifySettings`.
+fn notify_settings_input(
+    spec: &NotifySettingsSpec,
+) -> Result<tl::types::InputPeerNotifySettings, String> {
+    Ok(tl::types::InputPeerNotifySettings {
+        show_previews: spec.show_previews,
+        silent: spec.silent,
+        mute_until: spec.mute_until.map(seconds).transpose()?,
+        sound: spec.sound.as_ref().map(notify_sound_input).transpose()?,
+        stories_muted: spec.stories_muted,
+        stories_hide_sender: spec.stories_hide_sender,
+        stories_sound: spec.stories_sound.as_ref().map(notify_sound_input).transpose()?,
+    })
+}
+
+/// Maps one requested sound onto the layer's `notificationSound`.
+fn notify_sound_input(spec: &NotifySoundSpec) -> Result<tl::enums::NotificationSound, String> {
+    Ok(match spec.kind.as_str() {
+        "default" => tl::enums::NotificationSound::Default,
+        "none" => tl::enums::NotificationSound::None,
+        "local" => tl::enums::NotificationSound::Local(tl::types::NotificationSoundLocal {
+            title: spec
+                .title
+                .clone()
+                .ok_or("a local notification sound needs a title")?,
+            data: spec
+                .data
+                .clone()
+                .ok_or("a local notification sound needs its data")?,
+        }),
+        "ringtone" => tl::enums::NotificationSound::Ringtone(tl::types::NotificationSoundRingtone {
+            id: spec
+                .id
+                .ok_or("a ringtone notification sound needs an id")?,
+        }),
+        other => {
+            return Err(format!(
+                "unsupported notification sound: {other}; expected default, none, local or ringtone"
+            ))
+        }
+    })
+}
+
+/// The wire format is epoch milliseconds; the layer's `mute_until` is whole seconds.
+fn seconds(millis: i64) -> Result<i32, String> {
+    let seconds = millis / 1_000;
+    i32::try_from(seconds).map_err(|_| {
+        format!("muteUntil {millis} is out of the layer's date range")
+    })
 }
 
 /// Maps a curated key name onto the layer's input key.
@@ -490,6 +754,183 @@ mod tests {
     }
 
     #[test]
+    fn a_notify_payload_reads_its_scope_and_the_peer_it_names() {
+        let account: GetNotifySettingsPayload =
+            parse_payload(r#"{"scope": "account"}"#).expect("an account-wide payload");
+        assert_eq!(account.scope, NotifyScope::Account);
+        assert!(account.peer.peer_handle.is_none());
+        assert!(account.peer.username.is_none());
+        assert_eq!(account.top_msg_id, None);
+
+        let peer: GetNotifySettingsPayload =
+            parse_payload(r#"{"scope": "peer", "peerHandle": 42}"#).expect("a peer payload");
+        assert_eq!(peer.scope, NotifyScope::Peer);
+        assert_eq!(peer.peer.peer_handle, Some(42));
+        assert!(peer.scope.names_a_peer());
+
+        let topic: UpdateNotifySettingsPayload = parse_payload(
+            r#"{"scope": "forumTopic", "username": "someForum", "topMsgId": 9,
+                "settings": {"silent": true}}"#,
+        )
+        .expect("an update payload");
+        assert_eq!(topic.target.scope, NotifyScope::ForumTopic);
+        assert_eq!(topic.target.peer.username.as_deref(), Some("someForum"));
+        assert_eq!(topic.target.top_msg_id, Some(9));
+        assert_eq!(topic.settings.silent, Some(true));
+        assert_eq!(topic.settings.mute_until, None);
+    }
+
+    #[test]
+    fn a_notify_payload_without_a_scope_is_refused() {
+        let error = match parse_payload::<GetNotifySettingsPayload>("{}") {
+            Ok(_) => panic!("a payload without a scope names nothing to read"),
+            Err(error) => error,
+        };
+        assert!(error.contains("scope"), "{error}");
+    }
+
+    #[test]
+    fn every_scope_maps_to_its_wire_name() {
+        let cases = [
+            (NotifyScope::Account, "account"),
+            (NotifyScope::Peer, "peer"),
+            (NotifyScope::Users, "users"),
+            (NotifyScope::Chats, "chats"),
+            (NotifyScope::Broadcasts, "broadcasts"),
+            (NotifyScope::ForumTopic, "forumTopic"),
+            (NotifyScope::Community, "community"),
+        ];
+        for (scope, expected) in cases {
+            assert_eq!(scope.name(), expected);
+            let payload: GetNotifySettingsPayload = parse_payload(&format!(
+                r#"{{"scope": "{expected}"}}"#
+            ))
+            .expect("a named scope");
+            assert_eq!(payload.scope, scope);
+        }
+    }
+
+    #[test]
+    fn the_account_scope_is_the_logged_in_user_and_the_others_name_no_peer() {
+        assert_eq!(
+            notify_peer_self(),
+            tl::enums::InputNotifyPeer::Peer(tl::types::InputNotifyPeer {
+                peer: tl::enums::InputPeer::PeerSelf,
+            })
+        );
+        assert!(!NotifyScope::Account.names_a_peer());
+        assert!(!NotifyScope::Users.names_a_peer());
+        assert!(!NotifyScope::Chats.names_a_peer());
+        assert!(!NotifyScope::Broadcasts.names_a_peer());
+    }
+
+    #[test]
+    fn the_settings_map_onto_the_layer_flags_and_convert_the_mute_date() {
+        let spec: NotifySettingsSpec = parse_payload(
+            r#"{"showPreviews": false, "silent": true, "muteUntil": 1700000000000,
+                "storiesMuted": true, "storiesHideSender": false}"#,
+        )
+        .expect("a settings spec");
+        let settings = notify_settings_input(&spec).expect("the settings map");
+        assert_eq!(settings.show_previews, Some(false));
+        assert_eq!(settings.silent, Some(true));
+        assert_eq!(settings.mute_until, Some(1_700_000_000));
+        assert_eq!(settings.stories_muted, Some(true));
+        assert_eq!(settings.stories_hide_sender, Some(false));
+        assert_eq!(settings.sound, None);
+        assert_eq!(settings.stories_sound, None);
+
+        // An empty spec changes nothing at all, which is how one setting is written without
+        // resetting the rest.
+        let settings = notify_settings_input(&NotifySettingsSpec {
+            show_previews: None,
+            silent: None,
+            mute_until: None,
+            sound: None,
+            stories_muted: None,
+            stories_hide_sender: None,
+            stories_sound: None,
+        })
+        .expect("an empty spec");
+        assert_eq!(settings.show_previews, None);
+        assert_eq!(settings.silent, None);
+        assert_eq!(settings.mute_until, None);
+    }
+
+    #[test]
+    fn a_mute_date_outside_the_layer_range_is_refused() {
+        // A whole second past the last one the layer's 32-bit date can hold.
+        let error = seconds(i64::from(i32::MAX) * 1_000 + 1_000).expect_err("out of range");
+        assert!(error.contains("out of the layer's date range"), "{error}");
+        // The last second it can hold is still fine.
+        assert_eq!(seconds(i64::from(i32::MAX) * 1_000), Ok(i32::MAX));
+        assert_eq!(seconds(1_700_000_000_000), Ok(1_700_000_000));
+        assert_eq!(seconds(0), Ok(0));
+        assert_eq!(seconds(1_500), Ok(1));
+    }
+
+    #[test]
+    fn every_sound_kind_maps_to_its_layer_constructor() {
+        let sound = |kind: &str| NotifySoundSpec {
+            kind: kind.to_owned(),
+            id: Some(5150),
+            title: Some("Ping".to_owned()),
+            data: Some("blob".to_owned()),
+        };
+        assert_eq!(
+            notify_sound_input(&sound("default")).expect("default"),
+            tl::enums::NotificationSound::Default
+        );
+        assert_eq!(
+            notify_sound_input(&sound("none")).expect("none"),
+            tl::enums::NotificationSound::None
+        );
+        assert_eq!(
+            notify_sound_input(&sound("local")).expect("local"),
+            tl::enums::NotificationSound::Local(tl::types::NotificationSoundLocal {
+                title: "Ping".to_owned(),
+                data: "blob".to_owned(),
+            })
+        );
+        assert_eq!(
+            notify_sound_input(&sound("ringtone")).expect("ringtone"),
+            tl::enums::NotificationSound::Ringtone(tl::types::NotificationSoundRingtone { id: 5150 })
+        );
+    }
+
+    #[test]
+    fn a_sound_missing_its_field_and_an_unknown_kind_are_refused() {
+        let local = NotifySoundSpec {
+            kind: "local".to_owned(),
+            id: None,
+            title: None,
+            data: None,
+        };
+        let error = notify_sound_input(&local).expect_err("a local sound needs a title");
+        assert!(error.contains("a local notification sound needs a title"), "{error}");
+
+        let ringtone = NotifySoundSpec {
+            kind: "ringtone".to_owned(),
+            id: None,
+            title: None,
+            data: None,
+        };
+        let error = notify_sound_input(&ringtone).expect_err("a ringtone needs an id");
+        assert!(error.contains("a ringtone notification sound needs an id"), "{error}");
+
+        let unknown = NotifySoundSpec {
+            kind: "bird".to_owned(),
+            id: None,
+            title: None,
+            data: None,
+        };
+        assert_eq!(
+            notify_sound_input(&unknown).expect_err("no such sound"),
+            "unsupported notification sound: bird; expected default, none, local or ringtone"
+        );
+    }
+
+    #[test]
     fn the_account_operations_route_to_their_own_handler() {
         assert_eq!(
             route("accountUpdateProfile"),
@@ -497,6 +938,14 @@ mod tests {
         );
         assert_eq!(route("accountGetPassword"), Some(get_password as Handler));
         assert_eq!(route("accountSetPrivacy"), Some(set_privacy as Handler));
+        assert_eq!(
+            route("accountGetNotifySettings"),
+            Some(get_notify_settings as Handler)
+        );
+        assert_eq!(
+            route("accountUpdateNotifySettings"),
+            Some(update_notify_settings as Handler)
+        );
     }
 
     #[test]

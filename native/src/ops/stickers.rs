@@ -2,19 +2,28 @@
 //!
 //! grammers exposes no sticker surface of its own, so this module follows the
 //! [`super::contacts`] precedent: each operation builds one `tl::functions::messages::*` request,
-//! invokes it through the client and projects the result through [`crate::dto::stickers`]. Every
-//! operation here is get-only; installing, archiving and editing sets stay behind `invokeRaw`.
+//! invokes it through the client and projects the result through [`crate::dto::stickers`].
+//!
+//! Installing and archiving are the same layer call — `messagesInstallStickerSet` carries an
+//! `archived` flag, so one operation covers both directions — and removing an installed set is
+//! `messagesUninstallStickerSet`. Only editing a set's own metadata stays behind `invokeRaw`.
+//!
+//! The layer's install answer is not symmetrical: `messagesStickerSetInstallResultSuccess` is an
+//! empty constructor, so a plain install reports that it happened and nothing else. Only the
+//! archive branch names the sets it archived. [`crate::dto::stickers`] mirrors that rather than
+//! inventing a set the layer did not report.
 
 use grammers_client::message::InputMessage;
 use grammers_client::tl;
 use serde::Deserialize;
+use serde_json::json;
 
 use super::Handler;
 use crate::client::{resolve_peer, NativeClient};
 use crate::dto::message::message_dto;
 use crate::dto::stickers::{
-    all_stickers_dto, faved_stickers_dto, full_sticker_set_dto, recent_stickers_dto,
-    StickerSetResultDto,
+    all_stickers_dto, faved_stickers_dto, full_sticker_set_dto, install_result_dto,
+    recent_stickers_dto, StickerSetResultDto,
 };
 use crate::error::{invocation_error, json_string, parse_payload};
 use crate::payload::PeerTarget;
@@ -75,12 +84,47 @@ struct SendStickerPayload {
     silent: bool,
 }
 
+/// Payload of `messagesInstallStickerSet`: the set to install or archive, named the same way
+/// `messagesGetStickerSet` names it.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct InstallStickerSetPayload {
+    /// The set's short name, which the layer resolves without an id.
+    #[serde(default)]
+    short_name: Option<String>,
+    /// The set's id, paired with `accessHash` when no short name is given.
+    #[serde(default)]
+    id: Option<i64>,
+    #[serde(default)]
+    access_hash: Option<i64>,
+    /// True archives an installed set instead of installing one; this is the layer's own toggle, so
+    /// archiving is this operation with the flag set rather than an operation of its own.
+    #[serde(default)]
+    archived: bool,
+}
+
+/// Payload of `messagesUninstallStickerSet`: the set to remove, named the same way again.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UninstallStickerSetPayload {
+    /// The set's short name, which the layer resolves without an id.
+    #[serde(default)]
+    short_name: Option<String>,
+    /// The set's id, paired with `accessHash` when no short name is given.
+    #[serde(default)]
+    id: Option<i64>,
+    #[serde(default)]
+    access_hash: Option<i64>,
+}
+
 /// Operation names routed by this module.
 pub(crate) const OPERATIONS: &[&str] = &[
     "messagesGetStickerSet",
     "messagesGetAllStickers",
     "messagesGetRecentStickers",
     "messagesGetFavedStickers",
+    "messagesInstallStickerSet",
+    "messagesUninstallStickerSet",
     "sendSticker",
 ];
 
@@ -91,9 +135,47 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
         "messagesGetAllStickers" => get_all_stickers,
         "messagesGetRecentStickers" => get_recent_stickers,
         "messagesGetFavedStickers" => get_faved_stickers,
+        "messagesInstallStickerSet" => install_sticker_set,
+        "messagesUninstallStickerSet" => uninstall_sticker_set,
         "sendSticker" => send_sticker,
         _ => return None,
     })
+}
+
+/// Installs a sticker set, or archives one when `archived` is set.
+///
+/// The layer answers either an empty success marker or the sets it archived, so a plain install
+/// reports nothing but that it happened. See the module docs for why.
+fn install_sticker_set(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: InstallStickerSetPayload = parse_payload(payload)?;
+    let stickerset = input_sticker_set(data.short_name.as_deref(), data.id, data.access_hash)?;
+    let result = native
+        .runtime
+        .block_on(
+            native
+                .client
+                .invoke(&tl::functions::messages::InstallStickerSet {
+                    stickerset,
+                    archived: data.archived,
+                }),
+        )
+        .map_err(invocation_error)?;
+    json_string(install_result_dto(result))
+}
+
+/// Removes an installed sticker set, which the layer answers as a bare boolean.
+fn uninstall_sticker_set(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: UninstallStickerSetPayload = parse_payload(payload)?;
+    let stickerset = input_sticker_set(data.short_name.as_deref(), data.id, data.access_hash)?;
+    native
+        .runtime
+        .block_on(
+            native
+                .client
+                .invoke(&tl::functions::messages::UninstallStickerSet { stickerset }),
+        )
+        .map_err(invocation_error)?;
+    json_string(json!({ "ok": true }))
 }
 
 /// Sends one sticker of a set.
@@ -328,6 +410,42 @@ mod tests {
     }
 
     #[test]
+    fn an_install_payload_defaults_to_installing_rather_than_archiving() {
+        let data: InstallStickerSetPayload = decode(r#"{"shortName": "somePack"}"#);
+        assert_eq!(data.short_name.as_deref(), Some("somePack"));
+        assert!(!data.archived);
+        assert_eq!(data.id, None);
+        assert_eq!(data.access_hash, None);
+
+        let data: InstallStickerSetPayload = decode(r#"{"id": 1, "accessHash": 2, "archived": true}"#);
+        assert!(data.archived);
+        assert_eq!(input_sticker_set(data.short_name.as_deref(), data.id, data.access_hash), Ok(
+            tl::enums::InputStickerSet::Id(tl::types::InputStickerSetId { id: 1, access_hash: 2 })
+        ));
+    }
+
+    #[test]
+    fn an_install_payload_without_a_set_is_refused() {
+        let data: InstallStickerSetPayload = decode("{}");
+        let error = input_sticker_set(data.short_name.as_deref(), data.id, data.access_hash)
+            .expect_err("no set");
+        assert!(error.contains("a sticker set needs a shortName"));
+    }
+
+    #[test]
+    fn an_uninstall_payload_names_the_set_the_same_way() {
+        let data: UninstallStickerSetPayload = decode(r#"{"shortName": "somePack"}"#);
+        assert_eq!(
+            input_sticker_set(data.short_name.as_deref(), data.id, data.access_hash),
+            Ok(tl::enums::InputStickerSet::ShortName(
+                tl::types::InputStickerSetShortName {
+                    short_name: "somePack".to_owned(),
+                }
+            ))
+        );
+    }
+
+    #[test]
     fn the_sticker_operations_route_to_their_own_handler() {
         assert_eq!(
             route("messagesGetStickerSet"),
@@ -336,6 +454,14 @@ mod tests {
         assert_eq!(
             route("messagesGetFavedStickers"),
             Some(get_faved_stickers as Handler)
+        );
+        assert_eq!(
+            route("messagesInstallStickerSet"),
+            Some(install_sticker_set as Handler)
+        );
+        assert_eq!(
+            route("messagesUninstallStickerSet"),
+            Some(uninstall_sticker_set as Handler)
         );
     }
 

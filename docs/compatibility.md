@@ -60,23 +60,27 @@ its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 | `accountGetAuthorizations` / `accountResetAuthorization` / `accountResetAuthorizations` | raw `account.GetAuthorizations` / `account.ResetAuthorization` / `auth.ResetAuthorizations` |
 | `accountGetPassword` | raw `account.GetPassword` (a settings summary; no key material is projected) |
 | `accountGetPrivacy` / `accountSetPrivacy` / `accountUpdateStatus` | raw `account.GetPrivacy` / `SetPrivacy` / `UpdateStatus` |
+| `accountGetNotifySettings` / `accountUpdateNotifySettings` | raw `account.GetNotifySettings` / `UpdateNotifySettings`, scoped by name (`account`, `peer`, `users`, `chats`, `broadcasts`, `forumTopic`, `community`) |
 | `contactsGetContacts` / `contactsImportContacts` / `contactsDeleteContacts` / `contactsSearch` | raw `contacts.GetContacts` / `ImportContacts` / `DeleteContacts` / `Search` |
 | `contactsBlock` / `contactsUnblock` / `contactsGetBlocked` | raw `contacts.Block` / `Unblock` / `GetBlocked` |
 | `usersGetUsers` | raw `users.GetUsers` (batched by id, reusing the contacts user/peer projection) |
 | `messagesGetDialogFilters` / `messagesUpdateDialogFilter` / `messagesUpdateDialogFiltersOrder` | raw `messages.GetDialogFilters` / `UpdateDialogFilter` / `UpdateDialogFiltersOrder` |
 | `messagesGetStickerSet` / `messagesGetAllStickers` / `messagesGetRecentStickers` / `messagesGetFavedStickers` | raw `messages.GetStickerSet` / `GetAllStickers` / `GetRecentStickers` / `GetFavedStickers` |
+| `messagesInstallStickerSet` / `messagesUninstallStickerSet` | raw `messages.InstallStickerSet` (its `archived` flag covers archiving) / `UninstallStickerSet` |
 | `uploadBytes` / `uploadStreamBegin` / `uploadStreamChunk` / `uploadStreamFinish` / `uploadProgressBegin` / `uploadProgress` | `Client::upload_stream` over a bounded channel or a counting file reader, with a client-side upload registry; a later send or album item references the upload by `fileHandle` instead of a path, and a running upload is polled for its bytes sent, total, elapsed time and rate |
 | `sendInlineBotResult` | raw `messages.SendInlineBotResult` |
 | `answerGuestChatQuery` | raw `messages.SetBotGuestChatResult` |
 
-Three of those rows deserve a note. `accept_invite_link` and `parse_invite_link` are behind a grammers
+Some of those rows deserve a note. `accept_invite_link` and `parse_invite_link` are behind a grammers
 optional feature this crate does not enable, so the bridge rebuilds the same surface: the
 `messages.ImportChatInvite` request for the invite and a URL parser that follows grammers' own
 host and path rules (verified against its source). Similarly, grammers' `Client::edit_inline_message`
 is crate-private, so editing an inline message invokes the `messages.EditInlineBotMessage` request
 directly. Date-bounded peer search, on the other hand, is back on grammers' own `SearchIter`: its
 date bounds take a `jiff::Timestamp`, which the bridge carries `jiff` for, so no raw request is
-needed there.
+needed there. The notification settings are named by scope because the layer's `inputNotifyPeer` has
+no "the whole account" constructor: the `account` scope is the logged-in user's `inputPeerSelf`, and
+the answer echoes the scope back because the layer's own does not.
 
 `TelegramApiStorage` now provides a SQLite session path because grammers stores the auth key,
 datacenter data and peer cache as one atomic session database. The old per-field storage contract
@@ -100,7 +104,7 @@ domains can be developed and reviewed independently.
 `native/operations.txt` is the shared contract listing every operation the native crate answers.
 The Rust unit tests and `OperationParityTest` on the JVM both assert against it, so the bridge
 cannot declare a capability the native side does not implement, or the reverse. It currently
-lists 101 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
+lists 105 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
 analysis behind the layout, and [`docs/gap-closure-roadmap.md`](gap-closure-roadmap.md) the work
 that closed the post-parity gaps.
 
@@ -120,11 +124,10 @@ upgrade must create a new `telegram-tl-<layer>` API version instead of mutating 
 
 Everything in `native/operations.txt` is reachable from Kotlin. What stays outside the facade:
 
-- TL methods this layer has not added: chatlist folder creation, sticker install/archive,
-  per-peer notification settings, the story and paid-media surfaces, and most `messages.*` utility
-  calls. `invokeRaw` reaches all of them with a Layer-229 codec.
-- The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` rather
-  than by a background loop.
+- TL methods this layer has not added: chatlist folder creation, the story and paid-media surfaces,
+  and most `messages.*` utility calls. `invokeRaw` reaches all of them with a Layer-229 codec.
+- The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` or by the
+  background loop behind `UpdatesApi.startUpdateLoop`.
 - A few grammers capabilities have no request/response shape the bridge can carry: the
   `ActionSender` repeat loop, and `upload_stream` from a caller-supplied async reader that does not
   know its length up front (grammers must be told the total before the first part, which is why

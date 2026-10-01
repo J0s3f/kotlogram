@@ -7,19 +7,23 @@ import org.kotlogramme.protocol.FavedStickers
 import org.kotlogramme.protocol.GetRecentStickersPayload
 import org.kotlogramme.protocol.GetStickerSetPayload
 import org.kotlogramme.protocol.GetStickersPayload
+import org.kotlogramme.protocol.InstallStickerSetPayload
 import org.kotlogramme.protocol.Message
+import org.kotlogramme.protocol.OperationResult
 import org.kotlogramme.protocol.Peer
 import org.kotlogramme.protocol.PeerTarget
 import org.kotlogramme.protocol.RecentStickers
 import org.kotlogramme.protocol.SendStickerPayload
+import org.kotlogramme.protocol.StickerSetInstallResult
 import org.kotlogramme.protocol.StickerSetResult
+import org.kotlogramme.protocol.UninstallStickerSetPayload
 
 /**
  * The typed sticker family, built on grammers' TL layer because it exposes no high-level stickers
  * API.
  *
- * Every operation here is get-only; installing, archiving and editing sets stay behind
- * `invokeRaw`.
+ * Installing, archiving and removing a set are the layer's own `messages.*` calls; editing a set's
+ * metadata still stays behind `invokeRaw`.
  */
 internal interface StickersBridge {
     val transport: Transport
@@ -54,6 +58,35 @@ internal interface StickersBridge {
     @Operation("messagesGetFavedStickers")
     fun messagesGetFavedStickers(hash: Long = 0): FavedStickers =
         transport.request("messagesGetFavedStickers", GetStickersPayload(hash))
+
+    /**
+     * Installs a sticker set, or archives one when [archived] is set.
+     *
+     * The set is named as in [messagesGetStickerSet]. The layer's answer names the sets only when
+     * the call archived them: a plain install reports
+     * [StickerSetInstallResult.installed] and nothing else.
+     */
+    @Operation("messagesInstallStickerSet")
+    fun installStickerSet(
+        shortName: String? = null,
+        id: Long? = null,
+        accessHash: Long? = null,
+        archived: Boolean = false,
+    ): StickerSetInstallResult =
+        transport.request("messagesInstallStickerSet", InstallStickerSetPayload(shortName, id, accessHash, archived))
+
+    /** Removes an installed sticker set, named the same way. */
+    @Operation("messagesUninstallStickerSet")
+    fun uninstallStickerSet(
+        shortName: String? = null,
+        id: Long? = null,
+        accessHash: Long? = null,
+    ) {
+        transport.request<UninstallStickerSetPayload, OperationResult>(
+            "messagesUninstallStickerSet",
+            UninstallStickerSetPayload(shortName, id, accessHash),
+        )
+    }
 
     /**
      * Sends one sticker of a set.

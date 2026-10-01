@@ -2,6 +2,7 @@ package com.github.badoualy.telegram.api
 
 import kotlinx.serialization.json.Json
 import org.kotlogramme.protocol.AuthorizationsResult as BridgeAuthorizationsResult
+import org.kotlogramme.protocol.NotifySettingsResult as BridgeNotifySettingsResult
 import org.kotlogramme.protocol.PasswordSettings as BridgePasswordSettings
 import org.kotlogramme.protocol.PrivacyRulesResult as BridgePrivacyRulesResult
 import kotlin.test.Test
@@ -81,7 +82,86 @@ class AccountCompatibilityTest {
         )
     }
 
+    @Test
+    fun `an account-wide notify result projects the scope and leaves every flag unset`() {
+        val notify = json.decodeFromString<BridgeNotifySettingsResult>(NOTIFY_ACCOUNT)
+            .toCompatibility()
+
+        assertEquals("account", notify.scope)
+        assertEquals(null, notify.settings.silent)
+        assertEquals(null, notify.settings.muteUntil)
+        assertEquals(null, notify.settings.iosSound)
+    }
+
+    @Test
+    fun `a peer notify result projects the flags, the mute and every sound`() {
+        val notify = json.decodeFromString<BridgeNotifySettingsResult>(NOTIFY_PEER).toCompatibility()
+
+        assertEquals("peer", notify.scope)
+        val settings = notify.settings
+        assertEquals(false, settings.showPreviews)
+        assertEquals(true, settings.silent)
+        assertEquals(1_700_000_000_000L, settings.muteUntil)
+        assertEquals(NotificationSound("ringtone", id = 5150L), settings.androidSound)
+        assertEquals(
+            NotificationSound("local", title = "Ping", data = "blob"),
+            settings.iosSound,
+        )
+        assertTrue(settings.storiesMuted == true && settings.storiesHideSender == false)
+        assertEquals(null, settings.otherSound)
+    }
+
+    @Test
+    fun `requested notify settings cross to the bridge with only what was set`() {
+        val bridge = NotifySettings(silent = true, muteUntil = 1_700_000_000_000L).toBridge()
+
+        assertEquals(true, bridge.silent)
+        assertEquals(1_700_000_000_000L, bridge.muteUntil)
+        assertEquals(null, bridge.showPreviews)
+        assertEquals(null, bridge.sound)
+
+        val sound = NotifySettings(
+            sound = NotificationSound("ringtone", id = 5150L),
+            storiesSound = NotificationSound("none"),
+        ).toBridge()
+        assertEquals("ringtone", sound.sound?.kind)
+        assertEquals(5150L, sound.sound?.id)
+        assertEquals("none", sound.storiesSound?.kind)
+    }
+
+    @Test
+    fun `the notify scopes name the wire scopes the native side maps`() {
+        assertEquals(
+            mapOf(
+                "account" to AccountNotifyScope.Account,
+                "peer" to AccountNotifyScope.Peer,
+                "users" to AccountNotifyScope.Users,
+                "chats" to AccountNotifyScope.Chats,
+                "broadcasts" to AccountNotifyScope.Broadcasts,
+                "forumTopic" to AccountNotifyScope.ForumTopic,
+                "community" to AccountNotifyScope.Community,
+            ),
+            AccountNotifyScope.entries.associateBy { it.bridge.wire },
+        )
+    }
+
     private companion object {
+        val NOTIFY_ACCOUNT = """
+            {"scope": "account",
+             "settings": {"showPreviews": null, "silent": null, "muteUntil": null,
+              "iosSound": null, "androidSound": null, "otherSound": null, "storiesMuted": null,
+              "storiesHideSender": null, "storiesIosSound": null, "storiesAndroidSound": null,
+              "storiesOtherSound": null}}
+        """.trimIndent()
+
+        val NOTIFY_PEER = """
+            {"scope": "peer",
+             "settings": {"showPreviews": false, "silent": true, "muteUntil": 1700000000000,
+              "iosSound": {"kind": "local", "id": null, "title": "Ping", "data": "blob"},
+              "androidSound": {"kind": "ringtone", "id": 5150, "title": null, "data": null},
+              "otherSound": null, "storiesMuted": true, "storiesHideSender": false,
+              "storiesIosSound": null, "storiesAndroidSound": null, "storiesOtherSound": null}}
+        """.trimIndent()
         val AUTHORIZATIONS = """
             {"authorizationTtlDays": 180, "authorizations": [{"current": true,
              "officialApp": true, "passwordPending": false, "encryptedRequestsDisabled": true,

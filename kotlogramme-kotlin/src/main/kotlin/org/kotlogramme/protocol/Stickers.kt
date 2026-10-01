@@ -59,6 +59,29 @@ internal data class SendStickerPayload(
     ) : this(peer.peerHandle, peer.username, shortName, id, accessHash, index, replyToMessageId, silent)
 }
 
+/**
+ * Payload of `messagesInstallStickerSet`.
+ *
+ * The set is named exactly as `messagesGetStickerSet` names it: a non-empty [shortName] wins over
+ * the [id]/[accessHash] pair. [archived] makes the same call archive an installed set instead of
+ * installing one, which is how the layer toggles the two directions.
+ */
+@Serializable
+internal data class InstallStickerSetPayload(
+    val shortName: String? = null,
+    val id: Long? = null,
+    val accessHash: Long? = null,
+    val archived: Boolean = false,
+)
+
+/** Payload of `messagesUninstallStickerSet`, naming the set the same way again. */
+@Serializable
+internal data class UninstallStickerSetPayload(
+    val shortName: String? = null,
+    val id: Long? = null,
+    val accessHash: Long? = null,
+)
+
 /** One sticker pack: an emoticon and the ids of the documents it groups. */
 @Serializable
 internal data class StickerPack(val emoticon: String, val documents: List<Long> = emptyList())
@@ -127,4 +150,24 @@ internal data class FavedStickers(
     val hash: Long = 0,
     val packs: List<StickerPack> = emptyList(),
     val stickers: List<Long> = emptyList(),
+)
+
+/** One set `messagesInstallStickerSet` archived instead of installing one. */
+@Serializable
+internal data class ArchivedStickerSet(
+    val set: StickerSet,
+    /** Absent when the layer's constructor names no cover. */
+    val coverDocumentId: Long? = null,
+)
+
+/**
+ * Result of `messagesInstallStickerSet`.
+ *
+ * The layer's success constructor is empty, so [installed] is true and [archivedSets] is empty
+ * after a plain install: this layer has no answer naming the set that was just installed.
+ */
+@Serializable
+internal data class StickerSetInstallResult(
+    val installed: Boolean = false,
+    val archivedSets: List<ArchivedStickerSet> = emptyList(),
 )
