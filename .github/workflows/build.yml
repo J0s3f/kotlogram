@@ -319,9 +319,6 @@ jobs:
       - uses: gradle/actions/setup-gradle@v6.4.0
         with:
           gradle-version: '8.10'
-          # Nothing runs on main any more, so a tag build has no warmed cache to read; letting it
-          # write one means the retry of a failed release reuses what the first attempt downloaded.
-          cache-read-only: false
       - name: Determine the release version
         id: release
         shell: bash
