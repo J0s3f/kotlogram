@@ -1,6 +1,6 @@
 name: probe-guard
 
-# Throwaway: does a schedule trigger populate github.ref / github.ref_name for format()?
+# Throwaway: does hashFiles() see the last-successful-run marker on a scheduled run?
 on:
   schedule:
     - cron: '*/5 * * * *'
@@ -10,13 +10,12 @@ jobs:
   probe:
     runs-on: ubuntu-24.04
     steps:
-      - name: surfaced ref values
+      - uses: actions/checkout@v4
+      - name: what does hashFiles see before the marker exists?
         run: |
-          echo "ref=[${{ github.ref }}]"
-          echo "ref_name=[${{ github.ref_name }}]"
-          echo "event=[${{ github.event_name }}]"
-          echo "format-ref=[${{ format('refs/heads/{0}', github.ref_name) }}]"
-          echo "format-compare=[${{ format('refs/heads/{0}', github.ref_name) }}] vs [${{ github.ref }}]"
-      - name: the condition that would gate the nightly
+          echo "hash=[${{ hashFiles('.github/nightly-baseline') }}]"
+          echo "is-empty=${{ hashFiles('.github/nightly-baseline') == '' }}"
+      - name: touch the marker for the next run to find
         run: |
-          echo "equality test result: ${{ format('refs/heads/{0}', github.ref_name) == github.ref }}"
+          touch .github/nightly-baseline
+          ls -la .github/nightly-baseline
