@@ -5,6 +5,7 @@ import org.kotlogramme.protocol.DownloadResult as BridgeDownloadResult
 import org.kotlogramme.protocol.MediaChunk as BridgeMediaChunk
 import org.kotlogramme.protocol.ProfilePhoto as BridgeProfilePhoto
 import org.kotlogramme.protocol.UploadedFile as BridgeUploadedFile
+import org.kotlogramme.protocol.UploadProgress as BridgeUploadProgress
 import java.util.Base64
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -80,10 +81,24 @@ class FilesCompatibilityTest {
         assertNull(empty.height)
     }
 
+    @Test
+    fun `an upload progress report projects what a render loop needs`() {
+        val progress = json.decodeFromString<BridgeUploadProgress>(PROGRESS).toCompatibility()
+
+        assertEquals(512, progress.sent)
+        assertEquals(1_024, progress.total)
+        assertEquals(1_500, progress.elapsedMillis)
+        assertEquals(341.33, progress.bytesPerSecond, 0.001)
+    }
+
     private companion object {
         val DOWNLOAD_RESULT = """{"path": "/tmp/holidays.jpg", "size": 5150}"""
 
         val CHUNK = """{"data": "Zm9vYmFy", "offset": 524288, "size": 6}"""
+
+        val PROGRESS = """
+            {"sent": 512, "total": 1024, "elapsedMillis": 1500, "bytesPerSecond": 341.33}
+        """.trimIndent()
 
         val UPLOADED_SMALL = """
             {"id": 7, "name": "holidays.jpg", "size": 1048576, "parts": 2,

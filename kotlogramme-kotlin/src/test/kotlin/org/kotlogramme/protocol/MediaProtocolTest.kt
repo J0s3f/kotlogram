@@ -63,6 +63,16 @@ class MediaProtocolTest {
     }
 
     @Test
+    fun `a send-media request can name a progress slot for its path upload`() {
+        assertEquals(
+            """{"peerHandle":12,"path":"/tmp/a.bin","progressHandle":7}""",
+            requests.encodeToString(
+                SendMediaPayload(peerHandle = 12L, path = "/tmp/a.bin", progressHandle = 7),
+            ),
+        )
+    }
+
+    @Test
     fun `a video send-media request encodes its streaming dimensions`() {
         val payload = SendMediaPayload(
             peerHandle = 12L,

@@ -59,6 +59,9 @@ struct SendMediaPayload {
     /// The handle of an upload that already ran, as an alternative to [Self::path]. Exactly one of
     /// the two must be set.
     file_handle: Option<i64>,
+    /// A progress slot from `uploadProgressBegin` to count a path upload into, when the caller
+    /// wants to observe it. Ignored for a [Self::file_handle], which uploads nothing.
+    progress_handle: Option<i64>,
 }
 
 #[derive(Deserialize)]
@@ -239,6 +242,10 @@ fn send_media(native: &NativeClient, payload: &str) -> Result<String, String> {
     let uploaded = native.runtime.block_on(resolve_upload(
         native,
         file_source(data.path, data.file_handle)?,
+        match data.progress_handle {
+            Some(handle) => Some(native.uploads.progress(handle)?),
+            None => None,
+        },
     ))?;
     // grammers names the upload after the file it read, so a handle keeps the name it was created
     // with and a path keeps the file's own name; the raw spoiler media needs that name either way.

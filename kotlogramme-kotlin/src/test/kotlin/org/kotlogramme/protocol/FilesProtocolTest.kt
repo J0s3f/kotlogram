@@ -131,8 +131,12 @@ class FilesProtocolTest {
     }
 
     @Test
-    fun `the upload payload is just the path`() {
+    fun `the upload payload is just the path and an optional progress slot`() {
         assertEquals("""{"path":"/tmp/a.jpg"}""", requests.encodeToString(UploadFilePayload("/tmp/a.jpg")))
+        assertEquals(
+            """{"path":"/tmp/a.jpg","progressHandle":12}""",
+            requests.encodeToString(UploadFilePayload("/tmp/a.jpg", progressHandle = 12)),
+        )
     }
 
     @Test
@@ -144,10 +148,10 @@ class FilesProtocolTest {
     }
 
     @Test
-    fun `the streamed upload payloads carry the id and each chunk`() {
+    fun `the streamed upload payloads carry the id, the size and each chunk`() {
         assertEquals(
-            """{"name":"movie.mp4"}""",
-            requests.encodeToString(UploadStreamBeginPayload("movie.mp4")),
+            """{"name":"movie.mp4","size":1048576}""",
+            requests.encodeToString(UploadStreamBeginPayload("movie.mp4", 1_048_576)),
         )
         assertEquals(
             """{"uploadId":12,"dataBase64":"Zm9v"}""",
@@ -158,6 +162,28 @@ class FilesProtocolTest {
             requests.encodeToString(UploadStreamFinishPayload(12)),
         )
         assertEquals(12, json.decodeFromString<UploadStreamBeginResult>("""{"uploadId":12}""").uploadId)
+    }
+
+    @Test
+    fun `the progress payloads carry the slot and the total`() {
+        assertEquals(
+            """{"total":2048}""",
+            requests.encodeToString(UploadProgressBeginPayload(2_048)),
+        )
+        assertEquals(
+            """{"uploadId":12}""",
+            requests.encodeToString(UploadProgressPayload(12)),
+        )
+    }
+
+    @Test
+    fun `an upload progress report decodes and re-encodes unchanged`() {
+        val progress = roundTrips<UploadProgress>(PROGRESS)
+
+        assertEquals(512, progress.sent)
+        assertEquals(1_024, progress.total)
+        assertEquals(1_500, progress.elapsedMillis)
+        assertEquals(341.33, progress.bytesPerSecond, 0.001)
     }
 
     @Test
@@ -188,6 +214,10 @@ class FilesProtocolTest {
         val DOWNLOAD_RESULT = """{"path": "/tmp/holidays.jpg", "size": 5150}"""
 
         val CHUNK = """{"data": "Zm9vYmFy", "offset": 524288, "size": 6}"""
+
+        val PROGRESS = """
+            {"sent": 512, "total": 1024, "elapsedMillis": 1500, "bytesPerSecond": 341.33}
+        """.trimIndent()
 
         val UPLOADED_SMALL = """
             {"id": 7, "name": "holidays.jpg", "size": 1048576, "parts": 2,

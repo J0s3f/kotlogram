@@ -66,6 +66,7 @@ import org.kotlogramme.protocol.Update as BridgeUpdate
 import org.kotlogramme.protocol.UpdateMessageBox as BridgeUpdateMessageBox
 import org.kotlogramme.protocol.UpdateState as BridgeUpdateState
 import org.kotlogramme.protocol.UploadedFile as BridgeUploadedFile
+import org.kotlogramme.protocol.UploadProgress as BridgeUploadProgress
 import org.kotlogramme.protocol.User as BridgeUser
 import java.nio.file.Path
 import java.util.Base64
@@ -1292,6 +1293,21 @@ data class MediaChunk(
 )
 
 /**
+ * The live progress of an upload in flight, as `FilesApi.uploadProgress` reports it.
+ *
+ * [sent] is how many bytes have been handed to Telegram so far and [total] the declared size; a
+ * path upload fills [total] in when it opens the file, so it is only zero before that. [bytesPerSecond]
+ * is the average rate since the upload started and [elapsedMillis] how long that is, which is
+ * everything a render loop needs for a bar and a transfer rate.
+ */
+data class UploadProgress(
+    val sent: Long,
+    val total: Long,
+    val bytesPerSecond: Double,
+    val elapsedMillis: Long,
+)
+
+/**
  * The metadata of an uploaded file, which a later send can reuse.
  *
  * grammers exposes no size on an upload, so [size] is the length of the input that was uploaded.
@@ -1332,6 +1348,9 @@ data class ProfilePhoto(
 internal fun BridgeDownloadResult.toCompatibility() = DownloadedMedia(path, size)
 
 internal fun BridgeMediaChunk.toCompatibility() = MediaChunk(offset, size, Base64.getDecoder().decode(data))
+
+internal fun BridgeUploadProgress.toCompatibility() =
+    UploadProgress(sent, total, bytesPerSecond, elapsedMillis)
 
 internal fun BridgeUploadedFile.toCompatibility() =
     UploadedFile(id, name, size, parts, md5Checksum, isBig, handle)

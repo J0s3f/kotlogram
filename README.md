@@ -6,8 +6,8 @@ A Kotlin/JVM facade for the Telegram API, built on grammers and designed around 
 
 ## Status
 
-The compatibility layer is implemented across every domain the plan scoped: 99 native operations,
-each reachable from Kotlin through a 251-test Rust suite and a 262-test JVM suite.
+The compatibility layer is implemented across every domain the plan scoped: 101 native operations,
+each reachable from Kotlin through a 257-test Rust suite and a 266-test JVM suite.
 
 - persistent SQLite sessions through grammers
 - bot and user authentication (2FA included), `signOut`, the full account identity and its data
@@ -15,7 +15,8 @@ each reachable from Kotlin through a 251-test Rust suite and a 262-test JVM suit
 - sending text, files and typed media with captions, parse modes, explicit entities, spoilers, TTLs
   and scheduling; editing (media replacement included), deleting, searching (with filters, totals
   and global search), forwarding, pinning, replying and reacting to messages; uploading from memory
-  or a stream and re-sending an upload by handle
+  or from a stream that is never held whole in memory, with live progress for a stream, a local file
+  or a path media send, and re-sending an upload by handle
 - dialogs with raw-layer metadata, totals and mention clearing; message history paging and totals;
   chat participants, permissions, the full ban/admin rights, invite links and resolving by id
 - the typed update payloads (including guest-chat queries) and the raw update with its state;

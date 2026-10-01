@@ -99,6 +99,11 @@ internal data class SendMediaPayload(
     val markup: MarkupSpec? = null,
     /** The handle of an upload that already ran, as an alternative to [path]. */
     val fileHandle: Long? = null,
+    /**
+     * A progress slot from `FilesApi.uploadProgressBegin` to count a path upload into, when the
+     * caller wants to observe it. Ignored for a [fileHandle], which uploads nothing.
+     */
+    val progressHandle: Long? = null,
 )
 
 /**

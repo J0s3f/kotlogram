@@ -47,7 +47,9 @@ interface MediaApi : BridgeApi {
      * [ttlSeconds] makes the media self-destruct after that many seconds; [invertMedia] moves the
      * media below the caption; [scheduleDate] is epoch milliseconds and [scheduleOnceOnline] takes
      * precedence over it. [durationSeconds], [width] and [height] describe [MediaKind.VIDEO] and
-     * are ignored for the other kinds.
+     * are ignored for the other kinds. [progressHandle] is an optional slot from
+     * [FilesApi.uploadProgressBegin] that the upload reports into; when given, poll it from another
+     * thread because this call blocks until the send completes.
      */
     fun mediaSend(
         peer: TelegramPeer,
@@ -67,6 +69,7 @@ interface MediaApi : BridgeApi {
         scheduleDate: Long? = null,
         scheduleOnceOnline: Boolean = false,
         replyMarkup: ReplyMarkup? = null,
+        progressHandle: Long? = null,
     ): Message = bridge.sendMedia(
         peer = peer.native,
         path = path,
@@ -85,6 +88,7 @@ interface MediaApi : BridgeApi {
         scheduleDate = scheduleDate,
         scheduleOnceOnline = scheduleOnceOnline,
         replyMarkup = replyMarkup?.asSpec(),
+        progressHandle = progressHandle,
     ).toCompatibility()
 
     /**

@@ -268,6 +268,7 @@ fn send_file(native: &NativeClient, payload: &str) -> Result<String, String> {
     let uploaded = native.runtime.block_on(resolve_upload(
         native,
         file_source(data.path, data.file_handle)?,
+        None,
     ))?;
     let mut message = InputMessage::new()
         .text(data.caption.unwrap_or_default())
@@ -298,7 +299,7 @@ fn send_album(native: &NativeClient, payload: &str) -> Result<String, String> {
         let mut media = Vec::with_capacity(data.items.len());
         for item in data.items {
             let uploaded =
-                resolve_upload(native, file_source(item.path, item.file_handle)?).await?;
+                resolve_upload(native, file_source(item.path, item.file_handle)?, None).await?;
             let input = InputMedia::new().caption(item.caption.unwrap_or_default());
             media.push(if item.as_photo.unwrap_or(false) {
                 input.photo(uploaded)

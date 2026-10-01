@@ -94,6 +94,8 @@ unpinAllMessages
 unpinMessage
 uploadBytes
 uploadFile
+uploadProgress
+uploadProgressBegin
 uploadStreamBegin
 uploadStreamChunk
 uploadStreamFinish

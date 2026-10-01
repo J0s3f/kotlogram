@@ -52,6 +52,7 @@ internal interface MediaBridge {
         scheduleOnceOnline: Boolean = false,
         replyMarkup: MarkupSpec? = null,
         fileHandle: Long? = null,
+        progressHandle: Long? = null,
     ): Message = transport.request(
         "sendMedia",
         SendMediaPayload(
@@ -73,6 +74,7 @@ internal interface MediaBridge {
             scheduleOnceOnline = scheduleOnceOnline,
             markup = replyMarkup,
             fileHandle = fileHandle,
+            progressHandle = progressHandle,
         ),
     )
 

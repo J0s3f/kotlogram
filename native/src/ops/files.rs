@@ -2,6 +2,7 @@
 
 use std::io::Cursor;
 use std::path::PathBuf;
+use std::sync::atomic::Ordering;
 
 use grammers_client::media::Media as ClientMedia;
 use grammers_client::media::Uploaded;
@@ -10,7 +11,7 @@ use serde::Deserialize;
 use serde_json::json;
 
 use super::Handler;
-use crate::client::{resolve_peer, NativeClient};
+use crate::client::{resolve_peer, upload_path_with_progress, NativeClient, StreamUpload};
 use crate::dto::files::{
     base64, decode_base64, profile_photo_dto, uploaded_dto, DownloadResultDto, MediaChunkDto,
 };
@@ -45,6 +46,9 @@ struct DownloadChunkPayload {
 #[serde(rename_all = "camelCase")]
 struct UploadFilePayload {
     path: String,
+    /// A progress slot from `uploadProgressBegin` to count this upload into, when the caller wants
+    /// to observe it. Absent keeps the plain grammers path upload.
+    progress_handle: Option<i64>,
 }
 
 /// Payload of `uploadBytes`: the declared name and the whole file as one base64 string.
@@ -58,11 +62,31 @@ struct UploadBytesPayload {
     data_base64: String,
 }
 
-/// Payload of `uploadStreamBegin`: the name the finished upload will carry.
+/// Payload of `uploadStreamBegin`: the name the finished upload will carry and its total size.
+///
+/// grammers has to know the size before it can read the first part (it decides small versus big
+/// file and the part count from it), so a stream that wants live progress declares the size up
+/// front rather than accumulating the bytes to measure them at the end.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct UploadStreamBeginPayload {
     name: String,
+    size: u64,
+}
+
+/// Payload of `uploadProgressBegin`: the total an upload will have, which may be corrected at
+/// upload time when a path is opened.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UploadProgressBeginPayload {
+    total: u64,
+}
+
+/// Payload of `uploadProgress`: the progress slot to read.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct UploadProgressPayload {
+    upload_id: i64,
 }
 
 /// Payload of `uploadStreamChunk`: the stream to append to and one base64 chunk.
@@ -94,6 +118,8 @@ pub(crate) const OPERATIONS: &[&str] = &[
     "downloadMediaChunk",
     "uploadFile",
     "uploadBytes",
+    "uploadProgress",
+    "uploadProgressBegin",
     "uploadStreamBegin",
     "uploadStreamChunk",
     "uploadStreamFinish",
@@ -110,6 +136,8 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
         "downloadMediaChunk" => download_media_chunk,
         "uploadFile" => upload_file,
         "uploadBytes" => upload_bytes,
+        "uploadProgress" => upload_progress,
+        "uploadProgressBegin" => upload_progress_begin,
         "uploadStreamBegin" => upload_stream_begin,
         "uploadStreamChunk" => upload_stream_chunk,
         "uploadStreamFinish" => upload_stream_finish,
@@ -164,16 +192,31 @@ fn download_media_chunk(native: &NativeClient, payload: &str) -> Result<String, 
     }
 }
 
+/// Uploads a local file, counting it into a `uploadProgressBegin` slot when one is named.
+///
+/// Without a slot, grammers' own `Client::upload_file` runs; with one, the same upload runs over a
+/// counting reader, so the bytes and the resulting metadata are unchanged and only the observation
+/// point is added.
 fn upload_file(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: UploadFilePayload = parse_payload(payload)?;
     let path = PathBuf::from(&data.path);
     let size = std::fs::metadata(&path)
         .map(|metadata| metadata.len() as i64)
         .map_err(error)?;
-    let uploaded = native
-        .runtime
-        .block_on(native.client.upload_file(&path))
-        .map_err(error)?;
+    let uploaded = match data.progress_handle {
+        Some(handle) => {
+            let progress = native.uploads.progress(handle)?;
+            native.runtime.block_on(upload_path_with_progress(
+                &native.client,
+                path,
+                progress,
+            ))?
+        }
+        None => native
+            .runtime
+            .block_on(native.client.upload_file(&path))
+            .map_err(error)?,
+    };
     finish_upload(native, uploaded, size)
 }
 
@@ -197,39 +240,71 @@ fn upload_bytes(native: &NativeClient, payload: &str) -> Result<String, String> 
     finish_upload(native, uploaded, size)
 }
 
-/// Opens a chunked upload and returns the id every later chunk names.
+/// Opens a chunked upload and returns the id every later chunk and the progress poll name.
+///
+/// The upload task is spawned here and reads the channel the chunks are sent to, so the bytes are
+/// on their way to Telegram while the JVM is still reading its input.
 fn upload_stream_begin(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: UploadStreamBeginPayload = parse_payload(payload)?;
-    let upload_id = native.uploads.begin(data.name)?;
+    let upload_id = native.start_stream_upload(data.name, data.size)?;
     json_string(json!({ "uploadId": upload_id }))
 }
 
-/// Appends one decoded chunk to the stream [UploadStreamChunkPayload::upload_id] names.
+/// Hands one decoded chunk to the stream [UploadStreamChunkPayload::upload_id] names.
+///
+/// The send awaits room in the stream's bounded channel, which is what keeps a fast producer from
+/// piling the whole file up in memory.
 fn upload_stream_chunk(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: UploadStreamChunkPayload = parse_payload(payload)?;
     let bytes = decode_base64(&data.data_base64)?;
-    native.uploads.append(data.upload_id, &bytes)?;
+    native.append_stream(data.upload_id, &bytes)?;
     json_string(json!({ "ok": true }))
 }
 
-/// Feeds the bytes accumulated for a stream through grammers' `upload_stream`.
+/// Ends a stream's input and waits for the upload task that has been consuming it.
 ///
-/// A `std::io::Cursor<Vec<u8>>` is the `tokio::io::AsyncRead + Unpin` source grammers wants, and
-/// the stream's declared name is what the upload carries as its file name.
+/// Dropping the producing end of the channel is what the reader sees as end-of-file. A stream that
+/// received fewer bytes than it declared cannot satisfy grammers, so it is refused before the task
+/// is awaited.
 fn upload_stream_finish(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: UploadStreamFinishPayload = parse_payload(payload)?;
-    let stream = native.uploads.take(data.upload_id)?;
-    let size = stream.data.len() as i64;
-    let mut cursor = Cursor::new(stream.data);
-    let uploaded = native
-        .runtime
-        .block_on(
-            native
-                .client
-                .upload_stream(&mut cursor, size as usize, stream.name),
-        )
-        .map_err(error)?;
-    finish_upload(native, uploaded, size)
+    let stream = native.uploads.take_stream(data.upload_id)?;
+    let StreamUpload {
+        size,
+        accepted,
+        sender,
+        task,
+        ..
+    } = stream;
+    drop(sender);
+    let received = accepted.load(Ordering::Relaxed);
+    if received != size {
+        task.abort();
+        return Err(format!(
+            "upload stream {} was declared with {size} bytes but received {received}",
+            data.upload_id
+        ));
+    }
+    let uploaded = native.runtime.block_on(task).map_err(error)??;
+    finish_upload(native, uploaded, size as i64)
+}
+
+/// Allocates a progress slot for an upload whose bytes are not fed through a stream, so that a
+/// `uploadFile` or a path `sendMedia` can be observed while its single native call is running.
+fn upload_progress_begin(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: UploadProgressBeginPayload = parse_payload(payload)?;
+    let upload_id = native.uploads.begin_progress(data.total)?;
+    json_string(json!({ "uploadId": upload_id }))
+}
+
+/// Reads the live progress of the upload [UploadProgressPayload::upload_id] names.
+///
+/// This is a plain read of the counters, so a render loop can poll it from a different thread while
+/// the upload's own call is blocked.
+fn upload_progress(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: UploadProgressPayload = parse_payload(payload)?;
+    let progress = native.uploads.progress(data.upload_id)?;
+    json_string(progress.snapshot())
 }
 
 /// Registers a finished upload and projects the metadata plus the handle that references it.
@@ -358,9 +433,27 @@ mod tests {
         assert_eq!(bytes.name, "holidays.jpg");
         assert_eq!(bytes.data_base64, "Zm9vYmFy");
 
+        let file: UploadFilePayload =
+            parse_payload(r#"{"path":"/tmp/a.jpg","progressHandle":12}"#).expect("an upload payload");
+        assert_eq!(file.path, "/tmp/a.jpg");
+        assert_eq!(file.progress_handle, Some(12));
+        // A path upload with no progress slot leaves the handle unset.
+        let plain: UploadFilePayload =
+            parse_payload(r#"{"path":"/tmp/a.jpg"}"#).expect("a plain upload payload");
+        assert_eq!(plain.progress_handle, None);
+
         let begin: UploadStreamBeginPayload =
-            parse_payload(r#"{"name":"movie.mp4"}"#).expect("a begin payload");
+            parse_payload(r#"{"name":"movie.mp4","size":1048576}"#).expect("a begin payload");
         assert_eq!(begin.name, "movie.mp4");
+        assert_eq!(begin.size, 1_048_576);
+
+        let progress_begin: UploadProgressBeginPayload =
+            parse_payload(r#"{"total":2048}"#).expect("a progress-begin payload");
+        assert_eq!(progress_begin.total, 2_048);
+
+        let progress: UploadProgressPayload =
+            parse_payload(r#"{"uploadId":12}"#).expect("a progress payload");
+        assert_eq!(progress.upload_id, 12);
 
         let chunk: UploadStreamChunkPayload =
             parse_payload(r#"{"uploadId":12,"dataBase64":"Zm9v"}"#).expect("a chunk payload");

@@ -34,9 +34,12 @@ internal data class DownloadMediaChunkPayload(
         this(peer.peerHandle, peer.username, messageId, chunkSize, skipChunks)
 }
 
-/** Payload of `uploadFile`. */
+/** Payload of `uploadFile`. `progressHandle` is an optional `uploadProgressBegin` slot. */
 @Serializable
-internal data class UploadFilePayload(val path: String)
+internal data class UploadFilePayload(
+    val path: String,
+    val progressHandle: Long? = null,
+)
 
 /**
  * Payload of `uploadBytes`: the declared name and the whole file base64-encoded.
@@ -50,13 +53,47 @@ internal data class UploadBytesPayload(
     val dataBase64: String,
 )
 
-/** Payload of `uploadStreamBegin`: the name the finished upload carries. */
+/**
+ * Payload of `uploadStreamBegin`: the name the finished upload carries and its total size.
+ *
+ * grammers must be told the size before it reads the first part, so a stream declares it up front;
+ * the begin call starts the upload task that reads the chunks as they arrive.
+ */
 @Serializable
-internal data class UploadStreamBeginPayload(val name: String)
+internal data class UploadStreamBeginPayload(
+    val name: String,
+    val size: Long,
+)
 
 /** Result of `uploadStreamBegin`: the id every later chunk and the finish call name. */
 @Serializable
 internal data class UploadStreamBeginResult(val uploadId: Long)
+
+/**
+ * Payload of `uploadProgressBegin`: the total an upload will have. A path upload corrects the total
+ * to the file's length when it opens it.
+ */
+@Serializable
+internal data class UploadProgressBeginPayload(val total: Long)
+
+/** Payload of `uploadProgress`: the progress slot to read. */
+@Serializable
+internal data class UploadProgressPayload(val uploadId: Long)
+
+/**
+ * The live progress of an upload.
+ *
+ * [sent] is how many bytes have been handed to grammers so far and [total] the declared size.
+ * [bytesPerSecond] is the average rate since the upload started and [elapsedMillis] how long that
+ * is, so a render loop can show a bar and a transfer rate without keeping its own clock.
+ */
+@Serializable
+internal data class UploadProgress(
+    val sent: Long,
+    val total: Long,
+    val elapsedMillis: Long,
+    val bytesPerSecond: Double,
+)
 
 /** Payload of `uploadStreamChunk`: the stream to append to and one base64 chunk. */
 @Serializable

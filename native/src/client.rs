@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicI64, Ordering};
+use std::sync::atomic::{AtomicI64, AtomicU64, Ordering};
 use std::sync::{Arc, Mutex, OnceLock};
 
 use grammers_client::client::UpdateStream;
@@ -15,10 +15,14 @@ use grammers_mtsender::{SenderPool, SenderPoolHandle};
 use grammers_session::storages::SqliteSession;
 use grammers_session::types::PeerRef;
 use jni::sys::jlong;
+use tokio::io::AsyncSeekExt;
 use tokio::runtime::Runtime;
+use tokio::sync::mpsc;
+use tokio::task::JoinHandle;
 
 use crate::error::{error, invocation_error};
 use crate::payload::{FileSource, PeerTarget};
+use crate::upload::{stream_channel, ChannelReader, ProgressReader, UploadProgress};
 
 /// One live Telegram session: its Tokio runtime, its grammers client and its registries.
 pub(crate) struct NativeClient {
@@ -36,66 +40,102 @@ pub(crate) struct NativeClient {
 
 /// One upload that has begun through `uploadStreamBegin` and has not been finished yet.
 ///
-/// The declared name travels with the bytes because `Client::upload_stream` needs it when the
-/// stream is finished, and nothing else remembers it between the begin and the finish call.
+/// The declared name travels with the state because `Client::upload_stream` needs it when the
+/// upload task is spawned, and nothing else remembers it between the begin and the finish call.
+/// The bytes themselves are **not** here: the task reads them from a bounded channel as the JVM
+/// sends them, so only [`upload::STREAM_CHANNEL_CAPACITY`](crate::upload) chunks exist at once.
 #[derive(Debug)]
 pub(crate) struct StreamUpload {
-    pub(crate) name: String,
-    pub(crate) data: Vec<u8>,
+    pub(crate) size: u64,
+    /// How many bytes have been handed to the channel, so a short or fat stream is refused.
+    pub(crate) accepted: Arc<AtomicU64>,
+    /// The producing end of the channel; dropping it is what ends the reader's stream.
+    pub(crate) sender: mpsc::Sender<Vec<u8>>,
+    /// The upload in flight; the finish call awaits it.
+    pub(crate) task: JoinHandle<Result<Uploaded, String>>,
 }
 
 /// The per-client upload state: the in-progress stream buffers and the uploads that are done.
 ///
-/// The two maps share one id space, drawn from [Self::next_handle], so a stream id is never
-/// mistaken for an upload handle. A stream that is still taking chunks lives in [Self::streams];
-/// once it is finished its [`Uploaded`] moves to [Self::uploads], where a send resolves it by the
-/// handle the finish returned. Both maps live as long as the client and are dropped with it, which
-/// is the documented lifetime of a handle. Each map is behind its own mutex, and every lock is held
-/// only for the length of one lookup or insert.
+/// The three maps share one id space, drawn from [Self::next_handle], so an id cannot be mistaken
+/// for a handle or a progress slot. A stream that is still taking chunks lives in `streams`; every
+/// upload's live [`UploadProgress`] lives in `progress` (a stream's slot is created with it and a
+/// path upload is given one through `uploadProgressBegin`); once a stream is finished its
+/// [`Uploaded`] moves to `uploads`, where a send resolves it by the handle the finish returned.
+/// The maps live as long as the client and are dropped with it, which is the documented lifetime of
+/// a handle. Each map is behind its own mutex, and every lock is held only for the length of one
+/// lookup or insert.
 #[derive(Default)]
 pub(crate) struct UploadRegistry {
     streams: Mutex<HashMap<i64, StreamUpload>>,
     uploads: Mutex<HashMap<i64, Uploaded>>,
+    progress: Mutex<HashMap<i64, Arc<UploadProgress>>>,
     next_handle: AtomicI64,
 }
 
 impl UploadRegistry {
-    /// The next id, shared by stream ids and upload handles so the two never collide.
-    fn next(&self) -> i64 {
+    /// The next id, shared by stream ids, upload handles and progress slots so they never collide.
+    pub(crate) fn next(&self) -> i64 {
         self.next_handle.fetch_add(1, Ordering::Relaxed)
     }
 
-    /// Opens a stream under a fresh id and returns it.
-    pub(crate) fn begin(&self, name: String) -> Result<i64, String> {
-        let id = self.next();
+    /// Stores a stream under [id].
+    pub(crate) fn insert_stream(&self, id: i64, stream: StreamUpload) -> Result<(), String> {
         self.streams
             .lock()
             .map_err(|_| "upload stream registry is poisoned".to_owned())?
-            .insert(
-                id,
-                StreamUpload {
-                    name,
-                    data: Vec::new(),
-                },
-            );
+            .insert(id, stream);
+        Ok(())
+    }
+
+    /// Stores a progress counter under [id].
+    pub(crate) fn insert_progress(
+        &self,
+        id: i64,
+        progress: Arc<UploadProgress>,
+    ) -> Result<(), String> {
+        self.progress
+            .lock()
+            .map_err(|_| "upload progress registry is poisoned".to_owned())?
+            .insert(id, progress);
+        Ok(())
+    }
+
+    /// Allocates a progress slot for an upload whose bytes are not fed through a stream, which is a
+    /// path upload. Returns the id the caller polls and passes back to `uploadFile`/`sendMedia`.
+    pub(crate) fn begin_progress(&self, total: u64) -> Result<i64, String> {
+        let id = self.next();
+        self.insert_progress(id, UploadProgress::new(total))?;
         Ok(id)
     }
 
-    /// Appends [bytes] to the stream [id], or reports an unknown stream.
-    pub(crate) fn append(&self, id: i64, bytes: &[u8]) -> Result<(), String> {
-        let mut streams = self
+    /// The live progress of the upload [id] names.
+    pub(crate) fn progress(&self, id: i64) -> Result<Arc<UploadProgress>, String> {
+        self.progress
+            .lock()
+            .map_err(|_| "upload progress registry is poisoned".to_owned())?
+            .get(&id)
+            .cloned()
+            .ok_or_else(|| format!("unknown upload progress: {id}"))
+    }
+
+    /// The sender and accepted counter of the stream [id], which is what a chunk needs.
+    pub(crate) fn stream_handle(
+        &self,
+        id: i64,
+    ) -> Result<(mpsc::Sender<Vec<u8>>, Arc<AtomicU64>, u64), String> {
+        let streams = self
             .streams
             .lock()
             .map_err(|_| "upload stream registry is poisoned".to_owned())?;
         let stream = streams
-            .get_mut(&id)
+            .get(&id)
             .ok_or_else(|| format!("unknown upload stream: {id}"))?;
-        stream.data.extend_from_slice(bytes);
-        Ok(())
+        Ok((stream.sender.clone(), Arc::clone(&stream.accepted), stream.size))
     }
 
     /// Removes and returns the stream [id], which is what finishing it consumes.
-    pub(crate) fn take(&self, id: i64) -> Result<StreamUpload, String> {
+    pub(crate) fn take_stream(&self, id: i64) -> Result<StreamUpload, String> {
         self.streams
             .lock()
             .map_err(|_| "upload stream registry is poisoned".to_owned())?
@@ -122,6 +162,98 @@ impl UploadRegistry {
             .cloned()
             .ok_or_else(|| format!("unknown upload handle: {handle}"))
     }
+}
+
+impl NativeClient {
+    /// Starts a streamed upload of [size] bytes named [name] and returns its id.
+    ///
+    /// A bounded channel and a task reading it through a counting reader are set up, and the task
+    /// is spawned on the client's runtime so it runs while the JVM keeps calling
+    /// `uploadStreamChunk`. The reader has to start before the chunks arrive, because
+    /// `Client::upload_stream` must be told the size before it reads anything, which is why the
+    /// size is part of the begin call rather than discovered at the end.
+    pub(crate) fn start_stream_upload(&self, name: String, size: u64) -> Result<i64, String> {
+        let progress = UploadProgress::new(size);
+        let (sender, receiver) = stream_channel();
+        let accepted = Arc::new(AtomicU64::new(0));
+        let task_reader: ChannelReader = receiver;
+        let task_progress = Arc::clone(&progress);
+        let task_name = name.clone();
+        let client = self.client.clone();
+        let task = self.runtime.spawn(async move {
+            let mut reader = ProgressReader::new(task_reader, task_progress);
+            client
+                .upload_stream(&mut reader, size as usize, task_name)
+                .await
+                .map_err(error)
+        });
+
+        let id = self.uploads.next();
+        self.uploads.insert_progress(id, Arc::clone(&progress))?;
+        self.uploads.insert_stream(
+            id,
+            StreamUpload {
+                size,
+                accepted,
+                sender,
+                task,
+            },
+        )?;
+        Ok(id)
+    }
+
+    /// Hands one chunk to the stream [id] names, awaiting room when the uploader is behind.
+    ///
+    /// More bytes than the declared size is an error rather than a silent truncation.
+    pub(crate) fn append_stream(&self, id: i64, bytes: &[u8]) -> Result<(), String> {
+        if bytes.is_empty() {
+            return Ok(());
+        }
+        let (sender, accepted, size) = self.uploads.stream_handle(id)?;
+        accepted
+            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+                (current + bytes.len() as u64 <= size).then_some(current + bytes.len() as u64)
+            })
+            .map_err(|_| {
+                format!(
+                    "upload stream {id} received more than its declared size of {size} bytes"
+                )
+            })?;
+        self.runtime
+            .block_on(sender.send(bytes.to_vec()))
+            .map_err(|_| format!("upload stream {id} is no longer accepting chunks"))
+    }
+}
+
+/// Uploads a local file while counting the bytes read into [progress], grammers' own
+/// `Client::upload_file` with the reader wrapped.
+///
+/// This is `upload_file` reimplemented: open the file, take its length and name, and hand a
+/// counting reader to `upload_stream`. The parts sent and the resulting `Uploaded` are identical,
+/// so substituting it for `upload_file` changes nothing but the observation point.
+pub(crate) async fn upload_path_with_progress(
+    client: &Client,
+    path: PathBuf,
+    progress: Arc<UploadProgress>,
+) -> Result<Uploaded, String> {
+    let mut file = tokio::fs::File::open(&path).await.map_err(error)?;
+    let size = file
+        .seek(std::io::SeekFrom::End(0))
+        .await
+        .map_err(error)?;
+    file.seek(std::io::SeekFrom::Start(0))
+        .await
+        .map_err(error)?;
+    let name = path
+        .file_name()
+        .map(|name| name.to_string_lossy().into_owned())
+        .ok_or_else(|| format!("cannot upload a path without a file name: {}", path.display()))?;
+    progress.set_total(size);
+    let mut reader = ProgressReader::new(file, progress);
+    client
+        .upload_stream(&mut reader, size as usize, name)
+        .await
+        .map_err(error)
 }
 
 /// The step of the user login flow that has been reached so far.
@@ -234,18 +366,25 @@ pub(crate) async fn resolve_peer(
 
 /// Resolves the file a send attaches.
 ///
-/// A path is uploaded now, exactly as a plain `sendFile` always did; a handle is the finished
-/// upload the registry kept, reused without a second upload.
+/// A path is uploaded now, exactly as a plain `sendFile` always did, and, when [progress] is given,
+/// through the counting reader so a `uploadProgressBegin` slot observes it; a handle is the
+/// finished upload the registry kept, reused without a second upload.
 pub(crate) async fn resolve_upload(
     native: &NativeClient,
     source: FileSource,
+    progress: Option<Arc<UploadProgress>>,
 ) -> Result<Uploaded, String> {
     match source {
-        FileSource::Path(path) => native
-            .client
-            .upload_file(PathBuf::from(path))
-            .await
-            .map_err(error),
+        FileSource::Path(path) => match progress {
+            Some(progress) => {
+                upload_path_with_progress(&native.client, PathBuf::from(path), progress).await
+            }
+            None => native
+                .client
+                .upload_file(PathBuf::from(path))
+                .await
+                .map_err(error),
+        },
         FileSource::Handle(handle) => native.uploads.get(handle),
     }
 }
@@ -293,32 +432,73 @@ mod tests {
         }))
     }
 
+    /// A stream whose task never touches the network, for exercising the registry alone.
+    fn idle_stream(size: u64) -> (StreamUpload, ChannelReader, Runtime) {
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .build()
+            .expect("a test runtime");
+        let (sender, receiver) = stream_channel();
+        let task = runtime.spawn(async { Err("not a real upload".to_owned()) });
+        (
+            StreamUpload {
+                size,
+                accepted: Arc::new(AtomicU64::new(0)),
+                sender,
+                task,
+            },
+            receiver,
+            runtime,
+        )
+    }
+
     #[test]
-    fn a_started_stream_keeps_its_name_and_accumulates_its_chunks() {
+    fn a_started_stream_exposes_its_sender_and_declared_size() {
         let registry = UploadRegistry::default();
-        let id = registry.begin("report.pdf".to_owned()).expect("a stream");
+        let (stream, _receiver, _runtime) = idle_stream(3);
+        let id = registry.next();
+        registry.insert_stream(id, stream).expect("the stream");
 
-        registry.append(id, b"foo").expect("the first chunk");
-        registry.append(id, b"bar").expect("the second chunk");
+        let (sender, accepted, size) = registry.stream_handle(id).expect("the stream handle");
+        assert_eq!(size, 3);
+        assert_eq!(accepted.load(Ordering::Relaxed), 0);
+        // The sender is the live producing end, not a copy that would close the stream when dropped.
+        assert!(!sender.is_closed());
 
-        let stream = registry.take(id).expect("the finished stream");
-        assert_eq!(stream.name, "report.pdf");
-        assert_eq!(stream.data, b"foobar");
         // Taking the stream removes it: a second finish has nothing left to consume.
+        assert!(registry.take_stream(id).is_ok());
         assert_eq!(
-            registry.take(id).unwrap_err(),
+            registry.take_stream(id).unwrap_err(),
             format!("unknown upload stream: {id}")
         );
     }
 
     #[test]
-    fn a_chunk_for_an_unknown_stream_is_reported() {
+    fn an_operation_for_an_unknown_stream_is_reported() {
         let registry = UploadRegistry::default();
         assert_eq!(
-            registry.append(99, b"x").unwrap_err(),
+            registry.stream_handle(99).unwrap_err(),
             "unknown upload stream: 99"
         );
-        assert_eq!(registry.take(99).unwrap_err(), "unknown upload stream: 99");
+        assert_eq!(
+            registry.take_stream(99).unwrap_err(),
+            "unknown upload stream: 99"
+        );
+    }
+
+    #[test]
+    fn a_progress_slot_is_created_and_polled_by_its_id() {
+        let registry = UploadRegistry::default();
+        let id = registry.begin_progress(1_024).expect("a progress slot");
+
+        let progress = registry.progress(id).expect("the progress");
+        let snapshot = progress.snapshot();
+        assert_eq!(snapshot.total, 1_024);
+        assert_eq!(snapshot.sent, 0);
+
+        assert_eq!(
+            registry.progress(id + 1).unwrap_err(),
+            format!("unknown upload progress: {}", id + 1)
+        );
     }
 
     #[test]
@@ -334,11 +514,16 @@ mod tests {
     }
 
     #[test]
-    fn stream_ids_and_upload_handles_share_one_id_space() {
+    fn stream_ids_handles_and_progress_slots_share_one_id_space() {
         let registry = UploadRegistry::default();
-        let stream = registry.begin("a.bin".to_owned()).expect("a stream");
+        let (stream, _receiver, _runtime) = idle_stream(1);
+        let stream_id = registry.next();
+        registry.insert_stream(stream_id, stream).expect("the stream");
         let handle = registry.register(uploaded(1)).expect("a handle");
+        let progress = registry.begin_progress(1).expect("a progress slot");
 
-        assert_ne!(stream, handle);
+        assert_ne!(stream_id, handle);
+        assert_ne!(stream_id, progress);
+        assert_ne!(handle, progress);
     }
 }

@@ -7,6 +7,28 @@ The release process is tag-driven: publishing a `v<version>` tag builds the bund
 libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 [`docs/publishing.md`](docs/publishing.md).
 
+## 0.8.0 - unreleased
+
+### Added
+
+- `FilesApi.uploadStream` is now genuinely incremental: the bytes cross a bounded native channel to
+  grammers as they are read, instead of being collected in one `Vec<u8>` until the finish call, so
+  the memory an upload holds is a few chunks whatever the file size. It takes the stream's total
+  `size` and an optional `onProgress` callback, because grammers has to know the size before it can
+  send the first part.
+- `FilesApi.uploadProgressBegin(total)` and `FilesApi.uploadProgress(handle)` report an upload while
+  it runs: bytes sent, the total, elapsed milliseconds and the average bytes per second, which is
+  the shape a terminal render loop polls. `uploadFile(path)` and a path `MediaApi.mediaSend` accept
+  an optional `progressHandle` from `uploadProgressBegin` and count their local file into it through
+  the same counting reader, so a path upload can be observed from another thread although its own
+  call blocks. 101 operations.
+
+### Changed
+
+- `FilesApi.uploadStream` takes the stream's total `size`. The previous three-argument form could
+  not report progress and buffered the whole file; a caller moves by passing the size it already
+  knows (a file's length, or an HTTP `Content-Length`).
+
 ## 0.7.0 - 2026-09-30
 
 ### Added

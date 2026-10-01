@@ -65,7 +65,7 @@ its high-level API rather than the old Layer-66 TL requests Kotlogram generated:
 | `usersGetUsers` | raw `users.GetUsers` (batched by id, reusing the contacts user/peer projection) |
 | `messagesGetDialogFilters` / `messagesUpdateDialogFilter` / `messagesUpdateDialogFiltersOrder` | raw `messages.GetDialogFilters` / `UpdateDialogFilter` / `UpdateDialogFiltersOrder` |
 | `messagesGetStickerSet` / `messagesGetAllStickers` / `messagesGetRecentStickers` / `messagesGetFavedStickers` | raw `messages.GetStickerSet` / `GetAllStickers` / `GetRecentStickers` / `GetFavedStickers` |
-| `uploadBytes` / `uploadStreamBegin` / `uploadStreamChunk` / `uploadStreamFinish` | `Client::upload_stream` with a client-side upload registry; a later send or album item references the upload by `fileHandle` instead of a path |
+| `uploadBytes` / `uploadStreamBegin` / `uploadStreamChunk` / `uploadStreamFinish` / `uploadProgressBegin` / `uploadProgress` | `Client::upload_stream` over a bounded channel or a counting file reader, with a client-side upload registry; a later send or album item references the upload by `fileHandle` instead of a path, and a running upload is polled for its bytes sent, total, elapsed time and rate |
 | `sendInlineBotResult` | raw `messages.SendInlineBotResult` |
 | `answerGuestChatQuery` | raw `messages.SetBotGuestChatResult` |
 
@@ -100,7 +100,7 @@ domains can be developed and reviewed independently.
 `native/operations.txt` is the shared contract listing every operation the native crate answers.
 The Rust unit tests and `OperationParityTest` on the JVM both assert against it, so the bridge
 cannot declare a capability the native side does not implement, or the reverse. It currently
-lists 99 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
+lists 101 operations. [`docs/grammers-parity-plan.md`](grammers-parity-plan.md) records the gap
 analysis behind the layout, and [`docs/gap-closure-roadmap.md`](gap-closure-roadmap.md) the work
 that closed the post-parity gaps.
 
@@ -128,5 +128,6 @@ Everything in `native/operations.txt` is reachable from Kotlin. What stays outsi
 - The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` rather
   than by a background loop.
 - A few grammers capabilities have no request/response shape the bridge can carry: the
-  `ActionSender` repeat loop, and `upload_stream` from a caller-supplied async reader (the bridge
-  buffers chunks instead).
+  `ActionSender` repeat loop, and `upload_stream` from a caller-supplied async reader that does not
+  know its length up front (grammers must be told the total before the first part, which is why
+  `uploadStream` takes the size and the unknown-length single-shot form is not offered).

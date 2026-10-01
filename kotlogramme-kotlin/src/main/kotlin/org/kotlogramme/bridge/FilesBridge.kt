@@ -14,6 +14,9 @@ import org.kotlogramme.protocol.ProfilePhotosPayload
 import org.kotlogramme.protocol.UploadBytesPayload
 import org.kotlogramme.protocol.UploadedFile
 import org.kotlogramme.protocol.UploadFilePayload
+import org.kotlogramme.protocol.UploadProgress
+import org.kotlogramme.protocol.UploadProgressBeginPayload
+import org.kotlogramme.protocol.UploadProgressPayload
 import org.kotlogramme.protocol.UploadStreamBeginPayload
 import org.kotlogramme.protocol.UploadStreamBeginResult
 import org.kotlogramme.protocol.UploadStreamChunkPayload
@@ -47,11 +50,16 @@ internal interface FilesBridge {
             DownloadMediaChunkPayload(PeerTarget(peer.nativeHandle), messageId, chunkSize, skipChunks),
         )
 
-    /** Uploads a local file; the result is the metadata a later send can reuse. */
+    /**
+     * Uploads a local file; the result is the metadata a later send can reuse.
+     *
+     * When [progressHandle] names a slot from [uploadProgressBegin], the file is uploaded through a
+     * counting reader so the slot can be polled while this call runs.
+     */
     @Operation("uploadFile")
-    fun uploadFile(path: Path): UploadedFile = transport.request(
+    fun uploadFile(path: Path, progressHandle: Long? = null): UploadedFile = transport.request(
         "uploadFile",
-        UploadFilePayload(path.toAbsolutePath().toString()),
+        UploadFilePayload(path.toAbsolutePath().toString(), progressHandle),
     )
 
     /**
@@ -64,12 +72,15 @@ internal interface FilesBridge {
         UploadBytesPayload(name, dataBase64),
     )
 
-    /** Opens a chunked upload under [name] and returns the id its chunks and finish name. */
+    /**
+     * Opens a chunked upload of [size] bytes under [name] and returns the id its chunks, its finish
+     * and its progress poll name.
+     */
     @Operation("uploadStreamBegin")
-    fun uploadStreamBegin(name: String): Long =
+    fun uploadStreamBegin(name: String, size: Long): Long =
         transport.request<UploadStreamBeginPayload, UploadStreamBeginResult>(
             "uploadStreamBegin",
-            UploadStreamBeginPayload(name),
+            UploadStreamBeginPayload(name, size),
         ).uploadId
 
     /** Appends one base64 chunk to the stream [uploadId] names. */
@@ -87,6 +98,22 @@ internal interface FilesBridge {
         "uploadStreamFinish",
         UploadStreamFinishPayload(uploadId),
     )
+
+    /** Allocates a progress slot for an upload whose bytes do not travel through a stream. */
+    @Operation("uploadProgressBegin")
+    fun uploadProgressBegin(total: Long): Long =
+        transport.request<UploadProgressBeginPayload, UploadStreamBeginResult>(
+            "uploadProgressBegin",
+            UploadProgressBeginPayload(total),
+        ).uploadId
+
+    /** Reads the live progress of the upload [uploadId] names. */
+    @Operation("uploadProgress")
+    fun uploadProgress(uploadId: Long): UploadProgress =
+        transport.request<UploadProgressPayload, UploadProgress>(
+            "uploadProgress",
+            UploadProgressPayload(uploadId),
+        )
 
     /** Lists up to [limit] profile photos of a peer, most recent first. */
     @Operation("iterProfilePhotos")
