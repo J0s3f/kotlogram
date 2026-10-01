@@ -60,6 +60,7 @@ getPermissions
 getPinnedMessage
 getReplyMarkup
 getReplyToMessage
+getSelfPeer
 getUsers
 inlineQuery
 inviteToChannel

@@ -12,7 +12,7 @@ use grammers_client::Client;
 use grammers_mtsender::UpdatesConfiguration;
 use grammers_mtsender::{SenderPool, SenderPoolHandle};
 use grammers_session::storages::SqliteSession;
-use grammers_session::types::PeerRef;
+use grammers_session::types::{PeerAuth, PeerId, PeerRef};
 use jni::sys::jlong;
 use tokio::io::AsyncSeekExt;
 use tokio::runtime::Runtime;
@@ -370,10 +370,35 @@ pub(crate) async fn resolve_peer(
     target: &PeerTarget,
 ) -> Result<PeerRef, String> {
     let peer = resolve_peer_projected(native, target).await?;
+    if is_self_peer(&peer) {
+        return Ok(self_peer_ref());
+    }
     peer.to_ref()
         .await
         .map_err(|error| error.to_string())?
         .ok_or_else(|| "the resolved peer is not usable on its own".to_owned())
+}
+
+/// Whether [peer] is the logged-in account itself.
+///
+/// grammers reports the flag on the account `users.getUsers[UserSelf]` answers, which is what
+/// [`register_peer`] stores after a `getSelfPeer`.
+pub(crate) fn is_self_peer(peer: &Peer) -> bool {
+    matches!(peer, Peer::User(user) if user.is_self())
+}
+
+/// The reference the layer spells as `inputPeerSelf`.
+///
+/// Addressing Saved Messages means sending to this reference rather than to the account's numeric
+/// user id: converting the sentinel peer id to an `InputPeer` produces `inputPeerSelf`, while the
+/// account's real id would produce an `inputPeerUser`. Peer ids that are not the sentinel have no
+/// [`bot_api_dialog_id`](grammers_session::types::PeerId::bot_api_dialog_id), which is why a
+/// self-peer handle must not be routed through [`register_peer`]'s numeric form.
+pub(crate) fn self_peer_ref() -> PeerRef {
+    PeerRef {
+        id: PeerId::self_user(),
+        auth: PeerAuth::default(),
+    }
 }
 
 /// Resolves the file a send attaches.
@@ -537,5 +562,18 @@ mod tests {
         assert_ne!(stream_id, handle);
         assert_ne!(stream_id, progress);
         assert_ne!(handle, progress);
+    }
+
+    #[test]
+    fn the_self_peer_reference_is_the_layers_input_peer_self() {
+        let reference = self_peer_ref();
+        // The sentinel id is what makes grammers spell the peer as `inputPeerSelf`; a real user id
+        // would be spelled `inputPeerUser` instead.
+        assert_eq!(reference.id, PeerId::self_user());
+        assert_eq!(reference.id.bot_api_dialog_id(), None);
+        assert_eq!(
+            tl::enums::InputPeer::from(&reference),
+            tl::enums::InputPeer::PeerSelf,
+        );
     }
 }

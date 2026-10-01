@@ -55,6 +55,16 @@ internal interface AuthBridge {
     @Operation("getMe")
     fun getMe(): Me = transport.request("getMe", EmptyPayload)
 
+    /**
+     * Fetches the peer the session's account is itself, which addresses Saved Messages.
+     *
+     * The private chat with yourself is the peer `inputPeerSelf`, not a chat id: it never appears
+     * in the dialog listing, so this is the only way to reach it. The answer is an ordinary peer
+     * with a registered handle, so every peer-taking operation can target it.
+     */
+    @Operation("getSelfPeer")
+    fun getSelfPeer(): Peer = transport.request("getSelfPeer", EmptyPayload)
+
     /** The home data centre of the session, which is what a raw call defaults to. */
     @Operation("getDataCentreId")
     fun getDataCentreId(): Int =

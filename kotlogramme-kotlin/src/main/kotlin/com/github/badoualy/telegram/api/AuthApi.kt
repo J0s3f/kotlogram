@@ -52,6 +52,15 @@ interface AuthApi : BridgeApi {
     fun getAccountIdentity(): AccountIdentity = bridge.getMe().toCompatibility()
 
     /**
+     * The peer the session's account is itself, which addresses Saved Messages.
+     *
+     * This is the private chat with yourself: Telegram addresses it with `inputPeerSelf`, never a
+     * chat id, so it is absent from the dialog listing. The returned peer carries a registered
+     * handle and can be passed to any peer-taking operation.
+     */
+    fun getSelfPeer(): TelegramPeer = bridge.getSelfPeer().toCompatibility()
+
+    /**
      * The home data centre of the session, which is the one its main queries run against.
      *
      * [Kotlogram.getDcById] names the same identifier.

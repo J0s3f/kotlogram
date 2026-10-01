@@ -1,5 +1,6 @@
 //! Authentication and account operations.
 
+use grammers_client::peer::Peer;
 use grammers_client::SignInError;
 use grammers_session::Session;
 use serde::Deserialize;
@@ -36,6 +37,7 @@ pub(crate) const OPERATIONS: &[&str] = &[
     "checkPassword",
     "signOut",
     "getMe",
+    "getSelfPeer",
     "getDataCentreId",
     "resolveUsername",
 ];
@@ -51,6 +53,7 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
         "checkPassword" => check_password,
         "signOut" => sign_out,
         "getMe" => get_me,
+        "getSelfPeer" => get_self_peer,
         "getDataCentreId" => get_data_centre_id,
         "resolveUsername" => resolve_username,
         _ => return None,
@@ -160,6 +163,21 @@ fn get_me(native: &NativeClient, _payload: &str) -> Result<String, String> {
     json_string(me_dto(&user, data_centre_id))
 }
 
+/// Fetches the peer the session's account is itself, which addresses Saved Messages.
+///
+/// The private chat with yourself is not a special chat id: it is the peer
+/// [`inputPeerSelf`](grammers_session::types::PeerId::self_user). It never appears in
+/// `messages.getDialogs`, so the dialog-scan path cannot reach it, and `contacts.resolveUsername`
+/// would look for a user *named* "me" instead. The account is fetched the same way [`get_me`] does
+/// and projected as an ordinary peer, so it registers a handle like any other peer.
+fn get_self_peer(native: &NativeClient, _payload: &str) -> Result<String, String> {
+    let user = native
+        .runtime
+        .block_on(native.client.get_me())
+        .map_err(invocation_error)?;
+    json_string(peer_dto(native, &Peer::User(user))?)
+}
+
 /// Reports the home data centre of the session, which is what a raw call defaults to.
 fn get_data_centre_id(native: &NativeClient, _payload: &str) -> Result<String, String> {
     json_string(data_centre_dto(native.session.home_dc_id().map_err(error)?))
@@ -189,9 +207,18 @@ mod tests {
             get_me as Handler,
         ));
         assert!(fn_addr_eq(
+            route("getSelfPeer").expect("routed"),
+            get_self_peer as Handler,
+        ));
+        assert!(fn_addr_eq(
             route("getDataCentreId").expect("routed"),
             get_data_centre_id as Handler,
         ));
+    }
+
+    #[test]
+    fn the_self_peer_operation_is_in_the_inventory() {
+        assert!(OPERATIONS.contains(&"getSelfPeer"));
     }
 
     #[test]
