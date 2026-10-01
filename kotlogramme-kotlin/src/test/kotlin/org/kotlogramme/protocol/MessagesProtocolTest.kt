@@ -181,6 +181,30 @@ class MessagesProtocolTest {
     }
 
     @Test
+    fun `a message document decodes the quoted text with its own entities`() {
+        val decoded = json.decodeFromString<Message>(MESSAGE)
+
+        // The quote carries its own entity list and its own renderings, grouped as one value.
+        val quote = decoded.quote
+        assertEquals("see docs", quote?.text)
+        assertEquals("<b>see</b> <a href=\"https://example.org\">docs</a>", quote?.htmlText)
+        assertEquals("**see** [docs](https://example.org)", quote?.markdownText)
+        assertEquals(listOf("bold", "textUrl"), quote?.entities?.map { it.type })
+        assertEquals("https://example.org", quote?.entities?.get(1)?.url)
+    }
+
+    @Test
+    fun `a message that quotes nothing decodes a null quote`() {
+        // A message that is not a reply, and a reply whose header carries no text, both leave the
+        // quote out rather than sending four empty strings.
+        val decoded = json.decodeFromString<Message>(
+            """{"id": 1, "text": "hi", "outgoing": false, "replyToMessageId": null}""",
+        )
+
+        assertNull(decoded.quote)
+    }
+
+    @Test
     fun `a message document decodes the enriched fields`() {
         val decoded = json.decodeFromString<Message>(MESSAGE)
 
@@ -398,6 +422,14 @@ class MessagesProtocolTest {
                   "language": null, "customEmojiId": 5150}],
              "htmlText": "<b>hello</b>",
              "markdownText": "**hello**",
+             "quote": {"text": "see docs",
+                       "entities": [{"type": "bold", "offset": 0, "length": 3, "url": null,
+                                     "userId": null, "language": null, "customEmojiId": null},
+                                    {"type": "textUrl", "offset": 4, "length": 4,
+                                     "url": "https://example.org", "userId": null,
+                                     "language": null, "customEmojiId": null}],
+                       "htmlText": "<b>see</b> <a href=\"https://example.org\">docs</a>",
+                       "markdownText": "**see** [docs](https://example.org)"},
              "forwardHeader": {
                  "imported": true, "savedOut": true, "fromId": 7, "fromName": "Some One",
                  "date": 1700000000000, "channelPost": 42, "postAuthor": "Author",

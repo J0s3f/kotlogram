@@ -22,6 +22,13 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
   an optional `progressHandle` from `uploadProgressBegin` and count their local file into it through
   the same counting reader, so a path upload can be observed from another thread although its own
   call blocks. 101 operations.
+- a reply now projects the text it quotes: `Message.quote` carries the quoted `text`, the formatting
+  `entities` on it, and the same text rendered as `htmlText` and `markdownText` by grammers, grouped
+  into one value so a caller drawing the quoted line reads one object. It is `null` when the message
+  is not a reply and when the reply header carries no quoted text - a reply to a deleted message, a
+  scheduled or service reply, and a reply to a story all arrive that way - never four empty strings.
+  The entities are read from the layer's `messageReplyHeader`, whose offsets already count from the
+  start of the quoted text.
 
 ### Changed
 

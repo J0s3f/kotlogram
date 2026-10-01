@@ -13,7 +13,10 @@ use crate::dto::action::MessageActionDto;
 use crate::dto::dialog::DialogDto;
 use crate::dto::markup::{ButtonDto, ReplyMarkupDto};
 use crate::dto::media::{document_kind, MediaDto};
-use crate::dto::message::{ForwardHeaderDto, MessageDto, MessageEntityDto, ReplyHeaderDto};
+use crate::dto::message::{
+    message_quote_dto, ForwardHeaderDto, MessageDto, MessageEntityDto, MessageQuoteDto,
+    ReplyHeaderDto,
+};
 use crate::dto::participant::ParticipantDto;
 use crate::dto::peer::PeerDto;
 use crate::dto::permissions::{ChatPermissionsDto, ChatRestrictionsDto};
@@ -206,6 +209,12 @@ fn full_message(media: Option<MediaDto>) -> MessageDto {
         ],
         html_text: "<b>hello</b>".to_owned(),
         markdown_text: "**hello**".to_owned(),
+        quote: Some(MessageQuoteDto {
+            text: "quoted".to_owned(),
+            entities: vec![MessageEntityDto::plain("italic", 0, 6)],
+            html_text: "<i>quoted</i>".to_owned(),
+            markdown_text: "_quoted_".to_owned(),
+        }),
     }
 }
 
@@ -450,6 +459,22 @@ fn message_encodes_every_projected_field() {
         ],
         "htmlText": "<b>hello</b>",
         "markdownText": "**hello**",
+        "quote": {
+            "text": "quoted",
+            "entities": [
+                {
+                    "type": "italic",
+                    "offset": 0,
+                    "length": 6,
+                    "url": null,
+                    "userId": null,
+                    "language": null,
+                    "customEmojiId": null,
+                },
+            ],
+            "htmlText": "<i>quoted</i>",
+            "markdownText": "_quoted_",
+        },
     });
     let object = expected.as_object_mut().expect("an object");
     object.insert(
@@ -761,6 +786,119 @@ fn a_message_without_entities_carries_an_empty_list() {
     assert_eq!(encoded["entities"], json!([]));
     assert_eq!(encoded["htmlText"], json!("hello"));
     assert_eq!(encoded["markdownText"], json!("hello"));
+}
+
+/// A layer reply header for a quote, so the projection can be exercised without a session.
+fn quote_reply(
+    quote_text: Option<&str>,
+    quote_entities: Option<Vec<tl::enums::MessageEntity>>,
+) -> tl::enums::MessageReplyHeader {
+    tl::enums::MessageReplyHeader::Header(tl::types::MessageReplyHeader {
+        reply_to_scheduled: false,
+        forum_topic: false,
+        quote: quote_text.is_some(),
+        reply_to_ephemeral: false,
+        reply_to_msg_id: Some(30),
+        reply_to_peer_id: None,
+        reply_from: None,
+        reply_media: None,
+        reply_to_top_id: None,
+        quote_text: quote_text.map(ToOwned::to_owned),
+        quote_entities,
+        quote_offset: None,
+        todo_item_id: None,
+        poll_option: None,
+    })
+}
+
+#[test]
+fn a_reply_projects_its_quoted_text_with_its_entities() {
+    let quote = message_quote_dto(Some(&quote_reply(
+        Some("see docs"),
+        Some(vec![
+            tl::enums::MessageEntity::Bold(tl::types::MessageEntityBold { offset: 0, length: 3 }),
+            tl::enums::MessageEntity::TextUrl(tl::types::MessageEntityTextUrl {
+                offset: 4,
+                length: 4,
+                url: "https://example.org".to_owned(),
+            }),
+        ]),
+    )))
+    .expect("a reply that quotes text projects the quote");
+
+    assert_json(
+        &quote,
+        json!({
+            "text": "see docs",
+            "entities": [
+                {
+                    "type": "bold",
+                    "offset": 0,
+                    "length": 3,
+                    "url": null,
+                    "userId": null,
+                    "language": null,
+                    "customEmojiId": null,
+                },
+                {
+                    "type": "textUrl",
+                    "offset": 4,
+                    "length": 4,
+                    "url": "https://example.org",
+                    "userId": null,
+                    "language": null,
+                    "customEmojiId": null,
+                },
+            ],
+            "htmlText": "<b>see</b> <a href=\"https://example.org\">docs</a>",
+            "markdownText": "**see** [docs](https://example.org)",
+        }),
+    );
+}
+
+#[test]
+fn a_quoted_text_without_entities_is_rendered_as_it_stands() {
+    let quote = message_quote_dto(Some(&quote_reply(Some("plain quote"), None)))
+        .expect("a reply that quotes unformatted text projects the quote");
+
+    assert_json(
+        &quote,
+        json!({
+            "text": "plain quote",
+            "entities": [],
+            "htmlText": "plain quote",
+            "markdownText": "plain quote",
+        }),
+    );
+}
+
+#[test]
+fn a_message_that_is_not_a_reply_has_no_quote() {
+    assert!(message_quote_dto(None).is_none());
+}
+
+#[test]
+fn a_reply_that_quotes_no_text_has_no_quote() {
+    // A reply to a deleted message arrives with no `quote_text` at all, and an empty one quotes
+    // nothing; a story reply has no text to quote in the first place. None of them is a quote.
+    assert!(message_quote_dto(Some(&quote_reply(None, None))).is_none());
+    assert!(message_quote_dto(Some(&quote_reply(Some(""), None))).is_none());
+    assert!(message_quote_dto(Some(&tl::enums::MessageReplyHeader::MessageReplyStoryHeader(
+        tl::types::MessageReplyStoryHeader {
+            peer: tl::enums::Peer::User(tl::types::PeerUser { user_id: 7 }),
+            story_id: 3,
+        },
+    )))
+    .is_none());
+}
+
+#[test]
+fn an_absent_quote_is_absent_rather_than_an_empty_one() {
+    let mut message = full_message(None);
+    message.quote = None;
+
+    let encoded = serde_json::to_value(&message).expect("a message encodes");
+    assert_eq!(encoded["quote"], json!(null));
 }
 
 #[test]

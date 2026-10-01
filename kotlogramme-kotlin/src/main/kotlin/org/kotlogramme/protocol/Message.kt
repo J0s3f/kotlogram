@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
  * [entities] are the formatting entities on [text], empty when it is unformatted, and [htmlText]
  * and [markdownText] are the same text rendered from those entities by grammers. A media caption
  * is not among them; grammers has no caption accessor at all, and the text of a captioned
- * attachment is [text].
+ * attachment is [text]. [quote] is the text a reply quotes, projected the same way.
  *
  * [date] and [editDate] are epoch milliseconds. [peerId] and [senderId] are `null` for a message
  * grammers could not place, which happens for an empty message with no chat behind it.
@@ -63,6 +63,32 @@ data class Message(
     /** [text] rendered as HTML from [entities], as grammers computes it. */
     val htmlText: String = "",
     /** [text] rendered as CommonMark from [entities], as grammers computes it. */
+    val markdownText: String = "",
+    /** The text this message quotes, with its own entities and renderings, when it quotes any. */
+    val quote: MessageQuote? = null,
+)
+
+/**
+ * The text a reply quotes, with the formatting entities on it.
+ *
+ * This is the same projection as a message's own [Message.text], [Message.entities],
+ * [Message.htmlText] and [Message.markdownText], grouped into one value: a caller rendering the
+ * quoted line reads one object instead of four fields that only mean anything together.
+ * [htmlText] and [markdownText] are grammers' own renderings, from the same renderer it uses for
+ * the message's text.
+ *
+ * It travels as `null` when the message is not a reply and when the reply header carries no quoted
+ * text, which is also what a reply to a deleted message and a reply to a story answer.
+ */
+@Serializable
+data class MessageQuote(
+    /** The quoted text, as the reply header carries it. */
+    val text: String,
+    /** The formatting entities on [text], empty when the text is unformatted. */
+    val entities: List<MessageEntity> = emptyList(),
+    /** [text] rendered as HTML from [entities]. */
+    val htmlText: String = "",
+    /** [text] rendered as CommonMark from [entities]. */
     val markdownText: String = "",
 )
 
@@ -121,11 +147,8 @@ data class ForwardHeader(
  * The layer has two reply-header constructors: a normal reply and a reply to a story. They share
  * no fields, so this is the same flat shape [Media] uses: [kind] names the constructor and says
  * which of the other fields are populated, the rest being the defaults. Every field is always
- * present in the JSON.
- *
- * `quoteEntities` is absent: the message's own entities are projected, but the entities on the
- * quoted text are not yet. [pollOption] is the poll option bytes, base64 because JSON has no byte
- * string.
+ * present in the JSON. The quoted text and its entities are projected on the message itself, as
+ * [Message.quote]. [pollOption] is the poll option bytes, base64 because JSON has no byte string.
  */
 @Serializable
 data class ReplyHeader(

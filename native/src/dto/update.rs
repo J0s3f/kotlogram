@@ -657,6 +657,7 @@ mod tests {
                 entities: Vec::new(),
                 html_text: "hello".to_owned(),
                 markdown_text: "hello".to_owned(),
+                quote: None,
             }),
             state: Some(update_state_dto(&State {
                 date: 1_700_000_000,

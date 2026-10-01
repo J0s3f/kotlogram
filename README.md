@@ -32,8 +32,8 @@ scoped: 101 native operations, each reachable from Kotlin through a 257-test Rus
 
 Known limits, each reachable another way or listed in [`docs/compatibility.md`](docs/compatibility.md)
 under "Not mapped yet": the historical generated TL API is not recreated (only the versioned raw API is
-exposed); a message's own formatting entities and its rendered markdown/HTML are projected, but the
-entities on a reply's quoted text are not; sticker install/archive, per-peer notification settings and
+exposed); a message's own formatting entities and its rendered markdown/HTML are projected, and so are
+those on the text a reply quotes; sticker install/archive, per-peer notification settings and
 the story/paid-media surfaces stay behind `invokeRaw`; and `UpdateCallback` is delivered on demand by
 `dispatchNextUpdate` rather than by a background loop. Test the operations you depend on in your own
 application.

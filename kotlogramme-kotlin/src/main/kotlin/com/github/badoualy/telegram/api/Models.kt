@@ -48,6 +48,7 @@ import org.kotlogramme.protocol.MediaChunk as BridgeMediaChunk
 import org.kotlogramme.protocol.Message as BridgeMessage
 import org.kotlogramme.protocol.MessageAction
 import org.kotlogramme.protocol.MessageEntity as BridgeMessageEntity
+import org.kotlogramme.protocol.MessageQuote as BridgeMessageQuote
 import org.kotlogramme.protocol.Participant as BridgeParticipant
 import org.kotlogramme.protocol.ParticipantPermissions as BridgeParticipantPermissions
 import org.kotlogramme.protocol.ParticipantsResult as BridgeParticipantsResult
@@ -301,9 +302,9 @@ data class ReplyHeader(
  *
  * [entities] are the formatting entities on [text], empty when it is unformatted, and [htmlText]
  * and [markdownText] are the same text rendered from those entities by grammers. grammers has no
- * caption accessor, so the text of a captioned attachment is [text]. [date] and [editDate] are
- * epoch milliseconds, and [peerId] and [senderId] are `null` for a message grammers could not
- * place.
+ * caption accessor, so the text of a captioned attachment is [text]. [quote] is the text a reply
+ * quotes, projected the same way. [date] and [editDate] are epoch milliseconds, and [peerId] and
+ * [senderId] are `null` for a message grammers could not place.
  *
  * [peer] and [sender] are the full objects for [peerId] and [senderId]. [sender] is `null` when
  * the sender is not a user (a group or channel posting anonymously).
@@ -353,6 +354,31 @@ data class Message(
     /** [text] rendered as HTML from [entities], as grammers computes it. */
     val htmlText: String = "",
     /** [text] rendered as CommonMark from [entities], as grammers computes it. */
+    val markdownText: String = "",
+    /** The text this message quotes, with its own entities and renderings, when it quotes any. */
+    val quote: MessageQuote? = null,
+)
+
+/**
+ * The text a reply quotes, with the formatting entities on it.
+ *
+ * This is the same projection as a message's own [Message.text], [Message.entities],
+ * [Message.htmlText] and [Message.markdownText], grouped into one value: a caller rendering the
+ * quoted line reads one object instead of four fields that only mean anything together.
+ * [htmlText] and [markdownText] are grammers' own renderings, from the same renderer it uses for
+ * the message's text.
+ *
+ * It is `null` when the message is not a reply and when the reply header carries no quoted text,
+ * which is also what a reply to a deleted message and a reply to a story answer.
+ */
+data class MessageQuote(
+    /** The quoted text, as the reply header carries it. */
+    val text: String,
+    /** The formatting entities on [text], empty when the text is unformatted. */
+    val entities: List<MessageEntity> = emptyList(),
+    /** [text] rendered as HTML from [entities]. */
+    val htmlText: String = "",
+    /** [text] rendered as CommonMark from [entities]. */
     val markdownText: String = "",
 )
 
@@ -794,7 +820,11 @@ internal fun BridgeMessage.toCompatibility() = Message(
     forwardHeader?.toCompatibility(), replyHeader?.toCompatibility(),
     restrictionReasons.map { it.toCompatibility() }, action,
     replyMarkup?.toCompatibility(), peer?.toCompatibility(), sender?.toCompatibility(),
-    entities.map { it.toCompatibility() }, htmlText, markdownText,
+    entities.map { it.toCompatibility() }, htmlText, markdownText, quote?.toCompatibility(),
+)
+
+internal fun BridgeMessageQuote.toCompatibility() = MessageQuote(
+    text, entities.map { it.toCompatibility() }, htmlText, markdownText,
 )
 
 internal fun BridgeMessageEntity.toCompatibility() = MessageEntity(
