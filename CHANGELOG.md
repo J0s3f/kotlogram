@@ -8,6 +8,24 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## 0.9.4 - 2026-10-01
+
+### Fixed
+
+- **dtolnay/rust-toolchain is back on `@stable`.** 0.9.3 pinned it to `@v1` in the Node 24 sweep,
+  which failed every job at its first step with `'toolchain' is a required input`. The reason is a
+  difference between the action's branch and its release tag: on the `stable` branch the `toolchain`
+  input has `default: stable`, while on the `v1` tag it is `required: true` with **no default**, so
+  nothing supplies it. The action is composite (`runs.using: composite`), so it never ran on Node and
+  was never affected by the Node 20 removal - the pin was both unnecessary and breaking. It is
+  reverted, with a comment saying why.
+
+### Note
+
+- `v0.9.3` was tagged and its workflow failed before `package`, so nothing was published to Central,
+  JitPack or as a GitHub Release. This release carries the same changes plus the fix above. The other
+  action bumps from 0.9.3 are unchanged and still untested in a real run.
+
 ## 0.9.3 - 2026-10-01
 
 ### Changed

@@ -115,7 +115,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: dtolnay/rust-toolchain@v1
+      # The ref IS the toolchain: @stable asks for stable, and the action reads it from the ref rather
+      # than from an input. Do NOT "pin" this to @v1 - v1 is an ordinary release tag whose ref carries no
+      # toolchain, so the action fails with 'toolchain' is a required input. This action is composite
+      # (runs.using: composite), so it never ran on Node and was never affected by the Node 20 removal.
+      - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2.9.2
         with:
           workspaces: native
@@ -190,7 +194,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: dtolnay/rust-toolchain@v1
+      # The ref IS the toolchain: @stable asks for stable, and the action reads it from the ref rather
+      # than from an input. Do NOT "pin" this to @v1 - v1 is an ordinary release tag whose ref carries no
+      # toolchain, so the action fails with 'toolchain' is a required input. This action is composite
+      # (runs.using: composite), so it never ran on Node and was never affected by the Node 20 removal.
+      - uses: dtolnay/rust-toolchain@stable
       # grammers is a git dependency on codeberg, and a failed release is normally retried on the
       # same tag. Caching the cargo home means a retry reuses the clone it already made instead of
       # going back to codeberg, which is the part that keeps failing.
@@ -248,7 +256,11 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: dtolnay/rust-toolchain@v1
+      # The ref IS the toolchain: @stable asks for stable, and the action reads it from the ref rather
+      # than from an input. Do NOT "pin" this to @v1 - v1 is an ordinary release tag whose ref carries no
+      # toolchain, so the action fails with 'toolchain' is a required input. This action is composite
+      # (runs.using: composite), so it never ran on Node and was never affected by the Node 20 removal.
+      - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.targets }}
       # Six platforms recompiling grammers from source is the bulk of a release, and the retry after
