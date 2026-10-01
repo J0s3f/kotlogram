@@ -8,6 +8,29 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## 0.9.2 - 2026-10-01
+
+### Fixed
+
+- **The JitPack build works.** 0.9.1 carried a `jitpack.yml` that failed twice over: JitPack's `VERSION`
+  is the whole tag, so the download URL doubled the `v` and 404'd, and JitPack's curl predates
+  `--fail-with-body`, so the first request aborted before anything ran. Both are fixed, and the version
+  is stripped for the download while the coordinate a consumer writes stays bare. 0.9.1 itself remains
+  published on Maven Central and signed on its GitHub Release; JitPack simply never built it, which is
+  why this release exists.
+- The JitPack build no longer ends with `AFTER_INSTALL_CMD: unbound variable` and `Exit code: 1`.
+  JitPack's own `/script/buildit.sh` reads that variable without a default; it is now defined in
+  `jitpack.yml` as a no-op, so a build reports success rather than publishing artifacts under a red
+  status.
+
+### Changed
+
+- The docs no longer claim the detached signature is served from JitPack. It is not, and the evidence is
+  recorded in the 0.9.1 entry above and in [`docs/publishing.md`](docs/publishing.md). The signature is
+  a GitHub Release asset; a JitPack consumer fetches it from there.
+- Pre-rewrite tags (`0.0.1`-`0.0.6`, `1.0.0-RC1`-`RC3`) were deleted from the repository. They sorted
+  above the `v0.x` series, so JitPack would have presented a 2017 artifact as the newest version.
+
 ## 0.9.1 - 2026-10-01
 
 ### Changed
@@ -23,10 +46,15 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
 ### Added
 
 - The release jar is published with a **detached PGP signature**. JitPack does not sign artifacts, so
-  the signature is produced by CI and shipped beside the artifact - on the GitHub Release as
-  `kotlogramme-<version>.jar.asc` with the public key alongside it, and at the same path in the JitPack
-  repository so a consumer resolving from there can verify without leaving it. The signing key is
+  the signature is produced by CI and shipped beside the artifact, on the GitHub Release as
+  `kotlogramme-<version>.jar.asc` with the public key alongside it. The signing key is
   `D9F6 1805 A116 AB0A DB93 B750 66E5 BB1B 6FF3 C341`.
+
+  *Corrected in 0.9.2:* this entry originally claimed the signature was also served from the JitPack
+  repository at the same path. It is not. Writing the `.asc` into `~/.m2/repository` during the JitPack
+  build was tried, and the build log shows JitPack's published artifact set still contained only the
+  jar, the pom and the pom's md5/sha1. **JitPack cannot serve the signature for this artifact**, so it
+  stays a GitHub Release asset.
 
 ## 0.9.0 - 2026-10-01
 

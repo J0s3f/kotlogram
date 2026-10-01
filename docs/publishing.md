@@ -115,6 +115,26 @@ It matters because a source build on JitPack cannot produce a usable artifact he
 Downloading the jar CI already built removes all three obstacles: nothing is compiled, every native
 library is present because CI bundled them, and the bytes are identical to the Central artifact.
 
+### The `AFTER_INSTALL_CMD` workaround
+
+JitPack's own `/script/buildit.sh` mishandles `AFTER_INSTALL_CMD`, and the build ends with `Exit code: 1`
+even when every artifact installed and is served. All three behaviours were observed in the build log:
+
+| `AFTER_INSTALL_CMD` | Result |
+| --- | --- |
+| unset | `line 140: AFTER_INSTALL_CMD: unbound variable` |
+| `"true"` | `line 142: ${$AFTER_INSTALL_CMD}: bad substitution` |
+| `""` (empty) | **exit 0** - the non-empty guard skips the block entirely |
+
+The second row is a typo in their script: `${$AFTER_INSTALL_CMD}` is not valid bash. Setting the variable
+to a non-empty value moves execution past line 140 and straight into that broken expansion, so the value
+has to be *empty* rather than a no-op command. `jitpack.yml` therefore carries:
+
+```yaml
+env:
+  AFTER_INSTALL_CMD: ""
+```
+
 This was observed directly on the `v0.6.0` build, before `jitpack.yml` existed: JitPack reported
 `BUILD SUCCESSFUL`, served `com.github.J0s3f:kotlogram:v0.6.0`, and the 1.95 MB jar contained no
 `native/` entries - its build log said `file or directory '/home/jitpack/build/generated/native', not

@@ -47,7 +47,7 @@ install:
     # The released version whose jar is used whenever the version being built has no release of its own,
     # which is the case for any branch build (`main-SNAPSHOT` and friends). Bump it when the fallback
     # release is superseded.
-    JITPACK_FALLBACK="0.9.1"
+    JITPACK_FALLBACK="0.9.2"
 
     requested="${VERSION#v}"
     source_version="${requested}"
