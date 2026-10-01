@@ -114,9 +114,9 @@ jobs:
     if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@v1
+      - uses: Swatinem/rust-cache@v2.9.2
         with:
           workspaces: native
           key: check
@@ -126,11 +126,11 @@ jobs:
         run: |
           mkdir -p generated/native/linux-x86_64
           cp native/target/release/libkotlogramme.so generated/native/linux-x86_64/
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6.0.1
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6.4.0
         with:
           cache-read-only: false
       - name: Build and test
@@ -189,12 +189,12 @@ jobs:
     if: needs.nightly-guard.outputs.run == 'true' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@v1
       # grammers is a git dependency on codeberg, and a failed release is normally retried on the
       # same tag. Caching the cargo home means a retry reuses the clone it already made instead of
       # going back to codeberg, which is the part that keeps failing.
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2.9.2
         with:
           workspaces: native
           key: raw-schema
@@ -211,7 +211,7 @@ jobs:
           test -n "$schema"
           python3 tools/generate_raw_schema.py --schema "$schema" --output generated/raw-schema/telegram-layer-229.json
           cmp generated/raw-schema/telegram-layer-229.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-229.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         with:
           name: raw-schema
           path: generated/raw-schema/telegram-layer-229.json
@@ -247,13 +247,13 @@ jobs:
             targets: x86_64-apple-darwin,aarch64-apple-darwin
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@v7.0.1
+      - uses: dtolnay/rust-toolchain@v1
         with:
           targets: ${{ matrix.targets }}
       # Six platforms recompiling grammers from source is the bulk of a release, and the retry after
       # a codeberg failure re-runs the same tag ref, so it can reuse whatever the first attempt built.
-      - uses: Swatinem/rust-cache@v2
+      - uses: Swatinem/rust-cache@v2.9.2
         with:
           workspaces: native
           key: ${{ matrix.platform }}
@@ -278,7 +278,7 @@ jobs:
             mkdir -p "build/native/${{ matrix.platform }}"
             cp "native/target/${{ matrix.targets }}/release/${{ matrix.library }}" "build/native/${{ matrix.platform }}/"
           fi
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         with:
           name: native-${{ matrix.platform }}
           path: build/native
@@ -288,23 +288,23 @@ jobs:
     needs: [nightly-guard, native, raw-schema]
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v8.0.1
         with:
           pattern: native-*
           path: generated/native
           merge-multiple: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8.0.1
         with:
           name: raw-schema
           path: generated/raw-schema
       - name: Verify bundled raw schema source
         run: cmp generated/raw-schema/telegram-layer-229.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-229.json
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6.0.1
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6.4.0
         with:
           gradle-version: '8.10'
           # Nothing runs on main any more, so a tag build has no warmed cache to read; letting it
@@ -325,7 +325,7 @@ jobs:
       - name: Verify bundled native libraries
         run: |
           jar tf kotlogramme-kotlin/build/libs/*.jar | grep -E '^native/(linux-x86_64/libkotlogramme\.so|linux-aarch64/libkotlogramme\.so|windows-x86_64/kotlogramme\.dll|windows-aarch64/kotlogramme\.dll|macos-x86_64/libkotlogramme\.dylib|macos-aarch64/libkotlogramme\.dylib)$'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         with:
           name: kotlogramme-jars
           path: kotlogramme-kotlin/build/libs/*.jar
@@ -340,17 +340,17 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v8.0.1
         with:
           pattern: native-*
           path: generated/native
           merge-multiple: true
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6.0.1
         with:
           distribution: temurin
           java-version: '17'
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6.4.0
         with:
           cache-read-only: false
       - name: Publish the signed release to the Central staging API
@@ -420,13 +420,13 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/download-artifact@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v8.0.1
         with:
           pattern: native-*
           path: dist/natives
           merge-multiple: true
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8.0.1
         with:
           name: kotlogramme-jars
           path: dist/jars

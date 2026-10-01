@@ -8,6 +8,18 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## Unreleased
+
+### Changed
+
+- **CI actions moved off Node 20**, which GitHub removed from its runners on 23 September 2026. Every
+  pinned action in `.github/workflows/build.yml` is bumped to a release whose `action.yml` declares
+  `runs.using: node24`: `actions/checkout` v4 to v7.0.1, `actions/setup-java` v4 to v6.0.1,
+  `actions/upload-artifact` v4 to v7.0.1, `actions/download-artifact` v4 to v8.0.1, `gradle/actions`
+  v4 to v6.4.0 and `Swatinem/rust-cache` v2 to v2.9.2; `dtolnay/rust-toolchain` moves from the
+  `stable` branch ref to v1. `gradle/actions` and `dtolnay/rust-toolchain` are composite actions, so
+  they never ran on a Node runtime. No step logic, runner label, trigger or job name changed.
+
 ## 0.9.2 - 2026-10-01
 
 ### Fixed
