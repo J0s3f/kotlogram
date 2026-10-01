@@ -7,6 +7,7 @@
 pub(crate) mod account;
 pub(crate) mod action;
 pub(crate) mod auth;
+pub(crate) mod chatlists;
 pub(crate) mod contacts;
 pub(crate) mod dialog;
 pub(crate) mod dialog_meta;

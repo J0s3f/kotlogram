@@ -7,6 +7,7 @@
 pub(crate) mod account;
 pub(crate) mod actions;
 pub(crate) mod auth;
+pub(crate) mod chatlists;
 pub(crate) mod chats;
 pub(crate) mod contacts;
 pub(crate) mod dialogs;
@@ -34,6 +35,7 @@ pub(crate) type Handler = fn(&NativeClient, &str) -> Result<String, String>;
 const ROUTES: &[fn(&str) -> Option<Handler>] = &[
     account::route,
     auth::route,
+    chatlists::route,
     messages::route,
     chats::route,
     contacts::route,
@@ -54,6 +56,7 @@ const ROUTES: &[fn(&str) -> Option<Handler>] = &[
 const INVENTORY: &[&[&str]] = &[
     account::OPERATIONS,
     auth::OPERATIONS,
+    chatlists::OPERATIONS,
     messages::OPERATIONS,
     chats::OPERATIONS,
     contacts::OPERATIONS,

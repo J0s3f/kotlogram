@@ -99,6 +99,100 @@ class FoldersProtocolTest {
         assertEquals(listOf(3, 1, 2), payload.order)
     }
 
+    @Test
+    fun `an exported invites result decodes the invites and the objects`() {
+        val result = json.decodeFromString<ExportedInvitesResult>(INVITES)
+
+        val invite = result.invites.single()
+        assertEquals("News", invite.title)
+        assertEquals("AbCdEf", invite.slug)
+        assertEquals("https://t.me/+AbCdEf", invite.url)
+        assertEquals(-1000001000007L, invite.peers.single().id)
+        assertEquals("channel", invite.peers.single().kind)
+        assertEquals("Some Channel", result.chats.single().name)
+        assertEquals(7L, result.users.single().id)
+    }
+
+    @Test
+    fun `an exported invites result round-trips through the wire codec`() {
+        val decoded = plain.decodeFromString<ExportedInvitesResult>(INVITES)
+        assertEquals(decoded, plain.decodeFromString(plain.encodeToString(decoded)))
+    }
+
+    @Test
+    fun `a new invite result carries its title entities and emoticon`() {
+        val result = json.decodeFromString<ChatlistInviteResult>(NEW_INVITE)
+
+        assertEquals("new", result.kind)
+        assertTrue(result.titleNoanimate)
+        assertEquals("News", result.title)
+        assertEquals("bold", result.titleEntities.single().type)
+        assertEquals("\uD83D\uDCF0", result.emoticon)
+        assertEquals(7L, result.peers.single().id)
+        assertTrue(result.missingPeers.isEmpty() && result.alreadyPeers.isEmpty())
+    }
+
+    @Test
+    fun `an already joined invite result carries the folder id and the sorted peers`() {
+        val result = json.decodeFromString<ChatlistInviteResult>(JOINED_INVITE)
+
+        assertEquals("already", result.kind)
+        assertEquals(4, result.filterId)
+        assertTrue(result.missingPeers.single().kind == "user")
+        assertTrue(result.alreadyPeers.single().kind == "channel")
+        assertEquals("", result.title)
+        assertTrue(result.titleEntities.isEmpty())
+    }
+
+    @Test
+    fun `a chatlist updates result decodes the missing peers`() {
+        val result = json.decodeFromString<ChatlistUpdatesResult>(UPDATES)
+
+        assertEquals(7L, result.missingPeers.single().id)
+        assertEquals("Some One", result.users.single().fullName)
+    }
+
+    @Test
+    fun `an updates acknowledgement decodes the ok flag and the peers`() {
+        val ack = json.decodeFromString<ChatlistUpdatesAck>(ACK)
+
+        assertTrue(ack.ok)
+        assertEquals(7L, ack.peers.single().id)
+    }
+
+    @Test
+    fun `a leave suggestions result decodes the bare peers`() {
+        val result = json.decodeFromString<LeaveChatlistSuggestionsResult>(
+            """{"peers": [{"id": 42, "kind": "user"}, {"id": -7, "kind": "chat"}]}""",
+        )
+
+        assertEquals(2, result.peers.size)
+        assertEquals(42L, result.peers[0].id)
+        assertEquals("chat", result.peers[1].kind)
+    }
+
+    @Test
+    fun `an edit payload leaves an absent title and peers null`() {
+        val payload = json.decodeFromString<EditExportedInvitePayload>(
+            """{"filterId": 4, "slug": "AbCdEf"}""",
+        )
+
+        assertEquals(4, payload.filterId)
+        assertEquals("AbCdEf", payload.slug)
+        assertNull(payload.title)
+        assertNull(payload.peers)
+    }
+
+    @Test
+    fun `an export payload reads the title and the peers`() {
+        val payload = json.decodeFromString<ExportChatlistInvitePayload>(
+            """{"filterId": 4, "title": "News", "peers": [{"peerHandle": 12}]}""",
+        )
+
+        assertEquals("News", payload.title)
+        assertEquals(12L, payload.peers.single().peerHandle)
+    }
+
     private companion object {
         val FOLDERS = """
             {"tagsEnabled": true,
@@ -122,5 +216,36 @@ class FoldersProtocolTest {
         """.trimIndent()
 
         val BARE = """{"id": 5, "filter": {"title": "Bare"}}"""
+
+        val INVITES = """
+            {"invites": [{"title": "News", "slug": "AbCdEf", "url": "https://t.me/+AbCdEf",
+                          "peers": [{"id": -1000001000007, "kind": "channel"}]}],
+             "chats": [{"nativeHandle": 3, "id": -7, "kind": "group", "name": "Some Channel"}],
+             "users": [{"id": 7, "fullName": "Some One"}]}
+        """.trimIndent()
+
+        val NEW_INVITE = """
+            {"kind": "new", "titleNoanimate": true, "title": "News",
+             "titleEntities": [{"type": "bold", "offset": 0, "length": 4}],
+             "emoticon": "\uD83D\uDCF0",
+             "peers": [{"nativeHandle": 12, "id": 7, "kind": "user"}],
+             "chats": [], "users": []}
+        """.trimIndent()
+
+        val JOINED_INVITE = """
+            {"kind": "already", "filterId": 4,
+             "missingPeers": [{"nativeHandle": 12, "id": 7, "kind": "user"}],
+             "alreadyPeers": [{"nativeHandle": 3, "id": -1000001000007, "kind": "channel"}],
+             "chats": [], "users": []}
+        """.trimIndent()
+
+        val UPDATES = """
+            {"missingPeers": [{"nativeHandle": 12, "id": 7, "kind": "user"}],
+             "chats": [], "users": [{"id": 7, "fullName": "Some One"}]}
+        """.trimIndent()
+
+        val ACK = """
+            {"ok": true, "peers": [{"nativeHandle": 12, "id": 7, "kind": "user"}]}
+        """.trimIndent()
     }
 }

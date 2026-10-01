@@ -9,6 +9,17 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
 
 ## Unreleased
 
+### Added
+
+- The `chatlists.*` sharing and sync surface, which grammers exposes no high-level API for: a folder
+  can be exported as a joinable invite (`chatlistsExportChatlistInvite`), its invites listed, looked
+  up, edited and deleted, and a joined folder's updates can be read, joined, hidden or left
+  (`chatlistsGetChatlistUpdates`, `chatlistsJoinChatlistUpdates`, `chatlistsHideChatlistUpdates`,
+  `chatlistsGetLeaveChatlistSuggestions`, `chatlistsLeaveChatlist`). An invite lookup keeps the
+  layer's two answers apart — a still-unjoined invite carries its title and roster, one already
+  joined names the folder and sorts the peers — and the `Updates`-returning calls project the chats
+  they touched alongside an acknowledgement.
+
 ### Fixed
 
 - An update read that times out no longer loses the update it was waiting for. grammers' update

@@ -1,7 +1,12 @@
 package com.github.badoualy.telegram.api
 
 import kotlinx.serialization.json.Json
+import org.kotlogramme.protocol.ChatlistInviteResult as BridgeChatlistInviteResult
+import org.kotlogramme.protocol.ChatlistUpdatesAck as BridgeChatlistUpdatesAck
+import org.kotlogramme.protocol.ChatlistUpdatesResult as BridgeChatlistUpdatesResult
 import org.kotlogramme.protocol.DialogFoldersResult as BridgeDialogFoldersResult
+import org.kotlogramme.protocol.ExportedInvitesResult as BridgeExportedInvitesResult
+import org.kotlogramme.protocol.LeaveChatlistSuggestionsResult as BridgeLeaveChatlistSuggestionsResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -56,6 +61,71 @@ class FoldersCompatibilityTest {
         assertTrue(bridge.includePeers.isEmpty() && bridge.excludePeers.isEmpty())
     }
 
+    @Test
+    fun `an exported invites result projects the invites and the objects`() {
+        val invites =
+            json.decodeFromString<BridgeExportedInvitesResult>(INVITES).toCompatibility()
+
+        val invite = invites.invites.single()
+        assertEquals("News", invite.title)
+        assertEquals("AbCdEf", invite.slug)
+        assertEquals(-1000001000007L, invite.peers.single().id)
+        assertEquals("channel", invite.peers.single().kind)
+        assertEquals("Some Channel", invites.chats.single().name)
+        assertEquals(7L, invites.users.single().id)
+    }
+
+    @Test
+    fun `a new invite projects into the unjoined case`() {
+        val check =
+            json.decodeFromString<BridgeChatlistInviteResult>(NEW_INVITE).toCompatibility()
+                as FolderInviteCheck.New
+
+        assertTrue(check.titleNoanimate)
+        assertEquals("News", check.title)
+        assertEquals("bold", check.titleEntities.single().type)
+        assertEquals("\uD83D\uDCF0", check.emoticon)
+        assertEquals(7L, check.peers.single().id)
+    }
+
+    @Test
+    fun `an already joined invite projects into the joined case`() {
+        val check =
+            json.decodeFromString<BridgeChatlistInviteResult>(JOINED_INVITE).toCompatibility()
+                as FolderInviteCheck.Already
+
+        assertEquals(4, check.filterId)
+        assertEquals("user", check.missingPeers.single().kind)
+        assertEquals("channel", check.alreadyPeers.single().kind)
+    }
+
+    @Test
+    fun `a chatlist updates result projects the missing peers and the objects`() {
+        val updates =
+            json.decodeFromString<BridgeChatlistUpdatesResult>(UPDATES).toCompatibility()
+
+        assertEquals(7L, updates.missingPeers.single().id)
+        assertEquals("Some One", updates.users.single().fullName)
+    }
+
+    @Test
+    fun `an updates acknowledgement projects the ok flag and the peers`() {
+        val ack = json.decodeFromString<BridgeChatlistUpdatesAck>(ACK).toCompatibility()
+
+        assertTrue(ack.ok)
+        assertEquals(7L, ack.peers.single().id)
+    }
+
+    @Test
+    fun `a leave suggestions result projects the bare peers`() {
+        val suggestions = json.decodeFromString<BridgeLeaveChatlistSuggestionsResult>(
+            """{"peers": [{"id": 42, "kind": "user"}]}""",
+        ).toCompatibility()
+
+        assertEquals(42L, suggestions.peers.single().id)
+        assertEquals("user", suggestions.peers.single().kind)
+    }
+
     private companion object {
         val FOLDERS = """
             {"tagsEnabled": true,
@@ -72,5 +142,32 @@ class FoldersCompatibilityTest {
              "filters": [{"id": 4, "kind": "chatlist", "title": "Chats", "hasMyInvites": true,
                           "pinnedPeers": [], "includePeers": [], "excludePeers": []}]}
         """.trimIndent()
+
+        val INVITES = """
+            {"invites": [{"title": "News", "slug": "AbCdEf", "url": "https://t.me/+AbCdEf",
+                          "peers": [{"id": -1000001000007, "kind": "channel"}]}],
+             "chats": [{"nativeHandle": 3, "id": -7, "kind": "group", "name": "Some Channel"}],
+             "users": [{"id": 7, "fullName": "Some One"}]}
+        """.trimIndent()
+
+        val NEW_INVITE = """
+            {"kind": "new", "titleNoanimate": true, "title": "News",
+             "titleEntities": [{"type": "bold", "offset": 0, "length": 4}],
+             "emoticon": "\uD83D\uDCF0",
+             "peers": [{"nativeHandle": 12, "id": 7, "kind": "user"}]}
+        """.trimIndent()
+
+        val JOINED_INVITE = """
+            {"kind": "already", "filterId": 4,
+             "missingPeers": [{"nativeHandle": 12, "id": 7, "kind": "user"}],
+             "alreadyPeers": [{"nativeHandle": 3, "id": -1000001000007, "kind": "channel"}]}
+        """.trimIndent()
+
+        val UPDATES = """
+            {"missingPeers": [{"nativeHandle": 12, "id": 7, "kind": "user"}],
+             "chats": [], "users": [{"id": 7, "fullName": "Some One"}]}
+        """.trimIndent()
+
+        val ACK = """{"ok": true, "peers": [{"nativeHandle": 12, "id": 7, "kind": "user"}]}"""
     }
 }
