@@ -66,7 +66,7 @@ Kotlogram.getDefaultClient(
 
 The library is published to Maven Central as `io.github.j0s3f:kotlogramme`. The JAR bundles all six
 native libraries and loads the one matching the host at startup, so no separate native setup is
-required. The current release is **0.7.0**.
+required. The current release is **0.8.0**.
 
 JitPack is not offered: it does build the repository, but the JAR it serves carries no native
 libraries and fails at runtime. [`docs/publishing.md`](docs/publishing.md) records what JitPack
@@ -76,7 +76,7 @@ actually produced and why.
 
 ```kotlin
 dependencies {
-    implementation("io.github.j0s3f:kotlogramme:0.7.0")
+    implementation("io.github.j0s3f:kotlogramme:0.8.0")
 }
 ```
 
@@ -84,7 +84,7 @@ dependencies {
 
 ```groovy
 dependencies {
-    implementation 'io.github.j0s3f:kotlogramme:0.7.0'
+    implementation 'io.github.j0s3f:kotlogramme:0.8.0'
 }
 ```
 
@@ -94,12 +94,19 @@ dependencies {
 <dependency>
     <groupId>io.github.j0s3f</groupId>
     <artifactId>kotlogramme</artifactId>
-    <version>0.7.0</version>
+    <version>0.8.0</version>
 </dependency>
 ```
 
 Requires JDK 17 or newer. See [the publishing guide](docs/publishing.md) for the release process and
 [`CHANGELOG.md`](CHANGELOG.md) for what each release contains.
+
+### Sample project
+
+[`kotlogramme-cli`](https://github.com/J0s3f/kotlogramme-cli) is a command-line client built on this
+library. It is a working example of the hexagonal shape this facade is meant for: the Telegram access
+sits behind ports, the offline test suite drives fakes, and the same build produces a single runnable
+JAR.
 
 Your API ID and API hash come from `my.telegram.org`; bot tokens come from BotFather. Sessions contain sensitive authentication data and must not be committed to Git.
 
