@@ -8,9 +8,10 @@ A Kotlin/JVM facade for the Telegram API, built on grammers and designed around 
 
 ## Status
 
-Released to Maven Central as `io.github.j0s3f:kotlogramme` and covered across every domain the plan
-scoped: 116 native operations, each reachable from Kotlin through a 310-test Rust suite and a
-311-test JVM suite.
+Released to [JitPack](https://jitpack.io/#J0s3f/kotlogram) as `com.github.J0s3f:kotlogram`, and to Maven
+Central as `io.github.j0s3f:kotlogramme` - see [Install](#install) for why JitPack is the one to prefer.
+Covered across every domain the plan scoped: 116 native operations, each reachable from Kotlin through a
+310-test Rust suite and a 311-test JVM suite.
 
 - persistent SQLite sessions through grammers
 - bot and user authentication (2FA included), `signOut`, the full account identity and its data
@@ -70,17 +71,85 @@ Kotlogram.getDefaultClient(
 }
 ```
 
-## Maven Central
+## Install
 
-The library is published to Maven Central as `io.github.j0s3f:kotlogramme`. The JAR bundles all six
-native libraries and loads the one matching the host at startup, so no separate native setup is
-required. The current release is **0.9.0**.
+The JAR bundles all six native libraries and loads the one matching the host at startup, so no separate
+native setup is required. The current release is **0.9.0**.
 
-JitPack is not offered: it does build the repository, but the JAR it serves carries no native
-libraries and fails at runtime. [`docs/publishing.md`](docs/publishing.md) records what JitPack
-actually produced and why.
+### JitPack (recommended)
 
-### Gradle (Kotlin DSL)
+**Use JitPack.** Maven Central now enforces monthly publishing limits, so a release can be refused for
+reasons that have nothing to do with the release being correct - which means the version you want may
+not appear there at all, or may lag. JitPack has no such limits and always serves the latest release.
+
+The page is
+[central.sonatype.org/publish/maven-central-publishing-limits](https://central.sonatype.org/publish/maven-central-publishing-limits);
+the enforcement date was announced at
+[community.sonatype.com](https://community.sonatype.com/t/update-maven-central-publishing-limits-enforcement-moved-to-october-1/16475).
+
+```kotlin
+repositories {
+    maven("https://jitpack.io")
+}
+
+dependencies {
+    implementation("com.github.J0s3f:kotlogram:0.9.0")
+}
+```
+
+```groovy
+repositories {
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    implementation 'com.github.J0s3f:kotlogram:0.9.0'
+}
+```
+
+```xml
+<repositories>
+    <repository>
+        <id>jitpack.io</id>
+        <url>https://jitpack.io</url>
+    </repository>
+</repositories>
+
+<dependency>
+    <groupId>com.github.J0s3f</groupId>
+    <artifactId>kotlogram</artifactId>
+    <version>0.9.0</version>
+</dependency>
+```
+
+The coordinates differ from Central's because JitPack derives them from the repository name. JitPack
+builds a version the first time it is requested, which can take up to 15 minutes - if a first resolve
+times out, raise Gradle's HTTP timeouts:
+
+```properties
+systemProp.org.gradle.internal.http.connectionTimeout=180000
+systemProp.org.gradle.internal.http.socketTimeout=180000
+```
+
+### Verifying the artifact
+
+JitPack provides checksums but not artifact signing, so the release jar carries a detached signature
+produced by this project's CI and published beside it on the
+[v0.9.0 release](https://github.com/J0s3f/kotlogram/releases/tag/v0.9.0):
+
+```bash
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.0/kotlogramme-0.9.0.jar
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.0/kotlogramme-0.9.0.jar.asc
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.0/kotlogramme-0.9.0.jar.asc.pub
+gpg --import kotlogramme-0.9.0.jar.asc.pub
+gpg --verify kotlogramme-0.9.0.jar.asc kotlogramme-0.9.0.jar
+```
+
+### Maven Central (fallback)
+
+The library is also published to Maven Central as `io.github.j0s3f:kotlogramme`, and every release is
+signed there. Because of the publishing limits above, this channel is a fallback: a version may be
+missing from it even though it is released, in which case JitPack is the one to use.
 
 ```kotlin
 dependencies {
@@ -88,15 +157,11 @@ dependencies {
 }
 ```
 
-### Gradle (Groovy)
-
 ```groovy
 dependencies {
     implementation 'io.github.j0s3f:kotlogramme:0.9.0'
 }
 ```
-
-### Maven
 
 ```xml
 <dependency>
