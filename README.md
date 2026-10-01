@@ -87,6 +87,12 @@ The page is
 the enforcement date was announced at
 [community.sonatype.com](https://community.sonatype.com/t/update-maven-central-publishing-limits-enforcement-moved-to-october-1/16475).
 
+
+<br/>
+
+[![](https://jitpack.io/v/J0s3f/kotlogram.svg)](https://jitpack.io/#J0s3f/kotlogram)
+
+
 ```kotlin
 repositories {
     maven("https://jitpack.io")
