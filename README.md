@@ -28,7 +28,8 @@ scoped: 105 native operations, each reachable from Kotlin through a 278-test Rus
 - contacts, blocking and search; dialog filters (folders); sticker-set reads, installation,
   archiving and removal; notification settings, account-wide or per peer
 - familiar Kotlogram entry points under `com.github.badoualy.telegram.api`, including the ordered
-  `getNextUpdate` stream and the on-demand `dispatchNextUpdate` through the legacy `UpdateCallback`
+  `getNextUpdate` stream, the on-demand `dispatchNextUpdate`, and the startable/stoppable
+  `startUpdateLoop` background loop through the legacy `UpdateCallback`
 - native-library loading from the JAR and CI builds for Linux/macOS/Windows on x86_64/ARM64
 
 Known limits, each reachable another way or listed in [`docs/compatibility.md`](docs/compatibility.md)
