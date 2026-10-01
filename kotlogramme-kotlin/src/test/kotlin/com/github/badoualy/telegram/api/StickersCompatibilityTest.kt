@@ -4,6 +4,7 @@ import kotlinx.serialization.json.Json
 import org.kotlogramme.protocol.AllStickers as BridgeAllStickers
 import org.kotlogramme.protocol.FavedStickers as BridgeFavedStickers
 import org.kotlogramme.protocol.RecentStickers as BridgeRecentStickers
+import org.kotlogramme.protocol.StickerSetInstallResult as BridgeStickerSetInstallResult
 import org.kotlogramme.protocol.StickerSetResult as BridgeStickerSetResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -78,7 +79,36 @@ class StickersCompatibilityTest {
         assertTrue(result.packs.isEmpty())
     }
 
+    @Test
+    fun `a plain install result projects no set at all`() {
+        val install = json.decodeFromString<BridgeStickerSetInstallResult>(
+            """{"installed": true, "archivedSets": []}""",
+        ).toCompatibility()
+
+        assertTrue(install.installed)
+        assertTrue(install.archivedSets.isEmpty())
+    }
+
+    @Test
+    fun `an archive result projects the sets it archived and their covers`() {
+        val install = json.decodeFromString<BridgeStickerSetInstallResult>(ARCHIVED).toCompatibility()
+
+        assertTrue(!install.installed)
+        assertEquals(listOf("somePack"), install.archivedSets.map { it.set.shortName })
+        assertTrue(install.archivedSets[0].set.archived)
+        assertEquals(5150L, install.archivedSets[0].coverDocumentId)
+    }
+
     private companion object {
+        val ARCHIVED = """
+            {"installed": false, "archivedSets": [
+             {"set": {"archived": true, "official": false, "masks": false, "emojis": false,
+              "textColor": false, "channelEmojiStatus": false, "creator": false,
+              "installedDate": null, "id": 1, "accessHash": 2, "title": "Some Pack",
+              "shortName": "somePack", "thumbDocumentId": null, "thumbDcId": null,
+              "thumbVersion": null, "count": 0, "hash": 0, "packs": [], "documents": []},
+              "coverDocumentId": 5150}]}
+        """.trimIndent()
         val STICKER_SET = """
             {"notModified": false, "set": {"archived": false, "official": true, "masks": false,
              "emojis": true, "textColor": true, "channelEmojiStatus": false, "creator": true,

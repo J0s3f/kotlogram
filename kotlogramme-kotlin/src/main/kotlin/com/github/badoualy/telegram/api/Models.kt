@@ -24,10 +24,18 @@ import org.kotlogramme.protocol.ImportedContact as BridgeImportedContact
 import org.kotlogramme.protocol.ImportedContacts as BridgeImportedContacts
 import org.kotlogramme.protocol.PopularInvite as BridgePopularInvite
 import org.kotlogramme.protocol.AllStickers as BridgeAllStickers
+import org.kotlogramme.protocol.ArchivedStickerSet as BridgeArchivedStickerSet
 import org.kotlogramme.protocol.FavedStickers as BridgeFavedStickers
+import org.kotlogramme.protocol.NotificationSound as BridgeNotificationSound
+import org.kotlogramme.protocol.NotifyScope as BridgeNotifyScope
+import org.kotlogramme.protocol.NotifySettingsResult as BridgeNotifySettingsResult
+import org.kotlogramme.protocol.NotifySettingsSpec as BridgeNotifySettingsSpec
+import org.kotlogramme.protocol.NotifySoundSpec as BridgeNotifySoundSpec
+import org.kotlogramme.protocol.PeerNotifySettings as BridgePeerNotifySettings
 import org.kotlogramme.protocol.RecentStickers as BridgeRecentStickers
 import org.kotlogramme.protocol.StickerPack as BridgeStickerPack
 import org.kotlogramme.protocol.StickerSet as BridgeStickerSet
+import org.kotlogramme.protocol.StickerSetInstallResult as BridgeStickerSetInstallResult
 import org.kotlogramme.protocol.StickerSetResult as BridgeStickerSetResult
 import org.kotlogramme.protocol.DialogNotifySettings as BridgeDialogNotifySettings
 import org.kotlogramme.protocol.DownloadResult as BridgeDownloadResult
@@ -1621,6 +1629,92 @@ data class FavedStickers(
     val stickers: List<Long>,
 )
 
+/** One sticker set `messagesInstallStickerSet` archived instead of installing one. */
+data class ArchivedStickerSet(
+    val set: StickerSet,
+    /** Absent when Telegram's answer named no cover for the archived set. */
+    val coverDocumentId: Long? = null,
+)
+
+/**
+ * What an install did.
+ *
+ * Telegram's success answer is empty on this layer, so [installed] is true and [archivedSets] is
+ * empty after a plain install; only an archive names the sets it archived.
+ */
+data class StickerSetInstall(
+    val installed: Boolean,
+    val archivedSets: List<ArchivedStickerSet> = emptyList(),
+)
+
+/** One notification sound, mirroring Telegram's own constructors. */
+data class NotificationSound(
+    /** `default`, `none`, `local` or `ringtone`. */
+    val kind: String,
+    val id: Long? = null,
+    val title: String? = null,
+    val data: String? = null,
+)
+
+/** The notification settings of one scope. */
+data class AccountNotifySettings(
+    val scope: String,
+    val settings: PeerNotifySettings,
+)
+
+/**
+ * The notification settings themselves, as Telegram reports them.
+ *
+ * Every field is nullable because Telegram's settings are flags: an absent one means "not said",
+ * which is not the same answer as an explicit `false`.
+ */
+data class PeerNotifySettings(
+    val showPreviews: Boolean? = null,
+    val silent: Boolean? = null,
+    /** Epoch milliseconds at which a mute lifts. */
+    val muteUntil: Long? = null,
+    val iosSound: NotificationSound? = null,
+    val androidSound: NotificationSound? = null,
+    val otherSound: NotificationSound? = null,
+    val storiesMuted: Boolean? = null,
+    val storiesHideSender: Boolean? = null,
+    val storiesIosSound: NotificationSound? = null,
+    val storiesAndroidSound: NotificationSound? = null,
+    val storiesOtherSound: NotificationSound? = null,
+)
+
+/**
+ * The notification settings to write.
+ *
+ * Only what should change is set: an absent field leaves that one setting as Telegram has it.
+ */
+data class NotifySettings(
+    val showPreviews: Boolean? = null,
+    val silent: Boolean? = null,
+    /** Epoch milliseconds at which the mute lifts; `0` unmutes now. */
+    val muteUntil: Long? = null,
+    val sound: NotificationSound? = null,
+    val storiesMuted: Boolean? = null,
+    val storiesHideSender: Boolean? = null,
+    val storiesSound: NotificationSound? = null,
+)
+
+/**
+ * Which notifications an operation addresses.
+ *
+ * [Account] is the account-wide scope, which Telegram spells as the logged-in user; the peer-scoped
+ * values need a peer to name.
+ */
+enum class AccountNotifyScope(internal val bridge: BridgeNotifyScope) {
+    Account(BridgeNotifyScope.Account),
+    Peer(BridgeNotifyScope.Peer),
+    Users(BridgeNotifyScope.Users),
+    Chats(BridgeNotifyScope.Chats),
+    Broadcasts(BridgeNotifyScope.Broadcasts),
+    ForumTopic(BridgeNotifyScope.ForumTopic),
+    Community(BridgeNotifyScope.Community),
+}
+
 internal fun BridgeStickerPack.toCompatibility() = StickerPack(emoticon, documents)
 
 internal fun BridgeStickerSet.toCompatibility() = StickerSet(
@@ -1640,6 +1734,32 @@ internal fun BridgeRecentStickers.toCompatibility() =
 
 internal fun BridgeFavedStickers.toCompatibility() =
     FavedStickers(notModified, hash, packs.map { it.toCompatibility() }, stickers)
+
+internal fun BridgeArchivedStickerSet.toCompatibility() =
+    ArchivedStickerSet(set.toCompatibility(), coverDocumentId)
+
+internal fun BridgeStickerSetInstallResult.toCompatibility() =
+    StickerSetInstall(installed, archivedSets.map { it.toCompatibility() })
+
+internal fun BridgeNotificationSound.toCompatibility() =
+    NotificationSound(kind, id, title, data)
+
+internal fun BridgePeerNotifySettings.toCompatibility() = PeerNotifySettings(
+    showPreviews, silent, muteUntil, iosSound?.toCompatibility(), androidSound?.toCompatibility(),
+    otherSound?.toCompatibility(), storiesMuted, storiesHideSender,
+    storiesIosSound?.toCompatibility(), storiesAndroidSound?.toCompatibility(),
+    storiesOtherSound?.toCompatibility(),
+)
+
+internal fun BridgeNotifySettingsResult.toCompatibility() =
+    AccountNotifySettings(scope, settings.toCompatibility())
+
+internal fun NotificationSound.toBridge() = BridgeNotifySoundSpec(kind, id, title, data)
+
+internal fun NotifySettings.toBridge() = BridgeNotifySettingsSpec(
+    showPreviews, silent, muteUntil, sound?.toBridge(), storiesMuted, storiesHideSender,
+    storiesSound?.toBridge(),
+)
 
 /**
  * One dialog filter (folder).

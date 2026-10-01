@@ -1,11 +1,13 @@
 acceptInviteLink
 accountCheckUsername
 accountGetAuthorizations
+accountGetNotifySettings
 accountGetPassword
 accountGetPrivacy
 accountResetAuthorization
 accountResetAuthorizations
 accountSetPrivacy
+accountUpdateNotifySettings
 accountUpdateProfile
 accountUpdateStatus
 accountUpdateUsername
@@ -62,6 +64,8 @@ messagesGetDialogFilters
 messagesGetFavedStickers
 messagesGetRecentStickers
 messagesGetStickerSet
+messagesInstallStickerSet
+messagesUninstallStickerSet
 messagesUpdateDialogFilter
 messagesUpdateDialogFiltersOrder
 nextRawUpdate

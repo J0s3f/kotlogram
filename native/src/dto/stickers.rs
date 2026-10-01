@@ -6,6 +6,10 @@
 //! projections), and the thumbnail travels as the identifiers the summary carries rather than as
 //! bytes. The packs and the documents behind a set are projected as the document ids only, which
 //! is all a later send needs to reference them.
+//!
+//! The install answer is projected as the layer reports it rather than as a tidier shape: the
+//! layer's success constructor is empty, so [`StickerSetInstallResultDto`] names sets only when the
+//! call archived them.
 
 use grammers_client::tl;
 use serde::Serialize;
@@ -197,6 +201,92 @@ pub(crate) fn faved_stickers_dto(faved: tl::enums::messages::FavedStickers) -> F
             packs: sticker_packs_dto(&faved.packs),
             stickers: document_ids(&faved.stickers),
         },
+    }
+}
+
+/// One set the layer archived instead of installing one, as `messagesInstallStickerSet` reported
+/// it.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct ArchivedStickerSetDto {
+    /// The set summary. It carries its packs and document ids only when the layer sent the full
+    /// covered form, which is the one constructor of `stickerSetCovered` that does.
+    pub(crate) set: StickerSetDto,
+    /// The id of the cover the layer picked for the archived set. Absent for the constructors that
+    /// carry no cover — the full-covered and no-cover ones — and a multi-cover set reports the
+    /// first of its covers.
+    pub(crate) cover_document_id: Option<i64>,
+}
+
+/// The `messagesInstallStickerSet` document.
+///
+/// The layer answers either `messagesStickerSetInstallResultSuccess`, an empty constructor, or
+/// `messagesStickerSetInstallResultArchive`, which names the sets it archived. There is no "the set
+/// you just installed" answer on this layer, so a plain install travels as `installed: true` with
+/// nothing to read back.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct StickerSetInstallResultDto {
+    /// True for the layer's empty success marker.
+    pub(crate) installed: bool,
+    /// The sets the layer archived instead of installing one; empty for a plain install.
+    pub(crate) archived_sets: Vec<ArchivedStickerSetDto>,
+}
+
+/// Projects the layer's `stickerSetCovered`, filling in the packs and documents only when the
+/// constructor carries them.
+fn covered_set_dto(covered: &tl::enums::StickerSetCovered) -> StickerSetDto {
+    match covered {
+        tl::enums::StickerSetCovered::StickerSetFullCovered(covered) => {
+            let mut summary = sticker_set_dto(&covered.set);
+            summary.packs = sticker_packs_dto(&covered.packs);
+            summary.documents = document_ids(&covered.documents);
+            summary
+        }
+        // The other three constructors carry the summary alone.
+        _ => sticker_set_dto(&covered.set()),
+    }
+}
+
+/// The id of the cover a `stickerSetCovered` carries, if it carries one.
+///
+/// Only the `stickerSetCovered` and `stickerSetMultiCovered` constructors name a cover; the
+/// full-covered and no-covered ones leave it absent.
+fn cover_id(covered: &tl::enums::StickerSetCovered) -> Option<i64> {
+    match covered {
+        tl::enums::StickerSetCovered::Covered(covered) => {
+            Some(tl::enums::Document::id(&covered.cover))
+        }
+        tl::enums::StickerSetCovered::StickerSetMultiCovered(covered) => {
+            covered.covers.first().map(tl::enums::Document::id)
+        }
+        tl::enums::StickerSetCovered::StickerSetFullCovered(_)
+        | tl::enums::StickerSetCovered::StickerSetNoCovered(_) => None,
+    }
+}
+
+/// Projects `messages.StickerSetInstallResult`, keeping the two branches apart.
+pub(crate) fn install_result_dto(
+    result: tl::enums::messages::StickerSetInstallResult,
+) -> StickerSetInstallResultDto {
+    match result {
+        tl::enums::messages::StickerSetInstallResult::Success => StickerSetInstallResultDto {
+            installed: true,
+            archived_sets: Vec::new(),
+        },
+        tl::enums::messages::StickerSetInstallResult::Archive(archive) => {
+            StickerSetInstallResultDto {
+                installed: false,
+                archived_sets: archive
+                    .sets
+                    .iter()
+                    .map(|covered| ArchivedStickerSetDto {
+                        set: covered_set_dto(covered),
+                        cover_document_id: cover_id(covered),
+                    })
+                    .collect(),
+            }
+        }
     }
 }
 
@@ -412,6 +502,86 @@ mod tests {
         assert_json(
             &faved_stickers_dto(tl::enums::messages::FavedStickers::NotModified),
             json!({ "notModified": true, "hash": 0, "packs": [], "stickers": [] }),
+        );
+    }
+
+    #[test]
+    fn the_layer_success_marker_carries_no_set_at_all() {
+        assert_json(
+            &install_result_dto(tl::enums::messages::StickerSetInstallResult::Success),
+            json!({ "installed": true, "archivedSets": [] }),
+        );
+    }
+
+    #[test]
+    fn an_archive_carries_the_sets_it_archived_and_their_covers() {
+        let dto = install_result_dto(tl::enums::messages::StickerSetInstallResult::Archive(
+            tl::types::messages::StickerSetInstallResultArchive {
+                sets: vec![
+                    tl::enums::StickerSetCovered::Covered(tl::types::StickerSetCovered {
+                        set: tl::enums::StickerSet::Set(set()),
+                        cover: tl::enums::Document::Empty(tl::types::DocumentEmpty { id: 5150 }),
+                    }),
+                    tl::enums::StickerSetCovered::StickerSetNoCovered(
+                        tl::types::StickerSetNoCovered {
+                            set: tl::enums::StickerSet::Set(set()),
+                        },
+                    ),
+                ],
+            },
+        ));
+        assert!(!dto.installed);
+        assert_eq!(dto.archived_sets.len(), 2);
+        assert_eq!(dto.archived_sets[0].cover_document_id, Some(5150));
+        assert_eq!(dto.archived_sets[0].set.short_name, "somePack");
+        assert!(dto.archived_sets[0].set.packs.is_empty());
+        assert_eq!(dto.archived_sets[1].cover_document_id, None);
+    }
+
+    #[test]
+    fn a_full_covered_set_carries_its_packs_and_documents_but_no_cover() {
+        let dto = install_result_dto(tl::enums::messages::StickerSetInstallResult::Archive(
+            tl::types::messages::StickerSetInstallResultArchive {
+                sets: vec![tl::enums::StickerSetCovered::StickerSetFullCovered(
+                    tl::types::StickerSetFullCovered {
+                        set: tl::enums::StickerSet::Set(set()),
+                        packs: vec![pack()],
+                        keywords: vec![],
+                        documents: vec![tl::enums::Document::Empty(tl::types::DocumentEmpty {
+                            id: 42,
+                        })],
+                    },
+                )],
+            },
+        ));
+        let archived = &dto.archived_sets[0];
+        assert_eq!(archived.set.packs.len(), 1);
+        assert_eq!(archived.set.documents, vec![42]);
+        assert_eq!(archived.cover_document_id, None);
+    }
+
+    #[test]
+    fn a_multi_covered_set_reports_its_first_cover() {
+        assert_eq!(
+            cover_id(&tl::enums::StickerSetCovered::StickerSetMultiCovered(
+                tl::types::StickerSetMultiCovered {
+                    set: tl::enums::StickerSet::Set(set()),
+                    covers: vec![
+                        tl::enums::Document::Empty(tl::types::DocumentEmpty { id: 11 }),
+                        tl::enums::Document::Empty(tl::types::DocumentEmpty { id: 12 }),
+                    ],
+                }
+            )),
+            Some(11)
+        );
+        assert_eq!(
+            cover_id(&tl::enums::StickerSetCovered::StickerSetMultiCovered(
+                tl::types::StickerSetMultiCovered {
+                    set: tl::enums::StickerSet::Set(set()),
+                    covers: vec![],
+                }
+            )),
+            None
         );
     }
 

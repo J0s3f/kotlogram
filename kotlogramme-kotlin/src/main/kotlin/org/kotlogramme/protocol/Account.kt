@@ -1,8 +1,9 @@
 package org.kotlogramme.protocol
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-/** Payloads and results of the account profile, session, password and privacy operations. */
+/** Payloads and results of the account profile, session, password, privacy and notify operations. */
 
 /** Payload of `accountUpdateProfile`; an absent field leaves the current value unchanged. */
 @Serializable
@@ -121,4 +122,123 @@ internal data class PrivacyRulesResult(
     val rules: List<PrivacyRuleResult> = emptyList(),
     val chats: List<Long> = emptyList(),
     val users: List<Long> = emptyList(),
+)
+
+/** The scope a notification operation addresses, as the native side names it. */
+@Serializable
+internal enum class NotifyScope(val wire: String) {
+    @SerialName("account")
+    Account("account"),
+
+    @SerialName("peer")
+    Peer("peer"),
+
+    @SerialName("users")
+    Users("users"),
+
+    @SerialName("chats")
+    Chats("chats"),
+
+    @SerialName("broadcasts")
+    Broadcasts("broadcasts"),
+
+    @SerialName("forumTopic")
+    ForumTopic("forumTopic"),
+
+    @SerialName("community")
+    Community("community"),
+}
+
+/** Payload of `accountGetNotifySettings`. */
+@Serializable
+internal data class GetNotifySettingsPayload(
+    val scope: NotifyScope,
+    val peerHandle: Long? = null,
+    val username: String? = null,
+    /** The forum topic's top message id, only meaningful for `forumTopic`. */
+    val topMsgId: Int? = null,
+) {
+    constructor(
+        scope: NotifyScope,
+        peer: PeerTarget,
+        topMsgId: Int? = null,
+    ) : this(scope, peer.peerHandle, peer.username, topMsgId)
+}
+
+/** One requested notification sound, mirroring the layer's constructors. */
+@Serializable
+internal data class NotifySoundSpec(
+    /** `default`, `none`, `local` or `ringtone`. */
+    val kind: String,
+    /** A ringtone's identifier; only a `ringtone` sound carries it. */
+    val id: Long? = null,
+    /** A local sound's shown title; only a `local` sound carries it. */
+    val title: String? = null,
+    /** A local sound's data blob; only a `local` sound carries it. */
+    val data: String? = null,
+)
+
+/** Settings to write via `accountUpdateNotifySettings`. Every field is optional. */
+@Serializable
+internal data class NotifySettingsSpec(
+    val showPreviews: Boolean? = null,
+    val silent: Boolean? = null,
+    /** Epoch milliseconds at which the mute lifts; `0` unmutes now. */
+    val muteUntil: Long? = null,
+    val sound: NotifySoundSpec? = null,
+    val storiesMuted: Boolean? = null,
+    val storiesHideSender: Boolean? = null,
+    val storiesSound: NotifySoundSpec? = null,
+)
+
+/** Payload of `accountUpdateNotifySettings`. */
+@Serializable
+internal data class UpdateNotifySettingsPayload(
+    val scope: NotifyScope,
+    val peerHandle: Long? = null,
+    val username: String? = null,
+    val topMsgId: Int? = null,
+    val settings: NotifySettingsSpec,
+) {
+    constructor(
+        scope: NotifyScope,
+        peer: PeerTarget,
+        topMsgId: Int? = null,
+        settings: NotifySettingsSpec,
+    ) : this(scope, peer.peerHandle, peer.username, topMsgId, settings)
+}
+
+/** One notification sound, as the native side projects it. */
+@Serializable
+internal data class NotificationSound(
+    /** `default`, `none`, `local` or `ringtone`. */
+    val kind: String,
+    val id: Long? = null,
+    val title: String? = null,
+    val data: String? = null,
+)
+
+/** The notification settings of one scope. */
+@Serializable
+internal data class PeerNotifySettings(
+    val showPreviews: Boolean? = null,
+    val silent: Boolean? = null,
+    /** Epoch milliseconds, converted from the layer's whole-second `mute_until`. */
+    val muteUntil: Long? = null,
+    val iosSound: NotificationSound? = null,
+    val androidSound: NotificationSound? = null,
+    val otherSound: NotificationSound? = null,
+    val storiesMuted: Boolean? = null,
+    val storiesHideSender: Boolean? = null,
+    val storiesIosSound: NotificationSound? = null,
+    val storiesAndroidSound: NotificationSound? = null,
+    val storiesOtherSound: NotificationSound? = null,
+)
+
+/** Result of `accountGetNotifySettings`. */
+@Serializable
+internal data class NotifySettingsResult(
+    /** The scope that was asked for. */
+    val scope: String,
+    val settings: PeerNotifySettings,
 )

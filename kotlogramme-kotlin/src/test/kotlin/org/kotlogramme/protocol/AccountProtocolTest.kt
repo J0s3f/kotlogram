@@ -8,11 +8,11 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 /**
- * Wire-contract tests for the account profile, session, password and privacy models.
+ * Wire-contract tests for the account profile, session, password, privacy and notify models.
  *
- * The documents below are exactly what the projections in `native/src/dto/account.rs` emit and what
- * its handlers consume, which the Rust tests pin on their side, so a field renamed on one side
- * fails here instead of against a live session.
+ * The documents below are exactly what the projections in `native/src/dto/account.rs` and
+ * `native/src/dto/notifications.rs` emit and what their handlers consume, which the Rust tests pin
+ * on their side, so a field renamed on one side fails here instead of against a live session.
  */
 class AccountProtocolTest {
     /** Re-encodes with defaults, so a field that is present but holds its default survives. */
@@ -151,6 +151,122 @@ class AccountProtocolTest {
         assertEquals(listOf(42L), result.rules[1].chats)
     }
 
+    @Test
+    fun `an account-wide notify payload names its scope and carries no peer`() {
+        assertEquals(
+            """{"scope":"account"}""",
+            wire.encodeToString(GetNotifySettingsPayload(NotifyScope.Account)),
+        )
+    }
+
+    @Test
+    fun `a peer notify payload carries the scope and the peer it names`() {
+        assertEquals(
+            """{"scope":"peer","peerHandle":42}""",
+            wire.encodeToString(
+                GetNotifySettingsPayload(NotifyScope.Peer, PeerTarget(peerHandle = 42)),
+            ),
+        )
+        assertEquals(
+            """{"scope":"community","username":"someChannel"}""",
+            wire.encodeToString(
+                GetNotifySettingsPayload(NotifyScope.Community, PeerTarget(username = "someChannel")),
+            ),
+        )
+    }
+
+    @Test
+    fun `a forum topic notify payload carries its top message id`() {
+        assertEquals(
+            """{"scope":"forumTopic","topMsgId":9}""",
+            wire.encodeToString(GetNotifySettingsPayload(NotifyScope.ForumTopic, topMsgId = 9)),
+        )
+    }
+
+    @Test
+    fun `an update notify payload nests the settings under the scope`() {
+        val document = wire.encodeToString(
+            UpdateNotifySettingsPayload(
+                NotifyScope.Peer,
+                PeerTarget(peerHandle = 42),
+                null,
+                NotifySettingsSpec(silent = true, muteUntil = 1_700_000_000_000L),
+            ),
+        )
+        assertEquals(
+            wire.parseToJsonElement(
+                """{"scope": "peer", "peerHandle": 42,
+                    "settings": {"silent": true, "muteUntil": 1700000000000}}""",
+            ),
+            wire.parseToJsonElement(document),
+        )
+    }
+
+    @Test
+    fun `an update notify payload drops the fields left unset`() {
+        assertEquals(
+            """{"scope":"account","settings":{}}""",
+            wire.encodeToString(
+                UpdateNotifySettingsPayload(
+                    NotifyScope.Account,
+                    PeerTarget(),
+                    null,
+                    NotifySettingsSpec(),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun `a notify sound carries only the fields its kind reads`() {
+        assertEquals(
+            """{"kind":"ringtone","id":5150}""",
+            wire.encodeToString(NotifySoundSpec(kind = "ringtone", id = 5150L)),
+        )
+        assertEquals(
+            """{"kind":"local","title":"Ping","data":"blob"}""",
+            wire.encodeToString(NotifySoundSpec(kind = "local", title = "Ping", data = "blob")),
+        )
+        assertEquals(
+            """{"kind":"default"}""",
+            wire.encodeToString(NotifySoundSpec(kind = "default")),
+        )
+    }
+
+    @Test
+    fun `a notify result echoes the scope and carries the whole settings block`() {
+        val result = roundTrips<NotifySettingsResult>(NOTIFY_ACCOUNT)
+
+        assertEquals("account", result.scope)
+        assertEquals(null, result.settings.silent)
+        assertEquals(null, result.settings.iosSound)
+    }
+
+    @Test
+    fun `a peer notify result reads the flags, the mute and the sounds`() {
+        val result = roundTrips<NotifySettingsResult>(NOTIFY_PEER)
+
+        assertEquals("peer", result.scope)
+        val settings = result.settings
+        assertEquals(false, settings.showPreviews)
+        assertEquals(true, settings.silent)
+        assertEquals(1_700_000_000_000L, settings.muteUntil)
+        assertEquals("ringtone", settings.androidSound?.kind)
+        assertEquals(5150L, settings.androidSound?.id)
+        assertEquals("local", settings.iosSound?.kind)
+        assertEquals("Ping", settings.iosSound?.title)
+        assertEquals("blob", settings.iosSound?.data)
+        assertEquals(true, settings.storiesMuted)
+        assertEquals(false, settings.storiesHideSender)
+        assertEquals(null, settings.storiesIosSound)
+    }
+
+    @Test
+    fun `a notify result declares exactly the two fields it emits`() {
+        val names = (json.parseToJsonElement(NOTIFY_PEER) as JsonObject).keys.sorted()
+        assertEquals(listOf("scope", "settings"), names)
+    }
+
     /** Decodes a native document and asserts that re-encoding it reproduces the same document. */
     private inline fun <reified T> roundTrips(document: String): T {
         val decoded = json.decodeFromString<T>(document)
@@ -163,6 +279,22 @@ class AccountProtocolTest {
     }
 
     private companion object {
+        val NOTIFY_ACCOUNT = """
+            {"scope": "account",
+             "settings": {"showPreviews": null, "silent": null, "muteUntil": null,
+              "iosSound": null, "androidSound": null, "otherSound": null, "storiesMuted": null,
+              "storiesHideSender": null, "storiesIosSound": null, "storiesAndroidSound": null,
+              "storiesOtherSound": null}}
+        """.trimIndent()
+
+        val NOTIFY_PEER = """
+            {"scope": "peer",
+             "settings": {"showPreviews": false, "silent": true, "muteUntil": 1700000000000,
+              "iosSound": {"kind": "local", "id": null, "title": "Ping", "data": "blob"},
+              "androidSound": {"kind": "ringtone", "id": 5150, "title": null, "data": null},
+              "otherSound": null, "storiesMuted": true, "storiesHideSender": false,
+              "storiesIosSound": null, "storiesAndroidSound": null, "storiesOtherSound": null}}
+        """.trimIndent()
         val AUTHORIZATIONS = """
             {"authorizationTtlDays": 180, "authorizations": [{"current": true,
              "officialApp": true, "passwordPending": false, "encryptedRequestsDisabled": true,

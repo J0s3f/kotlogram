@@ -16,6 +16,7 @@ pub(crate) mod inline;
 pub(crate) mod markup;
 pub(crate) mod media;
 pub(crate) mod message;
+pub(crate) mod notifications;
 pub(crate) mod participant;
 pub(crate) mod peer;
 pub(crate) mod permissions;

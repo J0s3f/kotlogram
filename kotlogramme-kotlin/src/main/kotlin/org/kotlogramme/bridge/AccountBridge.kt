@@ -4,20 +4,26 @@ import org.kotlogramme.Operation
 import org.kotlogramme.Transport
 import org.kotlogramme.protocol.AuthorizationsResult
 import org.kotlogramme.protocol.EmptyPayload
+import org.kotlogramme.protocol.GetNotifySettingsPayload
+import org.kotlogramme.protocol.NotifyScope
+import org.kotlogramme.protocol.NotifySettingsResult
+import org.kotlogramme.protocol.NotifySettingsSpec
 import org.kotlogramme.protocol.OperationResult
 import org.kotlogramme.protocol.PasswordSettings
+import org.kotlogramme.protocol.PeerTarget
 import org.kotlogramme.protocol.PrivacyKeyPayload
 import org.kotlogramme.protocol.PrivacyRulesResult
 import org.kotlogramme.protocol.PrivacyRuleSpec
 import org.kotlogramme.protocol.ResetAuthorizationPayload
 import org.kotlogramme.protocol.SetPrivacyPayload
+import org.kotlogramme.protocol.UpdateNotifySettingsPayload
 import org.kotlogramme.protocol.UpdateProfilePayload
 import org.kotlogramme.protocol.UpdateStatusPayload
 import org.kotlogramme.protocol.User
 import org.kotlogramme.protocol.UsernameAvailability
 import org.kotlogramme.protocol.UsernamePayload
 
-/** Account profile, active sessions, two-factor password and privacy settings. */
+/** Account profile, active sessions, two-factor password, privacy and notification settings. */
 internal interface AccountBridge {
     val transport: Transport
 
@@ -91,6 +97,43 @@ internal interface AccountBridge {
     @Operation("accountSetPrivacy")
     fun setPrivacy(key: String, rules: List<PrivacyRuleSpec>): PrivacyRulesResult =
         transport.request("accountSetPrivacy", SetPrivacyPayload(key, rules))
+
+    /**
+     * Reads the notification settings of one scope.
+     *
+     * [scope] says which notifications are asked about. `Account` is the account-wide scope, which
+     * the layer spells as the logged-in user; a `Peer`, `ForumTopic` or `Community` scope also
+     * needs [peer]. The answer echoes the scope, because the layer's own does not.
+     */
+    @Operation("accountGetNotifySettings")
+    fun getNotifySettings(
+        scope: NotifyScope,
+        peer: PeerTarget = PeerTarget(),
+        topMsgId: Int? = null,
+    ): NotifySettingsResult = transport.request(
+        "accountGetNotifySettings",
+        GetNotifySettingsPayload(scope, peer, topMsgId),
+    )
+
+    /**
+     * Writes the notification settings of one scope, taking the same [scope] and [peer] as
+     * [getNotifySettings].
+     *
+     * Every field of [settings] is optional, because an absent one is what leaves that single
+     * setting as Telegram has it.
+     */
+    @Operation("accountUpdateNotifySettings")
+    fun updateNotifySettings(
+        scope: NotifyScope,
+        peer: PeerTarget = PeerTarget(),
+        topMsgId: Int? = null,
+        settings: NotifySettingsSpec = NotifySettingsSpec(),
+    ) {
+        transport.request<UpdateNotifySettingsPayload, OperationResult>(
+            "accountUpdateNotifySettings",
+            UpdateNotifySettingsPayload(scope, peer, topMsgId, settings),
+        )
+    }
 }
 
 /** The [AccountBridge] [org.kotlogramme.TelegramClient] delegates to. */

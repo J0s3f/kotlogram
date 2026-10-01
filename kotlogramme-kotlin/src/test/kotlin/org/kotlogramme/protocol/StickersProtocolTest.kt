@@ -137,6 +137,52 @@ class StickersProtocolTest {
         assertTrue(result.packs.isEmpty())
     }
 
+    @Test
+    fun `an install payload carries the set and defaults to installing rather than archiving`() {
+        assertEquals("{}", wire.encodeToString(InstallStickerSetPayload()))
+        assertEquals(
+            """{"shortName":"somePack"}""",
+            wire.encodeToString(InstallStickerSetPayload(shortName = "somePack")),
+        )
+        assertEquals(
+            """{"id":1,"accessHash":2,"archived":true}""",
+            wire.encodeToString(InstallStickerSetPayload(id = 1, accessHash = 2, archived = true)),
+        )
+    }
+
+    @Test
+    fun `an uninstall payload names the set the same way and carries no flag`() {
+        assertEquals(
+            """{"shortName":"somePack"}""",
+            wire.encodeToString(UninstallStickerSetPayload(shortName = "somePack")),
+        )
+        assertEquals(
+            """{"id":1,"accessHash":2}""",
+            wire.encodeToString(UninstallStickerSetPayload(id = 1, accessHash = 2)),
+        )
+        assertEquals("{}", wire.encodeToString(UninstallStickerSetPayload()))
+    }
+
+    @Test
+    fun `a plain install result names no set at all`() {
+        val result = roundTrips<StickerSetInstallResult>("""{"installed": true, "archivedSets": []}""")
+
+        assertTrue(result.installed)
+        assertTrue(result.archivedSets.isEmpty())
+    }
+
+    @Test
+    fun `an archive result carries the sets it archived and their covers`() {
+        val result = roundTrips<StickerSetInstallResult>(ARCHIVED)
+
+        assertTrue(!result.installed)
+        assertEquals(listOf("somePack", "otherPack"), result.archivedSets.map { it.set.shortName })
+        assertEquals(5150L, result.archivedSets[0].coverDocumentId)
+        assertTrue(result.archivedSets[0].set.archived)
+        assertEquals(listOf(42L, 43L), result.archivedSets[1].set.documents)
+        assertNull(result.archivedSets[1].coverDocumentId)
+    }
+
     /** Decodes a native document and asserts that re-encoding it reproduces the same document. */
     private inline fun <reified T> roundTrips(document: String): T {
         val decoded = json.decodeFromString<T>(document)
@@ -149,6 +195,21 @@ class StickersProtocolTest {
     }
 
     private companion object {
+        val ARCHIVED = """
+            {"installed": false, "archivedSets": [
+             {"set": {"archived": true, "official": false, "masks": false, "emojis": false,
+              "textColor": false, "channelEmojiStatus": false, "creator": false,
+              "installedDate": null, "id": 1, "accessHash": 2, "title": "Some Pack",
+              "shortName": "somePack", "thumbDocumentId": null, "thumbDcId": null,
+              "thumbVersion": null, "count": 0, "hash": 0, "packs": [], "documents": []},
+              "coverDocumentId": 5150},
+             {"set": {"archived": true, "official": false, "masks": false, "emojis": false,
+              "textColor": false, "channelEmojiStatus": false, "creator": false,
+              "installedDate": null, "id": 3, "accessHash": 4, "title": "Other Pack",
+              "shortName": "otherPack", "thumbDocumentId": null, "thumbDcId": null,
+              "thumbVersion": null, "count": 2, "hash": 0, "packs": [],
+              "documents": [42, 43]}, "coverDocumentId": null}]}
+        """.trimIndent()
         val STICKER_SET_RESULT = """
             {"notModified": false, "set": {"archived": false, "official": true, "masks": false,
              "emojis": true, "textColor": true, "channelEmojiStatus": false, "creator": true,

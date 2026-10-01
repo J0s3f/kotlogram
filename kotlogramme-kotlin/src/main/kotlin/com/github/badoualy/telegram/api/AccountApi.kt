@@ -1,6 +1,8 @@
 package com.github.badoualy.telegram.api
 
-/** Account profile, active sessions, two-factor password and privacy operations. */
+import org.kotlogramme.protocol.PeerTarget as BridgePeerTarget
+
+/** Account profile, active sessions, two-factor password, privacy and notification operations. */
 interface AccountApi : BridgeApi {
     /** Updates the account's first name, last name and bio, answering the updated account. */
     fun accountUpdateProfile(
@@ -48,4 +50,41 @@ interface AccountApi : BridgeApi {
     /** Writes one curated privacy setting, answering the rules in place afterwards. */
     fun accountSetPrivacy(key: AccountPrivacyKey, rules: List<PrivacyRule>): PrivacyRules =
         bridge.setPrivacy(key.wire, rules.map { it.toBridge() }).toCompatibility()
+
+    /**
+     * Reads the notification settings of one scope.
+     *
+     * [AccountNotifyScope.Account] asks for the account-wide settings, which is what a caller wants
+     * when it has no particular chat in mind. A [`AccountNotifyScope.Peer`], `ForumTopic` or
+     * `Community` scope also needs [peer]; [topMsgId] only carries for a `ForumTopic` scope. The
+     * answer echoes the scope, because Telegram's own does not.
+     */
+    fun accountGetNotifySettings(
+        scope: AccountNotifyScope,
+        peer: TelegramPeer? = null,
+        topMsgId: Int? = null,
+    ): AccountNotifySettings =
+        bridge.getNotifySettings(scope.bridge, BridgePeerTarget(peer?.native?.nativeHandle), topMsgId)
+            .toCompatibility()
+
+    /**
+     * Writes the notification settings of one scope, taking the same [scope], [peer] and [topMsgId]
+     * as [accountGetNotifySettings].
+     *
+     * [settings] carries only what should change: an absent field leaves that one setting as
+     * Telegram has it, which is how a single setting is written without resetting the rest.
+     */
+    fun accountUpdateNotifySettings(
+        scope: AccountNotifyScope,
+        peer: TelegramPeer? = null,
+        topMsgId: Int? = null,
+        settings: NotifySettings = NotifySettings(),
+    ) {
+        bridge.updateNotifySettings(
+            scope.bridge,
+            BridgePeerTarget(peer?.native?.nativeHandle),
+            topMsgId,
+            settings.toBridge(),
+        )
+    }
 }
