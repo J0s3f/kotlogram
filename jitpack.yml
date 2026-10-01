@@ -68,20 +68,15 @@ install:
       -Dpackaging=jar \
       -DgeneratePom=true
 
-    # JitPack serves whatever sits in ~/.m2/repository, so placing the detached signature beside the
-    # installed jar is what makes it available at kotlogram-<version>.jar.asc. JitPack does not sign
-    # artifacts itself, and this is the only way the signature can sit next to the artifact rather than
-    # only on the GitHub Release. The signature is public data - it is produced by CI from a key that
-    # never leaves GitHub secrets - so fetching it over HTTPS leaks nothing.
-    signed="${base}/kotlogramme-${source_version}.jar.asc"
-    echo "Fetching the detached signature from ${signed}"
-    curl -fsSL --output /tmp/kotlogramme.jar.asc "${signed}"
+    # The detached signature is deliberately NOT mirrored into ~/.m2 here. It was tried, and the build
+    # log proves JitPack does not serve it: the signature was written to
+    # ~/.m2/repository/.../kotlogram-<version>.jar.asc and JitPack's own Files: listing still contained
+    # only the jar, the pom and the pom's md5/sha1. JitPack publishes a fixed artifact set rather than
+    # mirroring the directory, so the signature cannot travel with a JitPack artifact. It is published
+    # on the GitHub Release instead, and the README tells a consumer to fetch it from there.
 
-    # The path maven installed into; mirror it for the signature.
     repo="${HOME}/.m2/repository"
     dir="$(dirname "$(find "${repo}" -type f -name "${ARTIFACT}-${requested}.jar" -print -quit)")"
     test -n "${dir}"
-    cp /tmp/kotlogramme.jar.asc "${dir}/${ARTIFACT}-${requested}.jar.asc"
-
     echo "installed into ${dir}:"
     ls -l "${dir}"

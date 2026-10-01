@@ -545,12 +545,17 @@ jobs:
           echo "JitPack did not serve the artifact within the wait window" >&2
           echo "Build log: https://jitpack.io/com/github/J0s3f/kotlogram/$tag/build.log" >&2
           exit 1
-      - name: Verify the JitPack-served jar bundles the native libraries and carries the signature
+      - name: Verify the JitPack-served jar bundles the native libraries
         # Two failures this guards against, both observed rather than imagined:
         #   * the v0.6.0 jar compiled and linked fine but carried no native/ entries, failing at a
         #     consumer's runtime with UnsatisfiedLinkError;
         #   * the v0.9.1 build failed before installing anything, because VERSION arrives as the tag and
         #     the URL doubled the v.
+        # The signature is deliberately not asserted here: JitPack publishes a fixed artifact set and
+        # does not serve a .jar.asc, which was tested and confirmed from the build log. The signature
+        # lives on the GitHub Release and `github-release` is what produces it.
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           version="${{ steps.release.outputs.version }}"
@@ -561,8 +566,6 @@ jobs:
           count="$(unzip -l /tmp/jitpack.jar | grep -c '^.*native/.*kotlogramme\(\.dll\|\.so\|\.dylib\)$' || true)"
           echo "bundled native libraries found: $count"
           test "$count" -ge 6
-          # The detached signature must sit beside the artifact, so a consumer resolving from JitPack can
-          # verify without leaving the repository. This is the point of mirroring it into ~/.m2.
-          curl -fsSL --output /tmp/jitpack.jar.asc "$base/kotlogram-$tag.jar.asc"
-          echo "served signature size: $(stat -c%s /tmp/jitpack.jar.asc) bytes"
-          grep -q 'BEGIN PGP SIGNATURE' /tmp/jitpack.jar.asc
+          # The signature must exist as a release asset, since that is the only place it is published.
+          gh release view "$tag" --repo "${{ github.repository }}" --json assets \
+            --jq '.assets[].name' | grep -q '^kotlogramme-.*\.jar\.asc$'
