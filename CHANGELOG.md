@@ -8,6 +8,22 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## 0.9.8 - 2026-10-02
+
+### Added
+
+- **Saved Messages is addressable as a peer.** Telegram's Saved Messages is not a special chat: it is
+  the private chat with yourself, the peer the layer spells `inputPeerSelf`. It never appears in
+  `messages.getDialogs`, so the existing dialog-scan path could not reach it, and
+  `contacts.resolveUsername("me")` would look for a *user named* "me" instead. The new `getSelfPeer`
+  operation returns the account's own peer, projected like any other so it registers a handle.
+
+  A subtlety worth naming, because getting it wrong would have been silent: a peer is only spelled
+  `inputPeerSelf` when it carries the `PeerId::self_user()` sentinel. Registering the account's real
+  numeric id would have produced `inputPeerUser(self_id, hash)` instead - accepted by Telegram, but
+  not the canonical form the spec describes. `resolve_peer` now swaps in the sentinel whenever the
+  resolved peer is the account itself, and a test asserts the conversion.
+
 ## 0.9.7 - 2026-10-01
 
 ### Fixed
