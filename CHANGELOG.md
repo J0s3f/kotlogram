@@ -8,7 +8,7 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
-## Unreleased
+## 0.9.3 - 2026-10-01
 
 ### Changed
 
@@ -19,6 +19,17 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
   v4 to v6.4.0 and `Swatinem/rust-cache` v2 to v2.9.2; `dtolnay/rust-toolchain` moves from the
   `stable` branch ref to v1. `gradle/actions` and `dtolnay/rust-toolchain` are composite actions, so
   they never ran on a Node runtime. No step logic, runner label, trigger or job name changed.
+- **The release pipeline is more parallel.** `publish-central` no longer waits for `package` - it reads
+  only the native artifacts and builds and publishes the jar itself, so it now runs alongside packaging
+  instead of after it. `github-release` no longer waits for `publish-central` at all: it reads nothing
+  from that job and its failure was already tolerated, so the release is no longer serialized behind a
+  best-effort step. `publish-jitpack` still waits for `github-release`, because it downloads the jar
+  from that release.
+- **The JitPack download retries.** A tag push triggers both the Actions run that creates the release and
+  JitPack's build of that tag, so JitPack can ask for the jar before the release exists - which is what
+  failed `v0.9.2`. `jitpack.yml` now waits for the asset, up to about ten minutes, instead of failing on
+  the first 404. Note the packaging file is read from the tagged commit, so this applies to tags cut from
+  this commit onward, not to earlier ones.
 
 ## 0.9.2 - 2026-10-01
 

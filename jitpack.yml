@@ -76,7 +76,7 @@ install:
     # which is the case for any branch build (`main-SNAPSHOT` and friends). Unlike `requested` this one
     # is not waited for: it is a release that already exists, so a failure here is a real error rather
     # than a race. Bump it when the fallback release is superseded.
-    JITPACK_FALLBACK="0.9.2"
+    JITPACK_FALLBACK="0.9.3"
 
     requested="${VERSION#v}"
     source_version="${requested}"
