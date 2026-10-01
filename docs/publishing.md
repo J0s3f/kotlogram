@@ -79,6 +79,24 @@ systemProp.org.gradle.internal.http.connectionTimeout=180000
 systemProp.org.gradle.internal.http.socketTimeout=180000
 ```
 
+The release workflow does not rely on a consumer triggering the build: `publish-jitpack` requests the new
+version itself and waits for it, so a broken `jitpack.yml` fails the release rather than a consumer's
+first resolve.
+
+#### On webhooks
+
+There is a JitPack webhook (`https://jitpack.io/api/webhooks`) and this repository has one configured,
+but it is **not** what gets a release built. JitPack's own documentation is explicit on both counts:
+
+- Ahead-of-time builds for releases are JitPack's own scheduler: "JitPack periodically checks for new
+  releases and builds them ahead-of-time." Nothing has to be configured for that.
+- The webhook is for branches: "The webhook will trigger a build for branches that you have previously
+  used with JitPack."
+
+Observed on the `v0.9.1` push: the branch delivery returned `200` and the tag delivery returned `404`,
+which matches the documented branch-only behaviour. The hook is therefore harmless but not load-bearing,
+and the release would still be published without it.
+
 ## JitPack packaging
 
 `jitpack.yml` at the repository root overrides JitPack's default "build from source" behaviour with
