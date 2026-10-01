@@ -1,13 +1,5 @@
 name: build
 
-# Three levels of effort, because the full five-platform native matrix is expensive in runner
-# contention and in its dependence on fetching grammers from codeberg:
-#   - a push to main runs a single Linux job, which keeps the default-branch cache warm and catches
-#     regressions without building every platform;
-#   - a pull request and a nightly schedule run the full matrix, so platform coverage does not depend
-#     on cutting a release;
-#   - a v* tag (or a manual dispatch with publish) does everything and publishes.
-# Standard runners are free on public repositories, so none of this is a cost decision.
 on:
   push:
     branches:
@@ -16,9 +8,7 @@ on:
       - 'v*'
   pull_request:
   schedule:
-    # Nightly, so a platform break is found without waiting for the next release. Deliberately not
-    # on the hour: GitHub's scheduler is congested at :00, so `37 3` starts closer to when it says
-    # it will than `0 3` does.
+    # Run nightly at 03:37 UTC to avoid peak scheduler congestion
     - cron: '37 3 * * *'
   workflow_dispatch:
     inputs:
@@ -49,19 +39,10 @@ concurrency:
 
 permissions:
   contents: read
-  # `nightly-guard` reads this workflow's own run history through the API to decide whether the
-  # nightly has anything new to do.
   actions: read
 
 jobs:
-  # Decides whether the nightly has anything to do, so an unchanged main branch does not spend six
-  # platform builds every night.
-  #
-  # This compares the ref's current commit against the commit of the last *successful* scheduled run
-  # of this same workflow, through the runs API. The earlier design wrote a marker file back to the
-  # repository from CI, which needed a write permission and a token to commit; this needs neither,
-  # because the run history already records the baseline. A dispatch bypasses it, so the nightly can
-  # always be forced by hand.
+  # Skips scheduled builds if no new commits have landed since the last successful run
   nightly-guard:
     name: nightly-guard
     if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/v')
@@ -73,9 +54,6 @@ jobs:
         id: guard
         env:
           GH_TOKEN: ${{ github.token }}
-          # This endpoint accepts a workflow's file path or its numeric id, NOT its display name -
-          # `github.workflow` is the name, which resolves to a 404. `workflow_ref` is
-          # `<owner>/<repo>/<path>@<ref>`, so the id is the part between the repo and the `@`.
           WORKFLOW_REF: ${{ github.workflow_ref }}
           SHA: ${{ github.sha }}
           EVENT: ${{ github.event_name }}
@@ -86,14 +64,9 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # `<owner>/<repo>/.github/workflows/build.yml@<ref>` -> `build.yml`, which is the form
-          # this endpoint takes. The leading `.github/workflows/` is not accepted; neither is the
-          # workflow's display name.
-          workflow="${WORKFLOW_REF%%@*}"; workflow="${workflow##*/}"
+          # Extract workflow file name (e.g. build.yml) expected by the runs API
+          workflow="${WORKFLOW_REF\%\%@*}"; workflow="${workflow##*/}"
           echo "workflow id    : $workflow"
-          # The most recent completed successful run of this workflow, whatever its event. Only one
-          # baseline matters here, and a pull-request run at the same commit is just as good a record
-          # that the commit built, so the filter is deliberately not `event`.
           previous="$(gh api \
             "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?status=success&per_page=1" \
             --jq '.workflow_runs[0].head_sha // ""')"
@@ -107,18 +80,12 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-  # A push to main gets one cheap job rather than the whole matrix; everything else (a pull request,
-  # a nightly that has work to do, a tag or a manual dispatch) is a full run.
   check:
     name: check
     if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
-      # The ref IS the toolchain: @stable asks for stable, and the action reads it from the ref rather
-      # than from an input. Do NOT "pin" this to @v1 - v1 is an ordinary release tag whose ref carries no
-      # toolchain, so the action fails with 'toolchain' is a required input. This action is composite
-      # (runs.using: composite), so it never ran on Node and was never affected by the Node 20 removal.
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2.9.2
         with:
@@ -142,11 +109,6 @@ jobs:
 
   signing-check:
     name: signing-check
-    # A dispatch-only smoke test for the release signing secrets. It imports SIGNING_KEY with
-    # SIGNING_PASSWORD, signs a throwaway file and verifies the signature against the exported public
-    # key, which is the whole failure surface of the signing step in `github-release` - without
-    # creating a release or touching Central. Run it after rotating the key so a broken secret is found
-    # here rather than halfway through a tag build.
     if: github.event_name == 'workflow_dispatch' && inputs.signing-check
     runs-on: ubuntu-24.04
     permissions:
@@ -166,14 +128,12 @@ jobs:
           key="$(gpg --batch --with-colons --list-keys | awk -F: '/^fpr:/ {print $10; exit}')"
           test -n "$key"
           echo "signing key fingerprint: $key"
-          # An expired or revoked key would still import, so check it can actually usably sign.
           gpg --batch --with-colons --list-keys "$key" | awk -F: '/^pub/ {print "pub validity/expiry fields: " $2 " " $7}'
           head -c 1024 /dev/urandom > /tmp/probe.bin
           gpg --batch --yes --quiet --armor --detach-sign \
             --pinentry-mode loopback --passphrase "$SIGNING_PASSWORD" \
             --output /tmp/probe.bin.asc /tmp/probe.bin
           gpg --batch --quiet --armor --export > /tmp/public.asc
-          # Verify against a bare keyring holding only the exported public half, as a consumer would.
           export GNUPGHOME="$(mktemp -d)"
           chmod 700 "$GNUPGHOME"
           gpg --batch --quiet --import < /tmp/public.asc
@@ -188,20 +148,12 @@ jobs:
 
   raw-schema:
     name: raw-schema
-    # Skipped on a main push, where `check` runs instead, and on a nightly with nothing new.
     needs: nightly-guard
     if: needs.nightly-guard.outputs.run == 'true' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
-      # The ref IS the toolchain: @stable asks for stable, and the action reads it from the ref rather
-      # than from an input. Do NOT "pin" this to @v1 - v1 is an ordinary release tag whose ref carries no
-      # toolchain, so the action fails with 'toolchain' is a required input. This action is composite
-      # (runs.using: composite), so it never ran on Node and was never affected by the Node 20 removal.
       - uses: dtolnay/rust-toolchain@stable
-      # grammers is a git dependency on codeberg, and a failed release is normally retried on the
-      # same tag. Caching the cargo home means a retry reuses the clone it already made instead of
-      # going back to codeberg, which is the part that keeps failing.
       - uses: Swatinem/rust-cache@v2.9.2
         with:
           workspaces: native
@@ -213,8 +165,6 @@ jobs:
         shell: bash
         run: |
           cargo_root="${CARGO_HOME:-$HOME/.cargo}"
-          # grammers is a git dependency, so its api.tl lives under git/checkouts as
-          # `grammers-tl-types` (no version suffix); registry/src is kept as a fallback.
           schema="$(find "$cargo_root/git/checkouts" "$cargo_root/registry/src" -path '*/grammers-tl-types*/tl/api.tl' -print -quit 2>/dev/null || true)"
           test -n "$schema"
           python3 tools/generate_raw_schema.py --schema "$schema" --output generated/raw-schema/telegram-layer-229.json
@@ -226,8 +176,6 @@ jobs:
 
   native:
     name: native-${{ matrix.platform }}
-    # The matrix is the expensive part; a main push uses `check` instead, and a nightly with nothing
-    # new is held back by the guard.
     needs: nightly-guard
     if: needs.nightly-guard.outputs.run == 'true' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/v'))
     strategy:
@@ -256,15 +204,9 @@ jobs:
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7.0.1
-      # The ref IS the toolchain: @stable asks for stable, and the action reads it from the ref rather
-      # than from an input. Do NOT "pin" this to @v1 - v1 is an ordinary release tag whose ref carries no
-      # toolchain, so the action fails with 'toolchain' is a required input. This action is composite
-      # (runs.using: composite), so it never ran on Node and was never affected by the Node 20 removal.
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.targets }}
-      # Six platforms recompiling grammers from source is the bulk of a release, and the retry after
-      # a codeberg failure re-runs the same tag ref, so it can reuse whatever the first attempt built.
       - uses: Swatinem/rust-cache@v2.9.2
         with:
           workspaces: native
@@ -296,7 +238,6 @@ jobs:
           path: build/native
 
   package:
-    # Gated with the jobs it needs: a skipped dependency skips this, so it only runs on a full build.
     needs: [nightly-guard, native, raw-schema]
     runs-on: ubuntu-24.04
     steps:
@@ -342,14 +283,6 @@ jobs:
             kotlogramme-kotlin/build/publications/mavenJava/pom-default.xml
 
   publish-central:
-    # Best effort by design. Maven Central has monthly publishing limits, and a rejection says nothing
-    # about the release being wrong, so this cannot be allowed to cost the release. The GitHub Release
-    # and the JitPack publish do not depend on this job succeeding.
-    #
-    # `package` is deliberately NOT a dependency: this job builds and publishes the jar itself with its
-    # own Gradle invocation, and downloads only the native-* artifacts that `package` also consumes. So
-    # it can start as soon as the natives and the schema are there, in parallel with `package` rather
-    # than after it.
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish)
     needs: [native, raw-schema]
     runs-on: ubuntu-24.04
@@ -371,7 +304,6 @@ jobs:
           cache-read-only: false
       - name: Publish the signed release to the Central staging API
         id: central
-        # Never fails the run: the outcome is recorded and reported in the summary below.
         continue-on-error: true
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
@@ -423,10 +355,6 @@ jobs:
           fi
 
   github-release:
-    # Runs as soon as `package` has produced the jar and the natives. `publish-central` is deliberately
-    # NOT a dependency: it is best effort, nothing here reads its outputs, and requiring it would only
-    # serialize the release behind a job whose failure is already tolerated. Its outcome is reported in
-    # its own job summary instead.
     if: |
       always() && !cancelled()
       && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
@@ -462,23 +390,13 @@ jobs:
           done
           jar="$(find dist/jars -type f -name '*.jar' | head -n1)"
           cp "$jar" "dist/release/kotlogramme-$version.jar"
-          # The real POM, generated by Gradle from the publication rather than invented by
-          # `install:install-file`. JitPack needs it: the POM it serves is what declares the transitive
-          # dependencies, and a generated empty one leaves consumers without kotlin-stdlib and failing at
-          # runtime with NoClassDefFoundError. Shipping it here keeps JitPack free of any dependency on
-          # Maven Central, which matters because Central's limits are why JitPack is the recommended
-          # channel in the first place.
           pom="$(find dist/jars -type f -name 'pom-default.xml' | head -n1)"
           test -n "$pom"
           cp "$pom" "dist/release/kotlogramme-$version.pom"
-          # Fail loudly if the POM lost its dependencies, since that is the whole point of shipping it.
           grep -q '<artifactId>kotlin-stdlib</artifactId>' "dist/release/kotlogramme-$version.pom"
           echo "POM declares kotlin-stdlib: ok"
           ls -l dist/release
       - name: Sign the released jar
-        # JitPack provides checksums but not artifact signing, so the signature is produced here and
-        # shipped as an asset beside the jar. The public key goes out too, so a consumer does not have
-        # to find a keyserver.
         env:
           SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
@@ -494,12 +412,10 @@ jobs:
           export GNUPGHOME="$(mktemp -d)"
           chmod 700 "$GNUPGHOME"
           printf '%s' "$SIGNING_KEY" | gpg --batch --quiet --import
-          # Detached, ASCII-armored, beside the jar.
           gpg --batch --yes --quiet --armor --detach-sign \
             --pinentry-mode loopback --passphrase "$SIGNING_PASSWORD" \
             --output "dist/release/kotlogramme-$version.jar.asc" \
             "dist/release/kotlogramme-$version.jar"
-          # The public half, so a consumer can verify without a keyserver lookup.
           gpg --batch --quiet --armor --export > "dist/release/kotlogramme-$version.jar.asc.pub"
           echo "signature fingerprint: $(gpg --batch --with-colons --list-keys | awk -F: '/^fpr:/ {print $10; exit}')"
           ls -l dist/release/*.asc*
@@ -521,8 +437,6 @@ jobs:
             dist/release/*
 
   publish-jitpack:
-    # JitPack's jitpack.yml downloads the jar from the GitHub Release, so this must run after that
-    # release exists. It is not gated on Central: JitPack is the channel consumers are pointed at.
     if: |
       always() && !cancelled()
       && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
@@ -548,41 +462,25 @@ jobs:
         shell: bash
         run: |
           version="${{ steps.release.outputs.version }}"
-          # The jar and the signature jitpack.yml and consumers depend on.
           gh release view "v$version" --repo "${{ github.repository }}" --json assets \
             --jq '.assets[].name' | sort
       - name: Trigger the JitPack build
         id: jitpack
-        # Deliberately NOT a polling loop. JitPack throttles repeated requests to the same artifact path
-        # per repository and version, and answers 429 once that trips - which is what failed the v0.9.4
-        # release: 60 attempts at 20s intervals were all 429, so the build was never given a chance to be
-        # requested, let alone served. A tight loop is self-defeating here: it causes the condition it is
-        # waiting on.
-        #
-        # So: one request to trigger the build, then a small number of widely spaced checks. And the job
-        # reports rather than fails, because JitPack is a mirror of an artifact the GitHub Release already
-        # carries in full - a throttled mirror must not turn a good release red. This mirrors how
-        # publish-central reports a Central rejection.
         continue-on-error: true
         shell: bash
         run: |
           version="${{ steps.release.outputs.version }}"
-          # JitPack keys its artifact path on the TAG, not the bare version: the v0.9.0 build was served
-          # at .../kotlogram/v0.9.0/kotlogram-v0.9.0.pom. `version` here is bare, so the `v` is added
-          # back for the URL while the coordinate a consumer writes stays bare.
           tag="v$version"
           url="https://jitpack.io/com/github/J0s3f/kotlogram/$tag/kotlogram-$tag.pom"
 
           echo "requesting $url (this triggers the build)"
-          # A single request is what asks JitPack to build the version. Its result does not matter yet.
           curl -s -o /dev/null -w 'first request: HTTP %{http_code}\n' --location "$url" || true
 
-          # Six checks, three minutes apart: about 15 minutes, which is JitPack's stated maximum build
-          # time. Widely spaced on purpose, so the checks themselves do not trip the limit.
+          # Poll at 3-minute intervals (up to ~15 min) to avoid rate limiting
           for attempt in $(seq 1 6); do
             sleep 180
-            code="$(curl -s -o /dev/null -w '%{http_code}' --location "$url" || true)"
-            echo "check $attempt/6: HTTP $code"
+            code="$(curl -s -o /dev/null -w '\%{http_code}' --location "$url" || true)"
+            echo "check $attempt/6: HTTP$code"
             case "$code" in
               200)
                 echo "JitPack is serving $tag"
@@ -627,15 +525,6 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
       - name: Verify the JitPack-served jar bundles the native libraries
-        # Only runs once JitPack is actually serving the version, so a throttled or still-building mirror
-        # cannot fail the job. What it guards against, both observed rather than imagined:
-        #   * the v0.6.0 jar compiled and linked fine but carried no native/ entries, failing at a
-        #     consumer's runtime with UnsatisfiedLinkError;
-        #   * the v0.9.1 build failed before installing anything, because VERSION arrives as the tag and
-        #     the URL doubled the v.
-        # The signature is deliberately not asserted here: JitPack publishes a fixed artifact set and
-        # does not serve a .jar.asc, which was tested and confirmed from the build log. The signature
-        # lives on the GitHub Release and `github-release` is what produces it.
         if: always() && steps.jitpack.outputs.serving == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -646,9 +535,8 @@ jobs:
           base="https://jitpack.io/com/github/J0s3f/kotlogram/$tag"
           curl -fsSL --output /tmp/jitpack.jar "$base/kotlogram-$tag.jar"
           echo "served jar size: $(stat -c%s /tmp/jitpack.jar) bytes"
-          count="$(unzip -l /tmp/jitpack.jar | grep -c '^.*native/.*kotlogramme\(\.dll\|\.so\|\.dylib\)$' || true)"
+          count="$(unzip -l /tmp/jitpack.jar | grep -c '^.*native/.*kotlogramme\(\.dll\Vert{}\.so\Vert{}\.dylib\)$' || true)"
           echo "bundled native libraries found: $count"
           test "$count" -ge 6
-          # The signature must exist as a release asset, since that is the only place it is published.
           gh release view "$tag" --repo "${{ github.repository }}" --json assets \
             --jq '.assets[].name' | grep -q '^kotlogramme-.*\.jar\.asc$'
