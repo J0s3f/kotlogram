@@ -66,9 +66,10 @@ https://docs.github.com/en/actions/reference/usage-limits-billing-and-administra
 - **Artifact/run retention**: 90 days by default; configurable 1–90 days on public repos. Since
   2026-10-01 this also governs checks, workflow runs and commit statuses.
 - **Cache**: 10 GB per repository default, caches unused for 7 days are evicted; retention is
-  configurable (up to 90 days on public repos). Cache scoping is by branch/tag — a run cannot reuse a
-  cache from a *different* tag (`release-a` cannot read `release-b`'s cache), which is the cause of
-  the read-only-cache warning noted in the build logs.
+  configurable (up to 90 days on public repos). A run can read caches saved on its own branch or tag,
+  and falls back to the default branch; it cannot read a cache saved on a *different* tag
+  (`release-a` cannot read `release-b`'s cache). That fallback is why a first tag run reports saves
+  rather than hits even when `main` has warmed a cache under the same key.
 - **Concurrency**: Free plan allows 20 concurrent jobs total, of which at most 5 may be macOS. The
   library matrix launches 5 native jobs plus `raw-schema` at once, so it is under the totals, but
   macOS is the scarce resource.
@@ -124,10 +125,9 @@ Non-cost reasons (these are real, and are the honest justification for the tag-o
   Running the matrix on every push multiplies load on a third-party host the project does not
   control; tag-only reduced that.
 - **Commit-status noise.** Five native checks plus package/publish per push clutters PRs and `main`.
-- **Cache warming is the counter-argument.** As the current `build.yml` comment notes, "nothing runs
-  on main any more, so a tag build has no warmed cache to read". The Rust cache on a tag is read-only
-  by default (tag scoping), so every release rebuilds cold. A `main` job would keep the default-branch
-  cache warm.
+- **Cache warming is the counter-argument.** Tag runs read the default branch's cache, but restore
+  it read-only by default (tag scoping), so a first release on a given tag rebuilds cold. A `main`
+  job keeps the default-branch cache warm under the same keys, so later releases restore it.
 
 ## 4. Recommendation
 
@@ -140,8 +140,9 @@ Non-cost reasons (these are real, and are the honest justification for the tag-o
    removes the queueing, codeberg-hammering and status-noise arguments for blocking all builds.
 3. **Optionally run the full matrix on PRs to `main` or nightly**, not on every push. It is free, so
    the only cost is runner contention; a PR/nightly cadence buys platform coverage without the noise.
-4. **Warm the cache from `main`.** A trusted `push` job on the default branch can populate caches that
-   later runs restore; tag runs cannot share each other's caches.
+4. **Warm the cache from `main`.** A trusted `push` job on the default branch populates caches that
+   tag runs restore through the default-branch fallback. Tag runs still cannot read *each other's*
+   caches.
 5. **Leave `kotlogramme-cli` as it is.** Its three-OS `ci.yml` on every push/PR is now free, and its
    measured footprint (219.5 min over two weeks, ~641 metered minutes even under multiplier
    accounting) never approached the Free allowance.

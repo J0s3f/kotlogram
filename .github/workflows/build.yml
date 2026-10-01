@@ -1,12 +1,25 @@
 name: build
 
-# Builds and publishes run for release tags only, plus a manual dispatch. A plain push to main or a
-# branch is not a release: it used to spin up the whole native matrix, which is slow and depends on
-# fetching grammers from codeberg, so it is not worth spending on documentation commits.
+# Three levels of effort, because the full five-platform native matrix is expensive in runner
+# contention and in its dependence on fetching grammers from codeberg:
+#   - a push to main runs a single Linux job, which keeps the default-branch cache warm and catches
+#     regressions without building every platform;
+#   - a pull request and a nightly schedule run the full matrix, so platform coverage does not depend
+#     on cutting a release;
+#   - a v* tag (or a manual dispatch with publish) does everything and publishes.
+# Standard runners are free on public repositories, so none of this is a cost decision.
 on:
   push:
+    branches:
+      - main
     tags:
       - 'v*'
+  pull_request:
+  schedule:
+    # Nightly, so a platform break is found without waiting for the next release. Deliberately not
+    # on the hour: GitHub's scheduler is congested at :00, so `37 3` starts closer to when it says
+    # it will than `0 3` does.
+    - cron: '37 3 * * *'
   workflow_dispatch:
     inputs:
       version:
@@ -19,6 +32,11 @@ on:
         required: false
         default: false
         type: boolean
+      as-schedule:
+        description: Pretend this dispatch is the nightly, to exercise the nightly-guard skip
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -26,10 +44,91 @@ concurrency:
 
 permissions:
   contents: read
+  # `nightly-guard` reads this workflow's own run history through the API to decide whether the
+  # nightly has anything new to do.
+  actions: read
 
 jobs:
+  # Decides whether the nightly has anything to do, so an unchanged main branch does not spend six
+  # platform builds every night.
+  #
+  # This compares the ref's current commit against the commit of the last *successful* scheduled run
+  # of this same workflow, through the runs API. The earlier design wrote a marker file back to the
+  # repository from CI, which needed a write permission and a token to commit; this needs neither,
+  # because the run history already records the baseline. A dispatch bypasses it, so the nightly can
+  # always be forced by hand.
+  nightly-guard:
+    name: nightly-guard
+    if: github.event_name != 'push' || startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.guard.outputs.run }}
+    steps:
+      - name: Should this run do any work?
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WORKFLOW: ${{ github.workflow }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
+          EVENT: ${{ github.event_name }}
+          AS_SCHEDULE: ${{ inputs.as-schedule }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" != "schedule" ] && [ "$AS_SCHEDULE" != "true" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The most recent completed successful run of this workflow, whatever its event. On the
+          # nightly only ever one baseline matters, and a pull-request run at the same commit is
+          # just as good a record that the commit built, so the filter is deliberately not `event`.
+          previous="$(gh api \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/${WORKFLOW}/runs?status=success&per_page=1" \
+            --jq '.workflow_runs[0].head_sha // ""')"
+          echo "baseline commit : ${previous:-<none>}"
+          echo "this commit      : $SHA"
+          if [ -n "$previous" ] && [ "$previous" = "$SHA" ]; then
+            echo "Nothing changed since the last successful run; skipping the nightly."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Building."
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  # A push to main gets one cheap job rather than the whole matrix; everything else (a pull request,
+  # a nightly that has work to do, a tag or a manual dispatch) is a full run.
+  check:
+    name: check
+    if: github.event_name == 'push' && !startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: native
+          key: check
+      - name: Build the native library for this host
+        run: cargo build --release --manifest-path native/Cargo.toml
+      - name: Stage it where Gradle expects it
+        run: |
+          mkdir -p generated/native/linux-x86_64
+          cp native/target/release/libkotlogramme.so generated/native/linux-x86_64/
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+      - name: Build and test
+        run: ./gradlew --no-daemon clean test
+
   raw-schema:
     name: raw-schema
+    # Skipped on a main push, where `check` runs instead, and on a nightly with nothing new.
+    needs: nightly-guard
+    if: needs.nightly-guard.outputs.run == 'true' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/v'))
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -61,6 +160,10 @@ jobs:
 
   native:
     name: native-${{ matrix.platform }}
+    # The matrix is the expensive part; a main push uses `check` instead, and a nightly with nothing
+    # new is held back by the guard.
+    needs: nightly-guard
+    if: needs.nightly-guard.outputs.run == 'true' && (github.event_name != 'push' || startsWith(github.ref, 'refs/tags/v'))
     strategy:
       fail-fast: false
       matrix:
@@ -123,7 +226,8 @@ jobs:
           path: build/native
 
   package:
-    needs: [native, raw-schema]
+    # Gated with the jobs it needs: a skipped dependency skips this, so it only runs on a full build.
+    needs: [nightly-guard, native, raw-schema]
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
