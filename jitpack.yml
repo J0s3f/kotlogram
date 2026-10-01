@@ -29,12 +29,16 @@
 jdk:
   - openjdk21
 
-# JitPack's own /script/buildit.sh reads AFTER_INSTALL_CMD without a default, so leaving it unset makes
-# every build end with `line 140: AFTER_INSTALL_CMD: unbound variable` and `Exit code: 1` even though the
-# artifacts were installed and are served. Defining it as a no-op is the fix; there is nothing to do
-# after the install step here.
+# JitPack's own /script/buildit.sh mishandles AFTER_INSTALL_CMD, and the build ends with `Exit code: 1`
+# even though the artifacts install and are served. The three behaviours, all observed in the build log:
+#
+#   * unset   -> `line 140: AFTER_INSTALL_CMD: unbound variable`  (it reads it without a default)
+#   * "true"  -> `line 142: ${$AFTER_INSTALL_CMD}: bad substitution`  (their expansion has a typo)
+#   * ""      -> the non-empty guard skips the block entirely, which is what we want
+#
+# So the value has to be empty rather than a no-op command. There is nothing to run after install here.
 env:
-  AFTER_INSTALL_CMD: "true"
+  AFTER_INSTALL_CMD: ""
 
 install:
   - |
@@ -43,7 +47,7 @@ install:
     # The released version whose jar is used whenever the version being built has no release of its own,
     # which is the case for any branch build (`main-SNAPSHOT` and friends). Bump it when the fallback
     # release is superseded.
-    JITPACK_FALLBACK="0.9.1"
+    JITPACK_FALLBACK="0.9.2"
 
     requested="${VERSION#v}"
     source_version="${requested}"
