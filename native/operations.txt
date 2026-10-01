@@ -18,6 +18,17 @@ buildForceReply
 buildHideKeyboard
 buildInlineMarkup
 buildReplyKeyboard
+chatlistsCheckChatlistInvite
+chatlistsDeleteExportedInvite
+chatlistsEditExportedInvite
+chatlistsExportChatlistInvite
+chatlistsGetChatlistUpdates
+chatlistsGetExportedInvites
+chatlistsGetLeaveChatlistSuggestions
+chatlistsHideChatlistUpdates
+chatlistsJoinChatlistInvite
+chatlistsJoinChatlistUpdates
+chatlistsLeaveChatlist
 checkPassword
 clearMentions
 contactsBlock

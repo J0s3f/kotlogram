@@ -136,8 +136,10 @@ upgrade must create a new `telegram-tl-<layer>` API version instead of mutating 
 
 Everything in `native/operations.txt` is reachable from Kotlin. What stays outside the facade:
 
-- TL methods this layer has not added: chatlist folder creation, the story and paid-media surfaces,
-  and most `messages.*` utility calls. `invokeRaw` reaches all of them with a Layer-229 codec.
+- TL methods this layer has not added: the story and paid-media surfaces, and most `messages.*`
+  utility calls. `invokeRaw` reaches all of them with a Layer-229 codec. Folder creation and editing
+  are mapped through `messagesUpdateDialogFilter`, and the `chatlists.*` sharing and sync surface —
+  exporting a folder as an invite, its lifecycle, and the update-sync calls — is mapped too.
 - The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` or by the
   background loop behind `UpdatesApi.startUpdateLoop`; both pull from the update pump's queue rather
   than being invoked by it.

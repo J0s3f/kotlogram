@@ -25,7 +25,8 @@ scoped: 105 native operations, each reachable from Kotlin through a 278-test Rus
 - the typed update payloads (including guest-chat queries) and the raw update with its state;
   inline-bot queries, article and media answers, and chosen-result sends; the four reply markups,
   attachable to any send, and chat actions
-- contacts, blocking and search; dialog filters (folders); sticker-set reads, installation,
+- contacts, blocking and search; dialog filters (folders), their export as joinable invites, the
+  invite lifecycle and the update-sync calls for a joined folder; sticker-set reads, installation,
   archiving and removal; notification settings, account-wide or per peer
 - familiar Kotlogram entry points under `com.github.badoualy.telegram.api`, including the ordered
   `getNextUpdate` stream, the on-demand `dispatchNextUpdate`, and the startable/stoppable

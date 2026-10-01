@@ -14,10 +14,17 @@ import org.kotlogramme.protocol.ContactImport as BridgeContactImport
 import org.kotlogramme.protocol.ContactPeer as BridgeContactPeer
 import org.kotlogramme.protocol.ContactUser as BridgeContactUser
 import org.kotlogramme.protocol.ContactsPage as BridgeContactsPage
+import org.kotlogramme.protocol.ChatlistInviteResult as BridgeChatlistInviteResult
+import org.kotlogramme.protocol.ChatlistPeer as BridgeChatlistPeer
+import org.kotlogramme.protocol.ChatlistUpdatesAck as BridgeChatlistUpdatesAck
+import org.kotlogramme.protocol.ChatlistUpdatesResult as BridgeChatlistUpdatesResult
 import org.kotlogramme.protocol.Dialog as BridgeDialog
 import org.kotlogramme.protocol.DialogFilterSpec as BridgeDialogFilterSpec
 import org.kotlogramme.protocol.DialogFolder as BridgeDialogFolder
 import org.kotlogramme.protocol.DialogFoldersResult as BridgeDialogFoldersResult
+import org.kotlogramme.protocol.ExportedInvite as BridgeExportedInvite
+import org.kotlogramme.protocol.ExportedInvitesResult as BridgeExportedInvitesResult
+import org.kotlogramme.protocol.LeaveChatlistSuggestionsResult as BridgeLeaveChatlistSuggestionsResult
 import org.kotlogramme.protocol.PeerTarget as BridgePeerTarget
 import org.kotlogramme.protocol.FoundContacts as BridgeFoundContacts
 import org.kotlogramme.protocol.ImportedContact as BridgeImportedContact
@@ -1860,6 +1867,113 @@ internal fun DialogFolderSpec.toBridge() = BridgeDialogFilterSpec(
     pinnedPeers.map { BridgePeerTarget(it.native.nativeHandle) },
     includePeers.map { BridgePeerTarget(it.native.nativeHandle) },
     excludePeers.map { BridgePeerTarget(it.native.nativeHandle) },
+)
+
+/**
+ * A peer a folder-sharing answer carried without objects to resolve it against.
+ *
+ * An exported invite and the leave suggestions report bare references, so only [id] and [kind]
+ * survive; the answers that carry chats and users project full [TelegramPeer]s instead.
+ */
+data class FolderInvitePeer(
+    val id: Long,
+    val kind: String,
+)
+
+/** One exported invite of a folder. */
+data class FolderInvite(
+    val title: String,
+    val slug: String,
+    val url: String,
+    val peers: List<FolderInvitePeer> = emptyList(),
+)
+
+/** The exported invites of a folder, with the chats and users they name. */
+data class FolderInvites(
+    val invites: List<FolderInvite>,
+    val chats: List<TelegramPeer> = emptyList(),
+    val users: List<User> = emptyList(),
+)
+
+/**
+ * The answer to a folder-invite lookup, in the layer's two distinct cases.
+ *
+ * [New] is a still-unjoined invite: joining it would create the folder, and it carries the title,
+ * its formatting entities, the emoticon and the peers joining would add. [Already] is a slug the
+ * account has already joined: it names the folder by [Already.filterId] and sorts the peers into
+ * the ones still missing and the ones already in.
+ */
+sealed interface FolderInviteCheck {
+    data class New(
+        val titleNoanimate: Boolean,
+        val title: String,
+        val titleEntities: List<MessageEntity> = emptyList(),
+        val emoticon: String? = null,
+        val peers: List<TelegramPeer> = emptyList(),
+    ) : FolderInviteCheck
+
+    data class Already(
+        val filterId: Int,
+        val missingPeers: List<TelegramPeer> = emptyList(),
+        val alreadyPeers: List<TelegramPeer> = emptyList(),
+    ) : FolderInviteCheck
+}
+
+/** The peers a joined folder still misses, with the chats and users that describe them. */
+data class FolderUpdates(
+    val missingPeers: List<TelegramPeer> = emptyList(),
+    val chats: List<TelegramPeer> = emptyList(),
+    val users: List<User> = emptyList(),
+)
+
+/**
+ * The acknowledgement a folder join or leave answers.
+ *
+ * The point updates themselves arrive through the update stream; [peers] are the chats the call
+ * touched.
+ */
+data class FolderUpdatesAck(
+    val ok: Boolean,
+    val peers: List<TelegramPeer> = emptyList(),
+)
+
+/** The peers a caller could leave from a folder. */
+data class FolderLeaveSuggestions(val peers: List<FolderInvitePeer> = emptyList())
+
+internal fun BridgeChatlistPeer.toCompatibility() = FolderInvitePeer(id, kind)
+
+internal fun BridgeExportedInvite.toCompatibility() = FolderInvite(
+    title, slug, url, peers.map { it.toCompatibility() },
+)
+
+internal fun BridgeExportedInvitesResult.toCompatibility() = FolderInvites(
+    invites.map { it.toCompatibility() },
+    chats.map { it.toCompatibility() },
+    users.map { it.toCompatibility() },
+)
+
+internal fun BridgeChatlistInviteResult.toCompatibility(): FolderInviteCheck = when (kind) {
+    "already" -> FolderInviteCheck.Already(
+        filterId, missingPeers.map { it.toCompatibility() }, alreadyPeers.map { it.toCompatibility() },
+    )
+    else -> FolderInviteCheck.New(
+        titleNoanimate, title, titleEntities.map { it.toCompatibility() }, emoticon,
+        peers.map { it.toCompatibility() },
+    )
+}
+
+internal fun BridgeChatlistUpdatesResult.toCompatibility() = FolderUpdates(
+    missingPeers.map { it.toCompatibility() },
+    chats.map { it.toCompatibility() },
+    users.map { it.toCompatibility() },
+)
+
+internal fun BridgeChatlistUpdatesAck.toCompatibility() = FolderUpdatesAck(
+    ok, peers.map { it.toCompatibility() },
+)
+
+internal fun BridgeLeaveChatlistSuggestionsResult.toCompatibility() = FolderLeaveSuggestions(
+    peers.map { it.toCompatibility() },
 )
 
 /** The "can do" rights a caller asks for, in the shape grammers' `set_admin_rights` takes. */

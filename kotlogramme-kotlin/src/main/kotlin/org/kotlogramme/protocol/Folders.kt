@@ -71,3 +71,124 @@ internal data class DialogFilterSpec(
 /** Payload of `messagesUpdateDialogFiltersOrder`. */
 @Serializable
 internal data class UpdateDialogFiltersOrderPayload(val order: List<Int>)
+
+/**
+ * A bare peer a chatlist answer reported without objects to resolve it against.
+ *
+ * Only `chatlistsGetLeaveChatlistSuggestions` reaches this: every other answer carries the chats
+ * and users that describe its peers, which arrive as full [Peer] values.
+ */
+@Serializable
+internal data class ChatlistPeer(
+    val id: Long = 0,
+    val kind: String = "user",
+)
+
+/** One exported invite of a folder. */
+@Serializable
+internal data class ExportedInvite(
+    val title: String = "",
+    val slug: String = "",
+    val url: String = "",
+    val peers: List<ChatlistPeer> = emptyList(),
+)
+
+/** Result of `chatlistsGetExportedInvites`: the folder's invites and the objects they name. */
+@Serializable
+internal data class ExportedInvitesResult(
+    val invites: List<ExportedInvite> = emptyList(),
+    val chats: List<Peer> = emptyList(),
+    val users: List<User> = emptyList(),
+)
+
+/**
+ * Result of `chatlistsCheckChatlistInvite`, in both of the layer's cases.
+ *
+ * [kind] is `new` for a still-unjoined invite, which carries [title], [titleEntities], [emoticon]
+ * and the [peers] joining would add, or `already` for a slug the account has already joined, which
+ * carries the folder's [filterId] and sorts the peers into [missingPeers] and [alreadyPeers]. The
+ * fields of the other case stay at their defaults, so a caller reads [kind] before either group.
+ */
+@Serializable
+internal data class ChatlistInviteResult(
+    val kind: String = "new",
+    val titleNoanimate: Boolean = false,
+    val title: String = "",
+    val titleEntities: List<MessageEntity> = emptyList(),
+    val emoticon: String? = null,
+    val peers: List<Peer> = emptyList(),
+    val filterId: Int = 0,
+    val missingPeers: List<Peer> = emptyList(),
+    val alreadyPeers: List<Peer> = emptyList(),
+    val chats: List<Peer> = emptyList(),
+    val users: List<User> = emptyList(),
+)
+
+/** Result of `chatlistsGetChatlistUpdates`: the peers a joined folder still misses. */
+@Serializable
+internal data class ChatlistUpdatesResult(
+    val missingPeers: List<Peer> = emptyList(),
+    val chats: List<Peer> = emptyList(),
+    val users: List<User> = emptyList(),
+)
+
+/**
+ * Result of the `Updates`-returning chatlist calls: an acknowledgement and the chats they touched.
+ *
+ * The point updates themselves arrive through the update stream, so only the chats the bundle
+ * reported travel here.
+ */
+@Serializable
+internal data class ChatlistUpdatesAck(
+    val ok: Boolean = false,
+    val peers: List<Peer> = emptyList(),
+)
+
+/** Result of `chatlistsGetLeaveChatlistSuggestions`: the peers a caller could leave. */
+@Serializable
+internal data class LeaveChatlistSuggestionsResult(
+    val peers: List<ChatlistPeer> = emptyList(),
+)
+
+/** Payload of an operation that names a folder by its dialog-filter id. */
+@Serializable
+internal data class ChatlistPayload(val filterId: Int)
+
+/** Payload of `chatlistsExportChatlistInvite`: the folder, the invite's label and its peers. */
+@Serializable
+internal data class ExportChatlistInvitePayload(
+    val filterId: Int,
+    val title: String,
+    val peers: List<PeerTarget> = emptyList(),
+)
+
+/** Payload of `chatlistsEditExportedInvite`; an absent field leaves that part of the invite alone. */
+@Serializable
+internal data class EditExportedInvitePayload(
+    val filterId: Int,
+    val slug: String,
+    val title: String? = null,
+    val peers: List<PeerTarget>? = null,
+)
+
+/** Payload of `chatlistsDeleteExportedInvite`: the folder and the slug to drop. */
+@Serializable
+internal data class DeleteExportedInvitePayload(val filterId: Int, val slug: String)
+
+/** Payload of `chatlistsCheckChatlistInvite`: the slug to look up. */
+@Serializable
+internal data class CheckChatlistInvitePayload(val slug: String)
+
+/** Payload of `chatlistsJoinChatlistInvite`: the slug and the peers to join. */
+@Serializable
+internal data class JoinChatlistInvitePayload(
+    val slug: String,
+    val peers: List<PeerTarget> = emptyList(),
+)
+
+/** Payload of `chatlistsJoinChatlistUpdates` and `chatlistsLeaveChatlist`. */
+@Serializable
+internal data class ChatlistPeersPayload(
+    val filterId: Int,
+    val peers: List<PeerTarget> = emptyList(),
+)
