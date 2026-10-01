@@ -540,7 +540,7 @@ jobs:
           base="https://jitpack.io/com/github/J0s3f/kotlogram/$tag"
           curl -fsSL --output /tmp/jitpack.jar "$base/kotlogram-$tag.jar"
           echo "served jar size: $(stat -c%s /tmp/jitpack.jar) bytes"
-          count="$(unzip -l /tmp/jitpack.jar | grep -c '^.*native/.*kotlogramme\(\.dll\Vert{}\.so\Vert{}\.dylib\)$' || true)"
+          count="$(unzip -l /tmp/jitpack.jar | grep -cE '^.*native/.*kotlogramme\.(dll|so|dylib)$' || true)"
           echo "bundled native libraries found: $count"
           test "$count" -ge 6
           gh release view "$tag" --repo "${{ github.repository }}" --json assets \
