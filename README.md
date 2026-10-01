@@ -27,15 +27,15 @@ scoped: 101 native operations, each reachable from Kotlin through a 257-test Rus
   attachable to any send, and chat actions
 - contacts, blocking and search; dialog filters (folders); sticker-set reads
 - familiar Kotlogram entry points under `com.github.badoualy.telegram.api`, including the ordered
-  `getNextUpdate` stream and the on-demand `dispatchNextUpdate` through the legacy `UpdateCallback`
+  `getNextUpdate` stream, the on-demand `dispatchNextUpdate`, and the startable/stoppable
+  `startUpdateLoop` background loop through the legacy `UpdateCallback`
 - native-library loading from the JAR and CI builds for Linux/macOS/Windows on x86_64/ARM64
 
 Known limits, each reachable another way or listed in [`docs/compatibility.md`](docs/compatibility.md)
 under "Not mapped yet": the historical generated TL API is not recreated (only the versioned raw API is
 exposed); a message's own formatting entities and its rendered markdown/HTML are projected, but the
 entities on a reply's quoted text are not; sticker install/archive, per-peer notification settings and
-the story/paid-media surfaces stay behind `invokeRaw`; and `UpdateCallback` is delivered on demand by
-`dispatchNextUpdate` rather than by a background loop. Test the operations you depend on in your own
+the story/paid-media surfaces stay behind `invokeRaw`. Test the operations you depend on in your own
 application.
 
 The original Kotlogram code base is archived and uses an old Telegram TL layer. This project is therefore deliberately not a source-code copy: it is a new compatibility-oriented Kotlin facade with grammers as its protocol and update layer.

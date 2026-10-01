@@ -16,6 +16,16 @@ libraries and publishes `io.github.j0s3f:kotlogramme` to Maven Central. See
   the memory an upload holds is a few chunks whatever the file size. It takes the stream's total
   `size` and an optional `onProgress` callback, because grammers has to know the size before it can
   send the first part.
+- `UpdatesApi.startUpdateLoop(callback, pollTimeoutMillis, onError)` runs the legacy
+  `UpdateCallback` on a background thread, which is what closes the one gap the facade had against
+  Kotlogram's registered-handler shape. `stopUpdateLoop()` joins it and `isUpdateLoopRunning()`
+  reports whether it is live; a second `startUpdateLoop` reports false instead of adding a second
+  reader to the shared stream. The loop polls in a short 250 ms wait rather than the 30 s
+  `dispatchNextUpdate` default, so a stop costs one poll instead of half a minute, and the thread is
+  a daemon, so a forgotten loop cannot hold a host's shutdown open. A callback that throws ends the
+  loop and its cause is kept in `updateLoopFailure()` and handed to `onError`, or printed by the
+  thread's uncaught-exception handler when no handler was supplied. `close()` stops the loop before
+  the session goes away.
 - `FilesApi.uploadProgressBegin(total)` and `FilesApi.uploadProgress(handle)` report an upload while
   it runs: bytes sent, the total, elapsed milliseconds and the average bytes per second, which is
   the shape a terminal render loop polls. `uploadFile(path)` and a path `MediaApi.mediaSend` accept
@@ -138,7 +148,8 @@ Kotlin.
 ### Updates, inline, markup and actions
 
 - `getNextTypedUpdate` / `getNextRawUpdate` / `syncUpdateState` and the on-demand
-  `dispatchNextUpdate` through the legacy `UpdateCallback`.
+  `dispatchNextUpdate` through the legacy `UpdateCallback`, which is now also available as a
+  background loop (`startUpdateLoop` / `stopUpdateLoop`).
 - `inlineQuery`, `answerCallbackQuery`, `answerInlineQuery`, `editInlineMessage`.
 - The four reply-markup builders and reading a message's markup.
 - Chat actions (`actionsSendChatAction`, `actionsCancelChatAction`) and the service action of a

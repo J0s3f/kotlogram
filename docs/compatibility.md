@@ -125,8 +125,7 @@ Everything in `native/operations.txt` is reachable from Kotlin. What stays outsi
   calls. `invokeRaw` reaches all of them with a Layer-229 codec.
 - The formatting entities on a reply's quoted text; a message's own entities and its rendered
   `markdownText`/`htmlText` are projected, and the send and edit directions carry explicit entities.
-- The legacy `UpdateCallback` is delivered on demand by `UpdatesApi.dispatchNextUpdate` rather
-  than by a background loop.
+
 - A few grammers capabilities have no request/response shape the bridge can carry: the
   `ActionSender` repeat loop, and `upload_stream` from a caller-supplied async reader that does not
   know its length up front (grammers must be told the total before the first part, which is why
