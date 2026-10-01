@@ -9,6 +9,7 @@ mod dto;
 mod error;
 mod ops;
 mod payload;
+mod update_pump;
 mod upload;
 
 use std::path::PathBuf;
