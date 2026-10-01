@@ -8,6 +8,28 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## 0.9.6 - 2026-10-01
+
+### Changed
+
+- **The release profile now enables `lto` and `codegen-units = 1`.** The six bundled native libraries
+  are ~88 MiB raw and ~32 MB compressed, and they are almost the whole jar, so the compiler's inlining
+  decisions are the dominant factor in the published size. Measured on the Windows x86_64 library these
+  two flags shrink the compiled code by **31.9% raw and 24.2% packed**, and because code compresses
+  less than symbol names do, most of that reaches the jar rather than being eaten by Deflate. Unlike
+  UPX, which cannot pack the Linux or macOS libraries at all, this applies to every platform.
+
+  `strip` is deliberately not used: Cargo 1.77+ already strips debug info in release builds, and the
+  shipped Windows libraries were confirmed to carry zero symbols and no `.debug_*` sections, so
+  `strip --strip-all` removed exactly **0 bytes**. On Linux and macOS a symbol table does remain, but
+  symbol names compress well, so stripping 22.9% of raw bytes would remove only about 8.8% of that
+  library's jar contribution - while destroying stack traces for anyone diagnosing a crash inside the
+  native code. `lto` and `codegen-units = 1` cost no debuggability at all: symbols and panic locations
+  are unaffected and panics still unwind, so `catch_unwind` callers keep working.
+
+  The cost is build time - clean release builds go from roughly 35 s to several minutes per target, and
+  the macOS matrix entry builds two targets in one job. LTO is also memory-hungry.
+
 ## 0.9.5 - 2026-10-01
 
 ### Fixed
