@@ -107,7 +107,7 @@ that closed the post-parity gaps.
 ## Raw API contract
 
 `org.kotlogramme.raw.RawTelegramApi` bundles a generated `kotlogram-raw-schema/v1` manifest for
-Layer 229. Its experimental `invoke` method transmits an already TL-encoded request through the
+Layer 229. Its low-level `invoke` method transmits an already TL-encoded request through the
 grammers sender pool and returns the raw response bytes. The caller must use a codec generated for
 the same manifest version and layer.
 

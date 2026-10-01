@@ -2,7 +2,13 @@
 
 Plan of record for closing every feature gap identified after the grammers 0.10.0 (git) port.
 Companion to [`grammers-parity-plan.md`](grammers-parity-plan.md), which covers the work already
-delivered. Nothing here has started; each task becomes one subagent, one worktree, one branch.
+delivered.
+
+**Status: complete.** Every task T0 through T9 below was delivered and is merged on `main`; see
+[`CHANGELOG.md`](../CHANGELOG.md) for what each release contains. The document is kept as the record
+of what was scoped and why, so the "deliberately does not include" section still explains the
+boundary of the facade. Test counts quoted in the task text are the targets that were set at the
+time, not the current figures; the current ones are in the [README](../README.md).
 
 ## Locked decisions
 
@@ -44,7 +50,7 @@ Answers given on 2026-09-30, in effect for every task below:
 ## Shared conventions for every task
 
 - **In place, no parallel types.** Enrichment adds defaulted fields to the existing public data
-  classes and DTOs. `0.1.0` is WIP, but no `*V2`/`*Rich` siblings.
+  classes and DTOs. No `*V2`/`*Rich` siblings were introduced.
 - **Wire polarity.** Rights fields keep the layer's own polarity (`true` bans on restrictions,
   grants on admin rights) exactly as `docs/compatibility.md` documents today.
 - **Operations contract.** New operations are declared in the owning module's `OPERATIONS`, routed

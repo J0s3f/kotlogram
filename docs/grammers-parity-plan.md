@@ -2,12 +2,16 @@
 
 Goal: make every capability of the Rust implementation reachable, and faithfully modelled, from
 Kotlin. The "Rust implementation" is the native JNI crate in `native/`, whose functional surface is
-the grammers 0.8.1 `Client` API it wraps. Kotlin currently covers 26 of those operations and
-projects them through lossy DTOs.
+the grammers 0.8.1 `Client` API it wraps.
+
+**Status: complete.** The work below was delivered on `feat/grammers-parity`, and the gap-closure work
+that followed it is in [`gap-closure-roadmap.md`](gap-closure-roadmap.md). The coverage and
+test-count figures quoted in this document are the ones recorded as each phase merged; the current
+figures are 101 operations, 257 Rust tests and 266 JVM tests.
 
 ## Current coverage
 
-All ten Phase 1 domains are merged on `feat/grammers-parity`. The native crate routes 66
+All ten Phase 1 domains are merged. The native crate routes 101
 operations, listed in `native/operations.txt` (verified equal to the dispatcher by the Rust tests
 and to the annotated Kotlin bridge by `OperationParityTest`), and `docs/compatibility.md` maps the
 Kotlogram-shaped facade surface to the grammers calls behind it. The seven JNI exports
@@ -138,8 +142,9 @@ Gradle `test` in its own worktree.
 
 ## Progress
 
-Integration branch `feat/grammers-parity`. Phase 0 (foundation, models, bridge split) and Phase 1
-per-domain branches merge with `--no-ff`; `native/operations.txt` is regenerated after any conflict.
+Delivered on the integration branch `feat/grammers-parity`. Phase 0 (foundation, models, bridge
+split) and Phase 1 per-domain branches merged with `--no-ff`; `native/operations.txt` was regenerated
+after any conflict.
 
 | phase | scope | state |
 | --- | --- | --- |
