@@ -342,6 +342,7 @@ mod tests {
     //! shape Kotlin sends and the `InputStickerSet` the mapping produces.
 
     use super::*;
+    use std::ptr::fn_addr_eq;
 
     fn decode<T: for<'de> Deserialize<'de>>(json: &str) -> T {
         serde_json::from_str(json).expect("the payload decodes")
@@ -448,22 +449,22 @@ mod tests {
 
     #[test]
     fn the_sticker_operations_route_to_their_own_handler() {
-        assert_eq!(
-            route("messagesGetStickerSet"),
-            Some(get_sticker_set as Handler)
-        );
-        assert_eq!(
-            route("messagesGetFavedStickers"),
-            Some(get_faved_stickers as Handler)
-        );
-        assert_eq!(
-            route("messagesInstallStickerSet"),
-            Some(install_sticker_set as Handler)
-        );
-        assert_eq!(
-            route("messagesUninstallStickerSet"),
-            Some(uninstall_sticker_set as Handler)
-        );
+        assert!(fn_addr_eq(
+            route("messagesGetStickerSet").expect("routed"),
+            get_sticker_set as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("messagesGetFavedStickers").expect("routed"),
+            get_faved_stickers as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("messagesInstallStickerSet").expect("routed"),
+            install_sticker_set as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("messagesUninstallStickerSet").expect("routed"),
+            uninstall_sticker_set as Handler,
+        ));
     }
 
     #[test]

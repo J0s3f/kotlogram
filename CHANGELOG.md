@@ -12,15 +12,28 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
 
 ### Fixed
 
-- **The native libraries no longer emit 19 "never used" warnings.** Each `src/ops/*.rs` module declares
-  a `pub(crate) const OPERATIONS` listing the operations it routes, and `ops/mod.rs` aggregates them
-  into `INVENTORY` via `all_operations()`. Every reader of that chain is in `#[cfg(test)]` code, so a
-  plain library build saw the whole inventory as dead. It is not dead: those tests are the drift gate
-  that asserts every declared name routes, that names are unique, and that `native/operations.txt`
-  matches the inventory - and `tools/generate_operations.py` scrapes the `OPERATIONS` blocks as source
-  text to regenerate that shared Rust/Kotlin contract. The 19 warnings were one liveness root, not 19
-  independent defects, so the fix is `#[cfg_attr(not(test), allow(dead_code))]` on the three
-  aggregating items and the 17 per-module constants rather than deleting any of it.
+- **The native crate compiles without warnings.** Three distinct sources, all now silenced at the
+  root rather than by blanket `allow`:
+
+  - **19 `never used` warnings** from the operations inventory. Each `src/ops/*.rs` module declares a
+    `pub(crate) const OPERATIONS` listing the operations it routes, and `ops/mod.rs` aggregates them
+    into `INVENTORY` via `all_operations()`. Every reader of that chain is in `#[cfg(test)]` code, so a
+    plain library build saw the whole inventory as dead. It is not dead: those tests are the drift gate
+    that asserts every declared name routes, that names are unique, and that `native/operations.txt`
+    matches the inventory - and `tools/generate_operations.py` scrapes the `OPERATIONS` blocks as source
+    text to regenerate that shared Rust/Kotlin contract. One liveness root, not 19 defects, so the fix
+    is `#[cfg_attr(not(test), allow(dead_code))]` on the three aggregating items and the 17 per-module
+    constants rather than deleting any of it.
+
+  - **21 `function pointer comparisons do not produce meaningful results`** warnings in the routing
+    tests, which asserted `assert_eq!(route("x"), Some(handler as Handler))`. Portability for function
+    pointers is not guaranteed by `==`, so they now use `std::ptr::fn_addr_eq`, which compares the
+    addresses explicitly. The assertions were confirmed to still have teeth by mutating one to expect
+    the wrong handler and checking that the test fails.
+
+  - **One deprecation warning** surfaced only by CI's newer stable toolchain:
+    `Atomic::<u64>::fetch_update` was renamed to `try_update`. The local toolchain was too old to emit
+    it, which is a good argument for the `cargo test` step below.
 
 - **The Rust unit tests now run in CI.** The `check` job built the native library and ran the JVM tests,
   but never `cargo test`, so the Rust half of the operations drift gate - the tests in

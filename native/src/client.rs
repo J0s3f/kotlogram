@@ -211,7 +211,7 @@ impl NativeClient {
         }
         let (sender, accepted, size) = self.uploads.stream_handle(id)?;
         accepted
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
+            .try_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
                 (current + bytes.len() as u64 <= size).then_some(current + bytes.len() as u64)
             })
             .map_err(|_| {

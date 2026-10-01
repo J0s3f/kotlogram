@@ -99,6 +99,7 @@ mod tests {
     //! Kotlin sends, the id deduplication and the empty-answer filter.
 
     use super::*;
+    use std::ptr::fn_addr_eq;
 
     fn decode<T: for<'de> Deserialize<'de>>(json: &str) -> T {
         serde_json::from_str(json).expect("the payload decodes")
@@ -131,7 +132,10 @@ mod tests {
 
     #[test]
     fn the_get_users_operation_routes_to_its_handler() {
-        assert_eq!(route("getUsers"), Some(get_users as Handler));
+        assert!(fn_addr_eq(
+            route("getUsers").expect("routed"),
+            get_users as Handler,
+        ));
     }
 
     #[test]

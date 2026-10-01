@@ -370,6 +370,7 @@ mod tests {
     //! `InputChatlist` the mapping produces.
 
     use super::*;
+    use std::ptr::fn_addr_eq;
 
     fn decode<T: for<'de> Deserialize<'de>>(json: &str) -> T {
         serde_json::from_str(json).expect("the payload decodes")
@@ -460,26 +461,26 @@ mod tests {
 
     #[test]
     fn the_chatlist_operations_route_to_their_own_handler() {
-        assert_eq!(
-            route("chatlistsExportChatlistInvite"),
-            Some(export_chatlist_invite as Handler)
-        );
-        assert_eq!(
-            route("chatlistsCheckChatlistInvite"),
-            Some(check_chatlist_invite as Handler)
-        );
-        assert_eq!(
-            route("chatlistsJoinChatlistInvite"),
-            Some(join_chatlist_invite as Handler)
-        );
-        assert_eq!(
-            route("chatlistsGetLeaveChatlistSuggestions"),
-            Some(get_leave_chatlist_suggestions as Handler)
-        );
-        assert_eq!(
-            route("chatlistsLeaveChatlist"),
-            Some(leave_chatlist as Handler)
-        );
+        assert!(fn_addr_eq(
+            route("chatlistsExportChatlistInvite").expect("routed"),
+            export_chatlist_invite as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("chatlistsCheckChatlistInvite").expect("routed"),
+            check_chatlist_invite as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("chatlistsJoinChatlistInvite").expect("routed"),
+            join_chatlist_invite as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("chatlistsGetLeaveChatlistSuggestions").expect("routed"),
+            get_leave_chatlist_suggestions as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("chatlistsLeaveChatlist").expect("routed"),
+            leave_chatlist as Handler,
+        ));
     }
 
     #[test]

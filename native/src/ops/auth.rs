@@ -176,15 +176,22 @@ fn resolve_username(native: &NativeClient, payload: &str) -> Result<String, Stri
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::ptr::fn_addr_eq;
 
     #[test]
     fn the_auth_operations_route_to_their_own_handler() {
-        assert_eq!(route("signOut"), Some(sign_out as Handler));
-        assert_eq!(route("getMe"), Some(get_me as Handler));
-        assert_eq!(
-            route("getDataCentreId"),
-            Some(get_data_centre_id as Handler)
-        );
+        assert!(fn_addr_eq(
+            route("signOut").expect("routed"),
+            sign_out as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("getMe").expect("routed"),
+            get_me as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("getDataCentreId").expect("routed"),
+            get_data_centre_id as Handler,
+        ));
     }
 
     #[test]

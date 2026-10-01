@@ -603,6 +603,7 @@ mod tests {
     //! operations that do not need a live session.
 
     use super::*;
+    use std::ptr::fn_addr_eq;
 
     #[test]
     fn a_profile_payload_reads_camel_case_and_leaves_absent_fields_alone() {
@@ -933,20 +934,26 @@ mod tests {
 
     #[test]
     fn the_account_operations_route_to_their_own_handler() {
-        assert_eq!(
-            route("accountUpdateProfile"),
-            Some(update_profile as Handler)
-        );
-        assert_eq!(route("accountGetPassword"), Some(get_password as Handler));
-        assert_eq!(route("accountSetPrivacy"), Some(set_privacy as Handler));
-        assert_eq!(
-            route("accountGetNotifySettings"),
-            Some(get_notify_settings as Handler)
-        );
-        assert_eq!(
-            route("accountUpdateNotifySettings"),
-            Some(update_notify_settings as Handler)
-        );
+        assert!(fn_addr_eq(
+            route("accountUpdateProfile").expect("routed"),
+            update_profile as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("accountGetPassword").expect("routed"),
+            get_password as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("accountSetPrivacy").expect("routed"),
+            set_privacy as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("accountGetNotifySettings").expect("routed"),
+            get_notify_settings as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("accountUpdateNotifySettings").expect("routed"),
+            update_notify_settings as Handler,
+        ));
     }
 
     #[test]

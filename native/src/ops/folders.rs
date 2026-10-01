@@ -186,6 +186,7 @@ mod tests {
     //! shape Kotlin sends: the camelCase names, the optional fields and the absent-filter delete.
 
     use super::*;
+    use std::ptr::fn_addr_eq;
 
     fn decode<T: for<'de> Deserialize<'de>>(json: &str) -> T {
         serde_json::from_str(json).expect("the payload decodes")
@@ -241,18 +242,18 @@ mod tests {
 
     #[test]
     fn the_folder_operations_route_to_their_own_handler() {
-        assert_eq!(
-            route("messagesGetDialogFilters"),
-            Some(get_dialog_filters as Handler)
-        );
-        assert_eq!(
-            route("messagesUpdateDialogFilter"),
-            Some(update_dialog_filter as Handler)
-        );
-        assert_eq!(
-            route("messagesUpdateDialogFiltersOrder"),
-            Some(update_dialog_filters_order as Handler)
-        );
+        assert!(fn_addr_eq(
+            route("messagesGetDialogFilters").expect("routed"),
+            get_dialog_filters as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("messagesUpdateDialogFilter").expect("routed"),
+            update_dialog_filter as Handler,
+        ));
+        assert!(fn_addr_eq(
+            route("messagesUpdateDialogFiltersOrder").expect("routed"),
+            update_dialog_filters_order as Handler,
+        ));
     }
 
     #[test]
