@@ -334,8 +334,13 @@ jobs:
     # Best effort by design. Maven Central has monthly publishing limits, and a rejection says nothing
     # about the release being wrong, so this cannot be allowed to cost the release. The GitHub Release
     # and the JitPack publish do not depend on this job succeeding.
+    #
+    # `package` is deliberately NOT a dependency: this job builds and publishes the jar itself with its
+    # own Gradle invocation, and downloads only the native-* artifacts that `package` also consumes. So
+    # it can start as soon as the natives and the schema are there, in parallel with `package` rather
+    # than after it.
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish)
-    needs: [native, raw-schema, package]
+    needs: [native, raw-schema]
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -407,15 +412,16 @@ jobs:
           fi
 
   github-release:
-    # Depends on publish-central having RUN, not on its having succeeded: a Central rejection must not
-    # stop the release being created. `always()` is what lets this run after a failed or cancelled
-    # publish-central, while the explicit needs still order it correctly.
+    # Runs as soon as `package` has produced the jar and the natives. `publish-central` is deliberately
+    # NOT a dependency: it is best effort, nothing here reads its outputs, and requiring it would only
+    # serialize the release behind a job whose failure is already tolerated. Its outcome is reported in
+    # its own job summary instead.
     if: |
       always() && !cancelled()
       && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
           || (github.event_name == 'workflow_dispatch' && inputs.publish))
       && needs.package.result == 'success'
-    needs: [native, raw-schema, package, publish-central]
+    needs: [native, raw-schema, package]
     runs-on: ubuntu-24.04
     permissions:
       contents: write
