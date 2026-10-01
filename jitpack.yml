@@ -10,7 +10,7 @@
 # JitPack supplies GROUP, ARTIFACT and VERSION as environment variables. They are derived from the
 # repository name, so a consumer writes `com.github.J0s3f:kotlogram:<version>` - see docs/publishing.md.
 #
-# Two things about those variables, both learned from a failed build rather than assumed:
+# Things about those variables learned from failed builds rather than assumed:
 #
 #   * VERSION is the whole tag, so it arrives as `v0.9.1`, not `0.9.1`. It is stripped below, because
 #     the GitHub Release is tagged `v0.9.1` while the Maven coordinate is `0.9.1`. Without the strip the
@@ -18,6 +18,10 @@
 #     not the version the README tells consumers to ask for.
 #   * JitPack's curl is older than 7.76, so `--fail-with-body` is unknown there and aborts the build.
 #     `-f` is used instead; it has been available forever.
+#   * A branch build exports VERSION as e.g. `main-SNAPSHOT`, for which no GitHub Release exists. Rather
+#     than fail on a missing asset, the build falls back to a released version's jar (see JITPACK_FALLBACK
+#     below). That makes a branch build a real test of everything on this page - the download, the native
+#     check, the local install and the signature mirroring - before any tag depends on it.
 #
 # The release this reads from is created by the same tag push that triggers it, and the workflow runs
 # publish-jitpack after github-release for that reason.
@@ -29,10 +33,21 @@ install:
   - |
     set -euo pipefail
 
-    version="${VERSION#v}"
-    test -n "${version}"
-    base="https://github.com/J0s3f/kotlogram/releases/download/v${version}"
-    asset="${base}/kotlogramme-${version}.jar"
+    # The released version whose jar is used whenever the version being built has no release of its own,
+    # which is the case for any branch build (`main-SNAPSHOT` and friends). Bump it when the fallback
+    # release is superseded.
+    JITPACK_FALLBACK="0.9.1"
+
+    requested="${VERSION#v}"
+    source_version="${requested}"
+    if ! curl -fsSL --head --output /dev/null \
+         "https://github.com/J0s3f/kotlogram/releases/download/v${requested}/kotlogramme-${requested}.jar"; then
+      echo "No release found for '${requested}'; falling back to ${JITPACK_FALLBACK}"
+      source_version="${JITPACK_FALLBACK}"
+    fi
+
+    base="https://github.com/J0s3f/kotlogram/releases/download/v${source_version}"
+    asset="${base}/kotlogramme-${source_version}.jar"
 
     echo "Fetching the CI-built jar from ${asset}"
     curl -fsSL --output /tmp/kotlogramme.jar "${asset}"
@@ -43,11 +58,13 @@ install:
     echo "bundled native libraries found: ${count}"
     test "${count}" -ge 6
 
+    # The artifact is installed under the version JitPack asked for, not the one the jar came from, so a
+    # branch build resolves as main-SNAPSHOT while still serving the fallback's bytes.
     mvn --batch-mode install:install-file \
       -Dfile=/tmp/kotlogramme.jar \
       -DgroupId="${GROUP}" \
       -DartifactId="${ARTIFACT}" \
-      -Dversion="${version}" \
+      -Dversion="${requested}" \
       -Dpackaging=jar \
       -DgeneratePom=true
 
@@ -56,15 +73,15 @@ install:
     # artifacts itself, and this is the only way the signature can sit next to the artifact rather than
     # only on the GitHub Release. The signature is public data - it is produced by CI from a key that
     # never leaves GitHub secrets - so fetching it over HTTPS leaks nothing.
-    signed="${base}/kotlogramme-${version}.jar.asc"
+    signed="${base}/kotlogramme-${source_version}.jar.asc"
     echo "Fetching the detached signature from ${signed}"
     curl -fsSL --output /tmp/kotlogramme.jar.asc "${signed}"
 
     # The path maven installed into; mirror it for the signature.
     repo="${HOME}/.m2/repository"
-    dir="$(dirname "$(find "${repo}" -type f -name "${ARTIFACT}-${version}.jar" -print -quit)")"
+    dir="$(dirname "$(find "${repo}" -type f -name "${ARTIFACT}-${requested}.jar" -print -quit)")"
     test -n "${dir}"
-    cp /tmp/kotlogramme.jar.asc "${dir}/${ARTIFACT}-${version}.jar.asc"
+    cp /tmp/kotlogramme.jar.asc "${dir}/${ARTIFACT}-${requested}.jar.asc"
 
     echo "installed into ${dir}:"
     ls -l "${dir}"
