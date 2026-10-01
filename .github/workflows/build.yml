@@ -68,8 +68,10 @@ jobs:
         id: guard
         env:
           GH_TOKEN: ${{ github.token }}
-          WORKFLOW: ${{ github.workflow }}
-          REF: ${{ github.ref }}
+          # This endpoint accepts a workflow's file path or its numeric id, NOT its display name -
+          # `github.workflow` is the name, which resolves to a 404. `workflow_ref` is
+          # `<owner>/<repo>/<path>@<ref>`, so the id is the part between the repo and the `@`.
+          WORKFLOW_REF: ${{ github.workflow_ref }}
           SHA: ${{ github.sha }}
           EVENT: ${{ github.event_name }}
           AS_SCHEDULE: ${{ inputs.as-schedule }}
@@ -79,11 +81,16 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # The most recent completed successful run of this workflow, whatever its event. On the
-          # nightly only ever one baseline matters, and a pull-request run at the same commit is
-          # just as good a record that the commit built, so the filter is deliberately not `event`.
+          # `<owner>/<repo>/.github/workflows/build.yml@<ref>` -> `build.yml`, which is the form
+          # this endpoint takes. The leading `.github/workflows/` is not accepted; neither is the
+          # workflow's display name.
+          workflow="${WORKFLOW_REF%%@*}"; workflow="${workflow##*/}"
+          echo "workflow id    : $workflow"
+          # The most recent completed successful run of this workflow, whatever its event. Only one
+          # baseline matters here, and a pull-request run at the same commit is just as good a record
+          # that the commit built, so the filter is deliberately not `event`.
           previous="$(gh api \
-            "repos/${GITHUB_REPOSITORY}/actions/workflows/${WORKFLOW}/runs?status=success&per_page=1" \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?status=success&per_page=1" \
             --jq '.workflow_runs[0].head_sha // ""')"
           echo "baseline commit : ${previous:-<none>}"
           echo "this commit      : $SHA"
