@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
 description = "JNI bridge between Kotlin/JVM and the grammers Telegram client"
-repository = "https://codeberg.org/kotlogramme/kotlogramme"
+repository = "https://github.com/J0s3f/kotlogram"
 
 [lib]
 crate-type = ["cdylib"]
