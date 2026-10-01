@@ -231,7 +231,7 @@ class ProtocolModelsTest {
              "replyCount": 3, "reactionCount": 2, "media": ${MEDIA_DOCUMENT.trimIndent()},
              "forwardHeader": null, "replyHeader": null, "restrictionReasons": [],
              "action": null, "replyMarkup": null, "peer": null, "sender": null,
-             "entities": [], "htmlText": "", "markdownText": ""}
+             "entities": [], "htmlText": "", "markdownText": "", "quote": null}
         """.trimIndent()
 
         val MESSAGE_WITHOUT_MEDIA = """
@@ -243,7 +243,7 @@ class ProtocolModelsTest {
              "reactionCount": null, "media": null,
              "forwardHeader": null, "replyHeader": null, "restrictionReasons": [],
              "action": null, "replyMarkup": null, "peer": null, "sender": null,
-             "entities": [], "htmlText": "", "markdownText": ""}
+             "entities": [], "htmlText": "", "markdownText": "", "quote": null}
         """.trimIndent()
 
         val DIALOG = """

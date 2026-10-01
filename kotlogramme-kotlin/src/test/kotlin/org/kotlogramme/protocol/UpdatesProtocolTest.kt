@@ -218,7 +218,7 @@ class UpdatesProtocolTest {
              "reactionCount": null, "media": null,
              "forwardHeader": null, "replyHeader": null, "restrictionReasons": [],
              "action": null, "replyMarkup": null, "peer": null, "sender": null,
-             "entities": [], "htmlText": "", "markdownText": ""}
+             "entities": [], "htmlText": "", "markdownText": "", "quote": null}
         """.trimIndent()
 
         val STATE_CHANNEL = """

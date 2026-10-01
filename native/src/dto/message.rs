@@ -2,6 +2,7 @@
 
 use grammers_client::media::Media as ClientMedia;
 use grammers_client::message::Message as ClientMessage;
+use grammers_client::parsers::{generate_html_message, generate_markdown_message};
 use grammers_client::peer::{Peer, RestrictionReason as ClientRestrictionReason};
 use grammers_client::tl;
 use grammers_session::types::PeerId;
@@ -71,6 +72,8 @@ pub(crate) struct MessageDto {
     pub(crate) html_text: String,
     /// [Self::text] rendered as CommonMark from [Self::entities], as grammers computes it.
     pub(crate) markdown_text: String,
+    /// The text this message quotes, with its own entities and renderings, when it quotes any.
+    pub(crate) quote: Option<MessageQuoteDto>,
 }
 
 /// One formatting entity on a message's text, flattened like [MediaDto].
@@ -114,6 +117,29 @@ impl MessageEntityDto {
     }
 }
 
+/// The text a reply quotes, with the formatting entities on it.
+///
+/// This is the same projection as a message's own [MessageDto::text], [MessageDto::entities],
+/// [MessageDto::html_text] and [MessageDto::markdown_text], grouped into one value: a caller
+/// rendering the quoted line reads one object instead of four fields that only mean anything
+/// together. The two rendered strings are grammers' own renderings, from the same renderer it uses
+/// for the message's text.
+///
+/// It travels as absent when the message is not a reply and when the reply header carries no
+/// quoted text, so an absent quote is never four empty strings.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct MessageQuoteDto {
+    /// The quoted text, as the reply header carries it.
+    pub(crate) text: String,
+    /// The formatting entities on [Self::text], empty when the text is unformatted.
+    pub(crate) entities: Vec<MessageEntityDto>,
+    /// [Self::text] rendered as HTML from [Self::entities].
+    pub(crate) html_text: String,
+    /// [Self::text] rendered as CommonMark from [Self::entities].
+    pub(crate) markdown_text: String,
+}
+
 /// The header of a forwarded message, mirroring grammers' `MessageFwdHeader`.
 ///
 /// The peer references are Bot API dialog ids rather than full objects: only the message's own
@@ -155,10 +181,7 @@ pub(crate) struct ForwardHeaderDto {
 /// The layer has two reply-header constructors: a normal reply and a reply to a story. They share
 /// no fields, so this is the same flat shape [MediaDto] uses: [kind] names the constructor and says
 /// which of the other fields are populated, the rest being the defaults. Every field is always
-/// present in the JSON.
-///
-/// `quote_entities` is absent: the message's own entities are projected, but the entities on the
-/// quoted text are not yet.
+/// present in the JSON. The quoted text and its entities are projected as [MessageDto::quote].
 ///
 /// [MediaDto]: crate::dto::media::MediaDto
 #[derive(Serialize)]
@@ -280,6 +303,9 @@ pub(crate) fn message_dto(native: &NativeClient, message: &ClientMessage) -> Mes
             .unwrap_or_default(),
         html_text: message.html_text(),
         markdown_text: message.markdown_text(),
+        // The quote rides on the same reply header, so it is read from there rather than through a
+        // grammers accessor, of which there is none.
+        quote: message_quote_dto(message.reply_header().as_ref()),
     }
 }
 
@@ -417,6 +443,47 @@ fn reply_header_dto(header: &tl::enums::MessageReplyHeader) -> ReplyHeaderDto {
             story_peer: peer_dialog_id(&Some(header.peer.clone())),
             story_id: Some(header.story_id),
         },
+    }
+}
+
+/// Projects the text a reply quotes.
+///
+/// [header] is the message's own reply header, so a message that is not a reply answers `None`
+/// here. A story reply header carries no quoted text at all, and a normal header whose
+/// `quote_text` is absent or empty quotes nothing: a reply to a deleted message, a scheduled reply
+/// and a reply that only quotes a piece of media all arrive that way, so both fold to `None`.
+///
+/// The entity offsets are the layer's own: they count from the start of the quoted text, not from
+/// the start of the message it was cut from, which is what makes the same renderers apply.
+pub(crate) fn message_quote_dto(
+    header: Option<&tl::enums::MessageReplyHeader>,
+) -> Option<MessageQuoteDto> {
+    match header? {
+        tl::enums::MessageReplyHeader::Header(header) => {
+            let text = header.quote_text.as_deref().filter(|text| !text.is_empty())?;
+            // An absent entity list is an empty one, and then the text is already the rendered
+            // form, which is what grammers' own `html_text` does for a message without entities.
+            let (html_text, markdown_text) = match header.quote_entities.as_deref() {
+                Some(entities) => (
+                    generate_html_message(text, entities),
+                    generate_markdown_message(text, entities),
+                ),
+                None => (text.to_owned(), text.to_owned()),
+            };
+            Some(MessageQuoteDto {
+                text: text.to_owned(),
+                entities: header
+                    .quote_entities
+                    .as_deref()
+                    .unwrap_or_default()
+                    .iter()
+                    .map(message_entity_dto)
+                    .collect(),
+                html_text,
+                markdown_text,
+            })
+        }
+        tl::enums::MessageReplyHeader::MessageReplyStoryHeader(_) => None,
     }
 }
 
