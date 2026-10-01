@@ -1,4 +1,4 @@
-# Kotlogram
+# Kotlogramme
 
 > A Kotlin/JVM reimplementation of [Kotlogram](https://github.com/badoualy/kotlogram). It keeps the
 > familiar Kotlogram entry points and delegates the Telegram protocol to the Rust project
