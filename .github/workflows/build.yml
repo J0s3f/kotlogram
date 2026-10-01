@@ -481,8 +481,8 @@ jobs:
           # Poll at 3-minute intervals (up to ~15 min) to avoid rate limiting
           for attempt in $(seq 1 6); do
             sleep 180
-            code="$(curl -s -o /dev/null -w '\%{http_code}' --location "$url" || true)"
-            echo "check $attempt/6: HTTP$code"
+            code="$(curl -s -o /dev/null -w '%{http_code}' --location "$url" || true)"
+            echo "check $attempt/6: HTTP $code"
             case "$code" in
               200)
                 echo "JitPack is serving $tag"
@@ -494,6 +494,9 @@ jobs:
                 ;;
               404)
                 echo "  not built or still building."
+                ;;
+              *)
+                echo "  unexpected status; treating as not-yet-built and continuing."
                 ;;
             esac
           done
