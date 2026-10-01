@@ -1,0 +1,36 @@
+# JitPack packaging for kotlogramme.
+#
+# JitPack's default behaviour is to build this repository from source, which cannot produce a usable
+# artifact here: JitPack runs Linux x86_64 only, so at most one of the six bundled native libraries
+# could be produced, and the native crate's grammers dependencies are git dependencies on codeberg that
+# a source build would have to fetch and compile inside JitPack's timeout. The jar CI builds carries all
+# six natives, so this file downloads that jar from the GitHub Release for the tag being built and
+# installs it into JitPack's local Maven repository instead of compiling anything.
+#
+# JitPack supplies GROUP, ARTIFACT and VERSION as environment variables. They are derived from the
+# repository name, so a consumer writes `com.github.J0s3f:kotlogram:<version>` - see docs/publishing.md.
+#
+# The release this reads from is created by the same tag push that triggers it, and the workflow runs
+# publish-jitpack after github-release for that reason.
+
+jdk:
+  - openjdk21
+
+install:
+  - |
+    set -euo pipefail
+    asset="https://github.com/J0s3f/kotlogram/releases/download/v${VERSION}/kotlogramme-${VERSION}.jar"
+    echo "Fetching the CI-built jar from ${asset}"
+    curl --fail-with-body --silent --show-error --location --output /tmp/kotlogramme.jar "${asset}"
+    # A sanity check that the artifact really carries the bundled natives. Without this the failure
+    # would only surface at a consumer's runtime as UnsatisfiedLinkError.
+    count="$(unzip -l /tmp/kotlogramme.jar | grep -c '^.*native/.*kotlogramme\(\.dll\|\.so\|\.dylib\)$' || true)"
+    echo "bundled native libraries found: ${count}"
+    test "${count}" -ge 6
+    mvn --batch-mode install:install-file \
+      -Dfile=/tmp/kotlogramme.jar \
+      -DgroupId="${GROUP}" \
+      -DartifactId="${ARTIFACT}" \
+      -Dversion="${VERSION}" \
+      -Dpackaging=jar \
+      -DgeneratePom=true

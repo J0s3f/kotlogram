@@ -32,6 +32,11 @@ on:
         required: false
         default: false
         type: boolean
+      signing-check:
+        description: Verify the release signing secrets import, sign and verify, without publishing
+        required: false
+        default: false
+        type: boolean
       as-schedule:
         description: Pretend this dispatch is the nightly, to exercise the nightly-guard skip
         required: false
@@ -130,6 +135,52 @@ jobs:
           cache-read-only: false
       - name: Build and test
         run: ./gradlew --no-daemon clean test
+
+  signing-check:
+    name: signing-check
+    # A dispatch-only smoke test for the release signing secrets. It imports SIGNING_KEY with
+    # SIGNING_PASSWORD, signs a throwaway file and verifies the signature against the exported public
+    # key, which is the whole failure surface of the signing step in `github-release` - without
+    # creating a release or touching Central. Run it after rotating the key so a broken secret is found
+    # here rather than halfway through a tag build.
+    if: github.event_name == 'workflow_dispatch' && inputs.signing-check
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Import the signing key and verify a signature with it
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        shell: bash
+        run: |
+          test -n "$SIGNING_KEY"
+          test -n "$SIGNING_PASSWORD"
+          export GNUPGHOME="$(mktemp -d)"
+          chmod 700 "$GNUPGHOME"
+          printf '%s' "$SIGNING_KEY" | gpg --batch --quiet --import
+          key="$(gpg --batch --with-colons --list-keys | awk -F: '/^fpr:/ {print $10; exit}')"
+          test -n "$key"
+          echo "signing key fingerprint: $key"
+          # An expired or revoked key would still import, so check it can actually usably sign.
+          gpg --batch --with-colons --list-keys "$key" | awk -F: '/^pub/ {print "pub validity/expiry fields: " $2 " " $7}'
+          head -c 1024 /dev/urandom > /tmp/probe.bin
+          gpg --batch --yes --quiet --armor --detach-sign \
+            --pinentry-mode loopback --passphrase "$SIGNING_PASSWORD" \
+            --output /tmp/probe.bin.asc /tmp/probe.bin
+          gpg --batch --quiet --armor --export > /tmp/public.asc
+          # Verify against a bare keyring holding only the exported public half, as a consumer would.
+          export GNUPGHOME="$(mktemp -d)"
+          chmod 700 "$GNUPGHOME"
+          gpg --batch --quiet --import < /tmp/public.asc
+          gpg --batch --verify /tmp/probe.bin.asc /tmp/probe.bin
+          {
+            echo "### Signing check passed"
+            echo
+            echo "The release signing key imports, signs, and verifies against its published public half."
+            echo
+            echo "Fingerprint: \`$key\`"
+          } >> "$GITHUB_STEP_SUMMARY"
 
   raw-schema:
     name: raw-schema
@@ -280,6 +331,9 @@ jobs:
           path: kotlogramme-kotlin/build/libs/*.jar
 
   publish-central:
+    # Best effort by design. Maven Central has monthly publishing limits, and a rejection says nothing
+    # about the release being wrong, so this cannot be allowed to cost the release. The GitHub Release
+    # and the JitPack publish do not depend on this job succeeding.
     if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish)
     needs: [native, raw-schema, package]
     runs-on: ubuntu-24.04
@@ -300,6 +354,9 @@ jobs:
         with:
           cache-read-only: false
       - name: Publish the signed release to the Central staging API
+        id: central
+        # Never fails the run: the outcome is recorded and reported in the summary below.
+        continue-on-error: true
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
@@ -319,6 +376,7 @@ jobs:
           test "$version" = "${version%-SNAPSHOT}"
           ./gradlew --no-daemon -Pversion="$version" :kotlogramme-kotlin:publishMavenJavaPublicationToCentralRepository
       - name: Submit the staged deployment to the Central Portal
+        if: steps.central.outcome == 'success'
         env:
           CENTRAL_USERNAME: ${{ secrets.CENTRAL_USERNAME }}
           CENTRAL_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
@@ -328,9 +386,35 @@ jobs:
           curl --fail-with-body --silent --show-error --request POST --data '' \
             --header "Authorization: Bearer $authorization" \
             "https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/io.github.j0s3f?publishing_type=automatic"
+      - name: Report the Central outcome
+        shell: bash
+        run: |
+          if [ "${{ steps.central.outcome }}" = "success" ]; then
+            echo "### Maven Central: published" >> "$GITHUB_STEP_SUMMARY"
+            echo "The release is on Central as well as JitPack." >> "$GITHUB_STEP_SUMMARY"
+          else
+            {
+              echo "### Maven Central: NOT published"
+              echo
+              echo "The deployment was refused. Central enforces monthly publishing limits, so this is"
+              echo "expected to happen and is not a failure of the release."
+              echo
+              echo "The GitHub Release and the JitPack publish completed regardless - consumers should"
+              echo "use JitPack, which is the recommended channel."
+              echo
+              echo "See https://central.sonatype.org/publish/maven-central-publishing-limits"
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   github-release:
-    if: (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || (github.event_name == 'workflow_dispatch' && inputs.publish)
+    # Depends on publish-central having RUN, not on its having succeeded: a Central rejection must not
+    # stop the release being created. `always()` is what lets this run after a failed or cancelled
+    # publish-central, while the explicit needs still order it correctly.
+    if: |
+      always() && !cancelled()
+      && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+          || (github.event_name == 'workflow_dispatch' && inputs.publish))
+      && needs.package.result == 'success'
     needs: [native, raw-schema, package, publish-central]
     runs-on: ubuntu-24.04
     permissions:
@@ -362,6 +446,34 @@ jobs:
           jar="$(find dist/jars -type f -name '*.jar' | head -n1)"
           cp "$jar" "dist/release/kotlogramme-$version.jar"
           ls -l dist/release
+      - name: Sign the released jar
+        # JitPack provides checksums but not artifact signing, so the signature is produced here and
+        # shipped as an asset beside the jar. The public key goes out too, so a consumer does not have
+        # to find a keyserver.
+        env:
+          SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_PASSWORD }}
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            version="${{ inputs.version }}"
+          else
+            version="${GITHUB_REF_NAME#v}"
+          fi
+          test -n "$SIGNING_KEY"
+          test -n "$SIGNING_PASSWORD"
+          export GNUPGHOME="$(mktemp -d)"
+          chmod 700 "$GNUPGHOME"
+          printf '%s' "$SIGNING_KEY" | gpg --batch --quiet --import
+          # Detached, ASCII-armored, beside the jar.
+          gpg --batch --yes --quiet --armor --detach-sign \
+            --pinentry-mode loopback --passphrase "$SIGNING_PASSWORD" \
+            --output "dist/release/kotlogramme-$version.jar.asc" \
+            "dist/release/kotlogramme-$version.jar"
+          # The public half, so a consumer can verify without a keyserver lookup.
+          gpg --batch --quiet --armor --export > "dist/release/kotlogramme-$version.jar.asc.pub"
+          echo "signature fingerprint: $(gpg --batch --with-colons --list-keys | awk -F: '/^fpr:/ {print $10; exit}')"
+          ls -l dist/release/*.asc*
       - name: Create the GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -378,3 +490,67 @@ jobs:
             --target "$GITHUB_SHA" \
             --generate-notes \
             dist/release/*
+
+  publish-jitpack:
+    # JitPack's jitpack.yml downloads the jar from the GitHub Release, so this must run after that
+    # release exists. It is not gated on Central: JitPack is the channel consumers are pointed at.
+    if: |
+      always() && !cancelled()
+      && ((github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+          || (github.event_name == 'workflow_dispatch' && inputs.publish))
+      && needs.github-release.result == 'success'
+    needs: [github-release]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    steps:
+      - name: Determine the release version
+        id: release
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Confirm the release the build will read from exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          version="${{ steps.release.outputs.version }}"
+          # The jar and the signature jitpack.yml and consumers depend on.
+          gh release view "v$version" --repo "${{ github.repository }}" --json assets \
+            --jq '.assets[].name' | sort
+      - name: Trigger the JitPack build
+        shell: bash
+        run: |
+          version="${{ steps.release.outputs.version }}"
+          # JitPack builds a version on first request; this asks for it and waits for the build to
+          # resolve, so a broken jitpack.yml fails here rather than at a consumer's first resolve.
+          url="https://jitpack.io/com/github/J0s3f/kotlogram/$version/kotlogram-$version.pom"
+          echo "requesting $url"
+          for attempt in $(seq 1 60); do
+            code="$(curl -s -o /dev/null -w '%{http_code}' --location "$url" || true)"
+            if [ "$code" = "200" ]; then
+              echo "JitPack is serving the artifact (attempt $attempt)"
+              exit 0
+            fi
+            echo "attempt $attempt: HTTP $code, waiting"
+            sleep 20
+          done
+          echo "JitPack did not serve the artifact within the wait window" >&2
+          echo "Build log: https://jitpack.io/com/github/J0s3f/kotlogram/$version/build.log" >&2
+          exit 1
+      - name: Verify the JitPack-served jar bundles the native libraries
+        # The failure this guards against is the one observed on v0.6.0: a jar that compiles and links
+        # fine but carries no native/ entries, failing at a consumer's runtime with UnsatisfiedLinkError.
+        shell: bash
+        run: |
+          version="${{ steps.release.outputs.version }}"
+          jar_url="https://jitpack.io/com/github/J0s3f/kotlogram/$version/kotlogram-$version.jar"
+          curl --fail-with-body --silent --show-error --location --output /tmp/jitpack.jar "$jar_url"
+          echo "served jar size: $(stat -c%s /tmp/jitpack.jar) bytes"
+          count="$(unzip -l /tmp/jitpack.jar | grep -c '^.*native/.*kotlogramme\(\.dll\|\.so\|\.dylib\)$' || true)"
+          echo "bundled native libraries found: $count"
+          test "$count" -ge 6
