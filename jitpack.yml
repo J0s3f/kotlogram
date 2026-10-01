@@ -1,42 +1,11 @@
-# JitPack packaging for kotlogramme.
-#
-# JitPack's default behaviour is to build this repository from source, which cannot produce a usable
-# artifact here: JitPack runs Linux x86_64 only, so at most one of the six bundled native libraries
-# could be produced, and the native crate's grammers dependencies are git dependencies on codeberg that
-# a source build would have to fetch and compile inside JitPack's timeout. The jar CI builds carries all
-# six natives, so this file downloads that jar from the GitHub Release for the tag being built and
-# installs it into JitPack's local Maven repository instead of compiling anything.
-#
-# JitPack supplies GROUP, ARTIFACT and VERSION as environment variables. They are derived from the
-# repository name, so a consumer writes `com.github.J0s3f:kotlogram:<version>` - see docs/publishing.md.
-#
-# Things about those variables learned from failed builds rather than assumed:
-#
-#   * VERSION is the whole tag, so it arrives as `v0.9.1`, not `0.9.1`. It is stripped below, because
-#     the GitHub Release is tagged `v0.9.1` while the Maven coordinate is `0.9.1`. Without the strip the
-#     downloads would double the v (`vv0.9.1`) and the artifact would be published as `v0.9.1`, which is
-#     not the version the README tells consumers to ask for.
-#   * JitPack's curl is older than 7.76, so `--fail-with-body` is unknown there and aborts the build.
-#     `-f` is used instead; it has been available forever.
-#   * A branch build exports VERSION as e.g. `main-SNAPSHOT`, for which no GitHub Release exists. Rather
-#     than fail on a missing asset, the build falls back to a released version's jar (see JITPACK_FALLBACK
-#     below). That makes a branch build a real test of everything on this page - the download, the native
-#     check and the local install - before any tag depends on it.
-#
-# The release this reads from is created by the same tag push that triggers it, and the workflow runs
-# publish-jitpack after github-release for that reason.
+# JitPack configuration for kotlogramme.
+# Downloads the multi-platform prebuilt jar and published POM from GitHub Releases
+# rather than compiling native binaries inside JitPack's environment.
 
 jdk:
   - openjdk21
 
-# JitPack's own /script/buildit.sh mishandles AFTER_INSTALL_CMD, and the build ends with `Exit code: 1`
-# even though the artifacts install and are served. The three behaviours, all observed in the build log:
-#
-#   * unset   -> `line 140: AFTER_INSTALL_CMD: unbound variable`  (it reads it without a default)
-#   * "true"  -> `line 142: ${$AFTER_INSTALL_CMD}: bad substitution`  (their expansion has a typo)
-#   * ""      -> the non-empty guard skips the block entirely, which is what we want
-#
-# So the value has to be empty rather than a no-op command. There is nothing to run after install here.
+# Explicit empty string prevents build failure from unbound variable in JitPack runner
 env:
   AFTER_INSTALL_CMD: ""
 
@@ -44,18 +13,11 @@ install:
   - |
     set -euo pipefail
 
-    # Where the CI-built jar for a version comes from.
     release_url() {
       echo "https://github.com/J0s3f/kotlogram/releases/download/v$1/kotlogramme-$1.jar"
     }
 
-    # Wait for a release asset to appear, because the tag push that triggers this build also triggers the
-    # GitHub Actions run that *creates* the release. JitPack's scheduler can start building the tag
-    # before that run has finished, so on the first attempt the asset may not exist yet. That race is
-    # what failed the v0.9.2 build: it asked for the jar, got a 404, and exited before the release
-    # existed a couple of minutes later.
-    #
-    # Polls until the asset answers, up to WAIT_ATTEMPTS * WAIT_INTERVAL_SECONDS.
+    # Poll until release assets are available on GitHub
     wait_for_release() {
       local version="$1" attempt
       for attempt in $(seq 1 "${WAIT_ATTEMPTS}"); do
@@ -68,21 +30,15 @@ install:
       return 1
     }
 
-    # Roughly ten minutes, which is longer than the native matrix takes to finish and create the release.
     WAIT_ATTEMPTS=40
     WAIT_INTERVAL_SECONDS=15
 
-    # The released version whose jar is used when the version being built has no release of its own,
-    # which is the case for any branch build (`main-SNAPSHOT` and friends). Unlike `requested` this one
-    # is not waited for: it is a release that already exists, so a failure here is a real error rather
-    # than a race. Bump it when the fallback release is superseded.
+    # Fallback release for branch builds (e.g., main-SNAPSHOT) where no tag release exists
     JITPACK_FALLBACK="0.9.5"
 
     requested="${VERSION#v}"
     source_version="${requested}"
     if ! wait_for_release "${requested}"; then
-      # Either a branch build, whose version is a commit name no release will ever carry, or a tag whose
-      # actions run failed. Fall back to a released version so a branch build still exercises the path.
       echo "No release found for '${requested}' after waiting; falling back to ${JITPACK_FALLBACK}"
       source_version="${JITPACK_FALLBACK}"
       wait_for_release "${source_version}"
@@ -94,28 +50,20 @@ install:
     echo "Fetching the CI-built jar from ${asset}"
     curl -fsSL --output /tmp/kotlogramme.jar "${asset}"
 
-    # A sanity check that the artifact really carries the bundled natives. Without this the failure
-    # would only surface at a consumer's runtime as UnsatisfiedLinkError.
+    # Verify that all 6 native libraries are packaged
     count="$(unzip -l /tmp/kotlogramme.jar | grep -c '^.*native/.*kotlogramme\(\.dll\|\.so\|\.dylib\)$' || true)"
     echo "bundled native libraries found: ${count}"
     test "${count}" -ge 6
 
-    # The real POM from the GitHub Release, not one generated here. `-DgeneratePom=true` invents an empty
-    # POM with no <dependencies>, so a consumer resolved the facade without kotlin-stdlib and died at
-    # runtime with NoClassDefFoundError: kotlin/jvm/internal/Intrinsics. A release asset carries the POM
-    # Gradle generated from the publication, which is the same one Maven Central serves, so JitPack now
-    # serves it too - and without depending on Central, whose limits are why JitPack is recommended.
+    # Fetch published POM to retain declared transitive dependencies
     pom_asset="${base}/kotlogramme-${source_version}.pom"
     echo "Fetching the published POM from ${pom_asset}"
     curl -fsSL --output /tmp/kotlogramme.pom "${pom_asset}"
 
-    # A POM without its dependencies is the bug this replaces, so refuse to install one.
     grep -q '<artifactId>kotlin-stdlib</artifactId>' /tmp/kotlogramme.pom
     echo "POM declares kotlin-stdlib: ok"
 
-    # The artifact is installed under the version JitPack asked for, not the one the jar came from, so a
-    # branch build resolves as main-SNAPSHOT while still serving the fallback's bytes. -DpomFile uses the
-    # real POM and rewrites its version to match `requested`.
+    # Install into local Maven repo with the requested coordinate version
     mvn --batch-mode install:install-file \
       -Dfile=/tmp/kotlogramme.jar \
       -DpomFile=/tmp/kotlogramme.pom \
@@ -123,13 +71,6 @@ install:
       -DartifactId="${ARTIFACT}" \
       -Dversion="${requested}" \
       -Dpackaging=jar
-
-    # The detached signature is deliberately NOT mirrored into ~/.m2 here. It was tried, and the build
-    # log proves JitPack does not serve it: the signature was written to
-    # ~/.m2/repository/.../kotlogram-<version>.jar.asc and JitPack's own Files: listing still contained
-    # only the jar, the pom and the pom's md5/sha1. JitPack publishes a fixed artifact set rather than
-    # mirroring the directory, so the signature cannot travel with a JitPack artifact. It is published
-    # on the GitHub Release instead, and the README tells a consumer to fetch it from there.
 
     repo="${HOME}/.m2/repository"
     dir="$(dirname "$(find "${repo}" -type f -name "${ARTIFACT}-${requested}.jar" -print -quit)")"
