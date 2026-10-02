@@ -8,6 +8,27 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## 0.9.11 - 2026-10-02
+
+### Added
+
+- **Paging cursors on the listing operations**, so a caller can walk a list page by page:
+  `getDialogs`/`getDialogsMeta` take the `offsetPeer`/`offsetId`/`offsetDate` triple, and
+  `getParticipants` and `iterProfilePhotos` take an index `offset`. `getHistory`, the searches,
+  `getChatPhotos` and `getBlocked` already carried theirs.
+- **An `all` flag on `getDialogs`, `getDialogsMeta`, `getChatPhotos`, `iterProfilePhotos` and
+  `getBlocked`**, which walks the whole list in one call and wins over any cursor or limit. It exists
+  because grammers exposes no cursor setter: a page beyond the first re-walks the iterator from the
+  top, so paging deep is expensive and a page-by-page walk is quadratic, where `all` is one linear
+  walk.
+
+### Fixed
+
+- **A cursor page of dialogs no longer comes back empty.** The page limit was applied to the iterator
+  before the cursor was skipped, and grammers' `limit` caps the iterator's *total* yields, so the skip
+  spent the page's whole budget and the next page was blank. The cursor is applied first and the page
+  collected by hand, as the participant and profile-photo listings already did.
+
 ## 0.9.10 - 2026-10-02
 
 ### Fixed

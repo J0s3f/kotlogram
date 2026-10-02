@@ -148,11 +148,23 @@ fn get_dialogs(native: &NativeClient, payload: &str) -> Result<String, String> {
     let dialogs = native.runtime.block_on(async {
         let mut iterator = native.client.iter_dialogs();
         if let DialogsPlan::Page { limit, cursor } = &plan {
-            iterator = iterator.limit(*limit);
+            // The cursor is applied before the page is bounded. grammers' `limit` caps the iterator's
+            // *total* yields, so setting it first would spend the page's budget on the dialogs the
+            // cursor skips and answer an empty page; the page is collected by hand instead, as the
+            // participant and profile-photo listings do.
             if let Some(cursor) = cursor {
                 skip_past_cursor(&mut iterator, cursor).await?;
             }
+            let mut result = Vec::new();
+            while result.len() < *limit {
+                let Some(dialog) = iterator.next().await.map_err(invocation_error)? else {
+                    break;
+                };
+                result.push(dialog_dto(native, &dialog)?);
+            }
+            return Ok::<_, String>(result);
         }
+        // `all`: one unbounded walk, no limit and no cursor.
         let mut result = Vec::new();
         while let Some(dialog) = iterator.next().await.map_err(invocation_error)? {
             result.push(dialog_dto(native, &dialog)?);
@@ -173,11 +185,21 @@ fn get_dialogs_meta(native: &NativeClient, payload: &str) -> Result<String, Stri
     let dialogs = native.runtime.block_on(async {
         let mut iterator = native.client.iter_dialogs();
         if let DialogsPlan::Page { limit, cursor } = &plan {
-            iterator = iterator.limit(*limit);
+            // See `get_dialogs`: the cursor is applied before the page is bounded, because grammers'
+            // `limit` caps the iterator's total yields.
             if let Some(cursor) = cursor {
                 skip_past_cursor(&mut iterator, cursor).await?;
             }
+            let mut result = Vec::new();
+            while result.len() < *limit {
+                let Some(dialog) = iterator.next().await.map_err(invocation_error)? else {
+                    break;
+                };
+                result.push(dialog_with_meta_dto(native, &dialog)?);
+            }
+            return Ok::<_, String>(result);
         }
+        // `all`: one unbounded walk, no limit and no cursor.
         let mut result = Vec::new();
         while let Some(dialog) = iterator.next().await.map_err(invocation_error)? {
             result.push(dialog_with_meta_dto(native, &dialog)?);
