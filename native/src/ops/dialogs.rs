@@ -41,6 +41,8 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct DialogsPayload {
+    /// Return the whole list in one unbounded walk. Wins over [Self::limit] and the cursor.
+    all: Option<bool>,
     limit: Option<usize>,
     /// Paging cursor: resume after the dialog with this peer. One of three values that travel
     /// together; see [DialogsCursor].
@@ -49,6 +51,33 @@ struct DialogsPayload {
     offset_id: Option<i32>,
     /// Paging cursor: resume after this date, in epoch milliseconds.
     offset_date: Option<i64>,
+}
+
+/// What a dialogs request asks for: the whole list in one walk, or one page.
+enum DialogsPlan {
+    /// `all: true` — walk the iterator to exhaustion, with no limit and no cursor.
+    All,
+    /// One page: the clamped limit, resumed after the cursor when the payload carries one.
+    Page {
+        limit: usize,
+        cursor: Option<DialogsCursor>,
+    },
+}
+
+/// Resolves a dialogs payload into the plan the handlers follow.
+///
+/// `all` wins over both `limit` and the cursor: it is the explicit request for the whole list, so a
+/// limit or cursor sent alongside it is a caller error that `all` overrides rather than honours —
+/// silently serving a page when the caller asked for everything would be the worse surprise.
+fn dialogs_plan(data: &DialogsPayload) -> DialogsPlan {
+    if data.all.unwrap_or(false) {
+        DialogsPlan::All
+    } else {
+        DialogsPlan::Page {
+            limit: data.limit.unwrap_or(50).clamp(1, 100),
+            cursor: DialogsCursor::from_payload(data),
+        }
+    }
 }
 
 /// The dialog paging cursor: the position a listing resumes after.
@@ -107,14 +136,22 @@ async fn skip_past_cursor(iterator: &mut DialogIter, cursor: &DialogsCursor) -> 
     Ok(())
 }
 
+/// Lists a page of the account's dialogs, or the whole list when the payload sets `all`.
+///
+/// Paging note: grammers' `DialogIter` keeps its cursor in `pub(crate)` request fields with no
+/// public setter, so a page beyond the first is reached by re-walking the iterator from the top —
+/// page *k* costs O(k) network work and a page-by-page walk is O(n²). `all: true` is one unbounded
+/// walk (O(n)), which is how the CLI's `--all` should be served.
 fn get_dialogs(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: DialogsPayload = parse_payload(payload)?;
-    let limit = data.limit.unwrap_or(50).clamp(1, 100);
-    let cursor = DialogsCursor::from_payload(&data);
+    let plan = dialogs_plan(&data);
     let dialogs = native.runtime.block_on(async {
-        let mut iterator = native.client.iter_dialogs().limit(limit);
-        if let Some(cursor) = &cursor {
-            skip_past_cursor(&mut iterator, cursor).await?;
+        let mut iterator = native.client.iter_dialogs();
+        if let DialogsPlan::Page { limit, cursor } = &plan {
+            iterator = iterator.limit(*limit);
+            if let Some(cursor) = cursor {
+                skip_past_cursor(&mut iterator, cursor).await?;
+            }
         }
         let mut result = Vec::new();
         while let Some(dialog) = iterator.next().await.map_err(invocation_error)? {
@@ -129,14 +166,17 @@ fn get_dialogs(native: &NativeClient, payload: &str) -> Result<String, String> {
 ///
 /// grammers' `Client::iter_dialogs` yields the same rows as [`getDialogs`]; only the projection
 /// differs, so the operation is a separate one rather than a change to the pinned listing shape.
+/// The paging cost is [`getDialogs`]'s: `all: true` is one walk, a cursor page re-walks.
 fn get_dialogs_meta(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: DialogsPayload = parse_payload(payload)?;
-    let limit = data.limit.unwrap_or(50).clamp(1, 100);
-    let cursor = DialogsCursor::from_payload(&data);
+    let plan = dialogs_plan(&data);
     let dialogs = native.runtime.block_on(async {
-        let mut iterator = native.client.iter_dialogs().limit(limit);
-        if let Some(cursor) = &cursor {
-            skip_past_cursor(&mut iterator, cursor).await?;
+        let mut iterator = native.client.iter_dialogs();
+        if let DialogsPlan::Page { limit, cursor } = &plan {
+            iterator = iterator.limit(*limit);
+            if let Some(cursor) = cursor {
+                skip_past_cursor(&mut iterator, cursor).await?;
+            }
         }
         let mut result = Vec::new();
         while let Some(dialog) = iterator.next().await.map_err(invocation_error)? {
@@ -187,7 +227,7 @@ mod tests {
     //! The handlers themselves need a live Telegram session, so what is asserted here is that the
     //! names the bridge annotates and `native/operations.txt` carries all route out of this module.
 
-    use super::{route, DialogsCursor, DialogsPayload, OPERATIONS};
+    use super::{dialogs_plan, route, DialogsCursor, DialogsPayload, DialogsPlan, OPERATIONS};
     use crate::error::parse_payload;
 
     #[test]
@@ -222,6 +262,60 @@ mod tests {
                 DialogsCursor::from_payload(&data).is_none(),
                 "{payload} is a partial cursor and must be ignored"
             );
+        }
+    }
+
+    #[test]
+    fn the_all_flag_decodes_from_the_payload() {
+        // Absent and explicit false both mean "one page", which is the old behaviour.
+        let data: DialogsPayload = parse_payload(r#"{"limit":25}"#).expect("a dialogs payload");
+        assert_eq!(data.all, None);
+        let data: DialogsPayload = parse_payload(r#"{"all":false}"#).expect("a dialogs payload");
+        assert_eq!(data.all, Some(false));
+        let data: DialogsPayload = parse_payload(r#"{"all":true}"#).expect("a dialogs payload");
+        assert_eq!(data.all, Some(true));
+    }
+
+    #[test]
+    fn all_wins_over_the_cursor_and_the_limit() {
+        // `all` with a cursor still walks everything: the cursor is ignored, not honoured.
+        let data: DialogsPayload = parse_payload(
+            r#"{"all":true,"limit":25,"offsetPeer":-1000007,"offsetId":31,
+                "offsetDate":1700000000000}"#,
+        )
+        .expect("a dialogs payload");
+        assert!(matches!(dialogs_plan(&data), DialogsPlan::All));
+
+        // `all` with a limit and no cursor still walks everything.
+        let data: DialogsPayload =
+            parse_payload(r#"{"all":true,"limit":25}"#).expect("a dialogs payload");
+        assert!(matches!(dialogs_plan(&data), DialogsPlan::All));
+    }
+
+    #[test]
+    fn a_page_request_keeps_the_old_behaviour() {
+        // Without `all` the plan is one clamped page, resumed after the cursor when there is one.
+        let data: DialogsPayload = parse_payload(r#"{"limit":25}"#).expect("a dialogs payload");
+        match dialogs_plan(&data) {
+            DialogsPlan::Page { limit, cursor } => {
+                assert_eq!(limit, 25);
+                assert!(cursor.is_none());
+            }
+            DialogsPlan::All => panic!("a page request must not walk everything"),
+        }
+
+        // A cursor is honoured on the paged path.
+        let data: DialogsPayload = parse_payload(
+            r#"{"offsetPeer":-1000007,"offsetId":31,"offsetDate":1700000000000}"#,
+        )
+        .expect("a dialogs payload");
+        match dialogs_plan(&data) {
+            DialogsPlan::Page { limit, cursor } => {
+                assert_eq!(limit, 50);
+                let cursor = cursor.expect("a full cursor");
+                assert_eq!(cursor.peer, -100_000_7);
+            }
+            DialogsPlan::All => panic!("a paged request must not walk everything"),
         }
     }
 

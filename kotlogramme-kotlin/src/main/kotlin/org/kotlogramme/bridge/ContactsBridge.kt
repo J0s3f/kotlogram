@@ -66,14 +66,19 @@ internal interface ContactsBridge {
         )
     }
 
-    /** Lists the account's blocked peers. */
+    /**
+     * Lists the account's blocked peers, or every blocked peer when [all] is set.
+     *
+     * [all] wins over [offset] and [limit]: it walks the layer's pages in one call.
+     */
     @Operation("contactsGetBlocked")
     fun contactsGetBlocked(
         myStoriesFrom: Boolean = false,
         offset: Int = 0,
         limit: Int = 100,
+        all: Boolean = false,
     ): BlockedContacts =
-        transport.request("contactsGetBlocked", GetBlockedPayload(myStoriesFrom, offset, limit))
+        transport.request("contactsGetBlocked", GetBlockedPayload(myStoriesFrom, offset, limit, all))
 
     /** Searches the account's contacts and the public directory. */
     @Operation("contactsSearch")

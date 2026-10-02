@@ -35,13 +35,18 @@ interface ContactsApi : BridgeApi {
         bridge.contactsUnblock(peer.native, myStoriesFrom)
     }
 
-    /** Lists the account's blocked peers. */
+    /**
+     * Lists the account's blocked peers, or every blocked peer when [all] is set.
+     *
+     * [all] wins over [offset] and [limit]: it walks the layer's pages in one call.
+     */
     fun contactsGetBlocked(
         myStoriesFrom: Boolean = false,
         offset: Int = 0,
         limit: Int = 100,
+        all: Boolean = false,
     ): BlockedContacts =
-        bridge.contactsGetBlocked(myStoriesFrom, offset, limit).toCompatibility()
+        bridge.contactsGetBlocked(myStoriesFrom, offset, limit, all).toCompatibility()
 
     /** Searches the account's contacts and the public directory. */
     fun contactsSearch(

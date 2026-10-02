@@ -118,11 +118,17 @@ interface FilesApi : BridgeApi {
     }
 
     /**
-     * Lists up to [limit] profile photos of a peer, most recent first.
+     * Lists up to [limit] profile photos of a peer, most recent first, or all of them when [all] is
+     * set.
      *
      * [offset] is the paging cursor: the index of the first photo to return, absent is the first
-     * page.
+     * page. [all] wins over [limit] and [offset].
      */
-    fun getProfilePhotos(peer: TelegramPeer, limit: Int = 50, offset: Int? = null): List<ProfilePhoto> =
-        bridge.iterProfilePhotos(peer.native, limit, offset).map { it.toCompatibility() }
+    fun getProfilePhotos(
+        peer: TelegramPeer,
+        limit: Int = 50,
+        offset: Int? = null,
+        all: Boolean = false,
+    ): List<ProfilePhoto> =
+        bridge.iterProfilePhotos(peer.native, limit, offset, all).map { it.toCompatibility() }
 }

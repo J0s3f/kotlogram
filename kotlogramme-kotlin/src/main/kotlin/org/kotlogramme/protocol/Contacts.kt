@@ -38,12 +38,18 @@ internal data class BlockContactPayload(
         this(peer.peerHandle, peer.username, myStoriesFrom)
 }
 
-/** Payload of `contactsGetBlocked`. */
+/**
+ * Payload of `contactsGetBlocked`.
+ *
+ * [all] returns every blocked peer by walking the layer's pages in one call. It wins over
+ * [offset] and [limit].
+ */
 @Serializable
 internal data class GetBlockedPayload(
     val myStoriesFrom: Boolean = false,
     val offset: Int = 0,
     val limit: Int = 100,
+    val all: Boolean = false,
 )
 
 /** Payload of `contactsSearch`. */

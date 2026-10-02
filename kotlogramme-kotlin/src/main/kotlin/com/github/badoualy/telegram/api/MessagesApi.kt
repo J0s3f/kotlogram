@@ -131,9 +131,19 @@ interface MessagesApi : BridgeApi {
     /** Counts every message in the peer's history. */
     fun messagesGetHistoryTotal(peer: TelegramPeer): Int = bridge.getHistoryTotal(peer.native)
 
-    /** Lists the peer's messages that carry a chat photo. */
-    fun messagesGetChatPhotos(peer: TelegramPeer, limit: Int = 50, offsetId: Int? = null): List<Message> =
-        bridge.getChatPhotos(peer.native, limit, offsetId).map { it.toCompatibility() }
+    /**
+     * Lists the peer's messages that carry a chat photo, or all of them when [all] is set.
+     *
+     * [offsetId] continues from the oldest message of the previous page. [all] wins over [limit]
+     * and [offsetId].
+     */
+    fun messagesGetChatPhotos(
+        peer: TelegramPeer,
+        limit: Int = 50,
+        offsetId: Int? = null,
+        all: Boolean = false,
+    ): List<Message> =
+        bridge.getChatPhotos(peer.native, limit, offsetId, all).map { it.toCompatibility() }
 
     /** Resolves the message [id] replies to, or null when it replies to nothing. */
     fun messagesGetReplyToMessage(peer: TelegramPeer, id: Int): Message? =

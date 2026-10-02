@@ -5,6 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Wire-contract tests for the message-operation payloads and results.
@@ -38,6 +39,24 @@ class MessagesProtocolTest {
             """{"peerHandle":7,"limit":20,"offsetId":31,"maxDate":1700000000000}""",
             requests.encodeToString(payload),
         )
+    }
+
+    @Test
+    fun `the chat-photos payload carries the all flag`() {
+        // Without `all` the payload is exactly what it always was.
+        assertEquals(
+            """{"peerHandle":7,"limit":20,"offsetId":31}""",
+            requests.encodeToString(ChatPhotosPayload(PeerTarget(peerHandle = 7L), limit = 20, offsetId = 31)),
+        )
+        // `all` travels as the wire's `all` and wins over the limit and cursor.
+        assertEquals(
+            """{"peerHandle":7,"limit":20,"offsetId":31,"all":true}""",
+            requests.encodeToString(ChatPhotosPayload(PeerTarget(peerHandle = 7L), limit = 20, offsetId = 31, all = true)),
+        )
+        val payload = requests.decodeFromString<ChatPhotosPayload>(
+            """{"peerHandle":7,"limit":20,"offsetId":31,"all":true}""",
+        )
+        assertTrue(payload.all)
     }
 
     @Test

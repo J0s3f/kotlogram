@@ -89,6 +89,24 @@ class ContactsProtocolTest {
     }
 
     @Test
+    fun `the get-blocked payload carries the all flag`() {
+        // Without `all` the payload leaves it out, exactly as before.
+        assertEquals(
+            """{"myStoriesFrom":true,"offset":50,"limit":25}""",
+            plain.encodeToString(GetBlockedPayload(myStoriesFrom = true, offset = 50, limit = 25)),
+        )
+        // `all` travels as the wire's `all` and wins over the offset and limit.
+        assertEquals(
+            """{"myStoriesFrom":true,"offset":50,"limit":25,"all":true}""",
+            plain.encodeToString(GetBlockedPayload(myStoriesFrom = true, offset = 50, limit = 25, all = true)),
+        )
+        val payload = plain.decodeFromString<GetBlockedPayload>(
+            """{"myStoriesFrom":true,"offset":50,"limit":25,"all":true}""",
+        )
+        assertTrue(payload.all)
+    }
+
+    @Test
     fun `a found result decodes both result sets`() {
         val result = json.decodeFromString<FoundContacts>(FOUND)
 

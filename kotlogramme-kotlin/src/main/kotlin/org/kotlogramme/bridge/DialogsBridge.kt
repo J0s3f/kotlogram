@@ -15,12 +15,12 @@ internal interface DialogsBridge {
     val transport: Transport
 
     /**
-     * Lists a page of the dialogs, newest first.
+     * Lists a page of the dialogs, newest first, or the whole list when [all] is set.
      *
      * [offsetPeer], [offsetId] and [offsetDate] are the paging cursor: they resume the listing
      * after the dialog they name (the peer, the id of its last message, and that message's date in
      * epoch milliseconds), and must all be present to have any effect. Absent, the listing starts
-     * from the top.
+     * from the top. [all] wins over [limit] and the cursor.
      */
     @Operation("getDialogs")
     fun getDialogs(
@@ -28,14 +28,16 @@ internal interface DialogsBridge {
         offsetPeer: Long? = null,
         offsetId: Int? = null,
         offsetDate: Long? = null,
+        all: Boolean = false,
     ): List<Dialog> = transport.request(
         "getDialogs",
-        LimitPayload(limit, offsetPeer, offsetId, offsetDate),
+        LimitPayload(limit, offsetPeer, offsetId, offsetDate, all),
     )
 
     /**
      * Lists the same dialogs as [getDialogs], each carrying the metadata that projection leaves
-     * out under `Dialog.meta`. The paging cursor is the same as [getDialogs] takes.
+     * out under `Dialog.meta`. The paging cursor is the same as [getDialogs] takes, and [all] walks
+     * the whole list in one call.
      */
     @Operation("getDialogsMeta")
     fun getDialogsMeta(
@@ -43,9 +45,10 @@ internal interface DialogsBridge {
         offsetPeer: Long? = null,
         offsetId: Int? = null,
         offsetDate: Long? = null,
+        all: Boolean = false,
     ): List<Dialog> = transport.request(
         "getDialogsMeta",
-        LimitPayload(limit, offsetPeer, offsetId, offsetDate),
+        LimitPayload(limit, offsetPeer, offsetId, offsetDate, all),
     )
 
     /** Counts the dialogs the account has, without fetching them; grammers' `DialogIter::total`. */

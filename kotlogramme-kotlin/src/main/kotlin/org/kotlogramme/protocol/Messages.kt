@@ -232,6 +232,26 @@ internal data class SearchMessagesPayload(
     ) : this(peer.peerHandle, peer.username, query, limit, offsetId, sentBySelf, minDate, maxDate, filter)
 }
 
+/**
+ * Payload of `getChatPhotos`.
+ *
+ * Separate from [HistoryPayload] so that `getHistory`, which does not offer `--all`, keeps its
+ * exact wire contract.
+ *
+ * [all] returns every chat photo in one unbounded walk. It wins over [limit] and [offsetId].
+ */
+@Serializable
+internal data class ChatPhotosPayload(
+    val peerHandle: Long? = null,
+    val username: String? = null,
+    val limit: Int = 50,
+    val offsetId: Int? = null,
+    val all: Boolean = false,
+) {
+    constructor(peer: PeerTarget, limit: Int, offsetId: Int? = null, all: Boolean = false) :
+        this(peer.peerHandle, peer.username, limit, offsetId, all)
+}
+
 /** Payload of `searchAllMessages`. */
 @Serializable
 internal data class GlobalSearchPayload(

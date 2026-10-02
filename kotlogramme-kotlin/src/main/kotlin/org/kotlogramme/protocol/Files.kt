@@ -111,6 +111,8 @@ internal data class UploadStreamFinishPayload(val uploadId: Long)
  *
  * [offset] is the paging cursor: the index of the first photo to return. An index, not an id, so
  * a caller can page without any new field on the photo projection. Absent is the first page.
+ *
+ * [all] returns every photo in one unbounded walk. It wins over [limit] and [offset].
  */
 @Serializable
 internal data class ProfilePhotosPayload(
@@ -118,9 +120,10 @@ internal data class ProfilePhotosPayload(
     val username: String? = null,
     val limit: Int = 50,
     val offset: Int? = null,
+    val all: Boolean = false,
 ) {
-    constructor(peer: PeerTarget, limit: Int, offset: Int? = null) :
-        this(peer.peerHandle, peer.username, limit, offset)
+    constructor(peer: PeerTarget, limit: Int, offset: Int? = null, all: Boolean = false) :
+        this(peer.peerHandle, peer.username, limit, offset, all)
 }
 
 /** Result of `downloadMedia`: where the file landed and how many bytes it holds. */

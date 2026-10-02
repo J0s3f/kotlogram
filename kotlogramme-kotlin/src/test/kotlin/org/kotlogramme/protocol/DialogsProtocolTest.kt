@@ -126,6 +126,20 @@ class DialogsProtocolTest {
         assertEquals(1_700_000_000_000, payload.offsetDate)
     }
 
+    @Test
+    fun `the dialog payload carries the all flag`() {
+        // Absent and explicit false both mean "one page", which is the old behaviour.
+        assertEquals("""{"limit":25}""", requests.encodeToString(LimitPayload(25)))
+        assertEquals("""{"limit":25}""", requests.encodeToString(LimitPayload(25, all = false)))
+        // `all` travels as the wire's `all` and wins over the limit and cursor.
+        assertEquals(
+            """{"limit":25,"all":true}""",
+            requests.encodeToString(LimitPayload(25, all = true)),
+        )
+        val payload = requests.decodeFromString<LimitPayload>("""{"limit":25,"all":true}""")
+        assertTrue(payload.all)
+    }
+
     /** Decodes a native document and asserts that re-encoding it reproduces the same document. */
     private inline fun <reified T> roundTrips(document: String): T {
         val decoded = json.decodeFromString<T>(document)

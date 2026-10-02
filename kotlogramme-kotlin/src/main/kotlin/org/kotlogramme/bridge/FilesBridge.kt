@@ -116,16 +116,17 @@ internal interface FilesBridge {
         )
 
     /**
-     * Lists up to [limit] profile photos of a peer, most recent first.
+     * Lists up to [limit] profile photos of a peer, most recent first, or all of them when [all] is
+     * set.
      *
      * [offset] is the paging cursor: the index of the first photo to return, absent is the first
-     * page.
+     * page. [all] wins over [limit] and [offset].
      */
     @Operation("iterProfilePhotos")
-    fun iterProfilePhotos(peer: Peer, limit: Int, offset: Int? = null): List<ProfilePhoto> =
+    fun iterProfilePhotos(peer: Peer, limit: Int, offset: Int? = null, all: Boolean = false): List<ProfilePhoto> =
         transport.request(
             "iterProfilePhotos",
-            ProfilePhotosPayload(PeerTarget(peer.nativeHandle), limit, offset),
+            ProfilePhotosPayload(PeerTarget(peer.nativeHandle), limit, offset, all),
         )
 }
 

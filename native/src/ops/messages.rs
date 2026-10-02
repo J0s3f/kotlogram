@@ -119,6 +119,49 @@ struct HistoryPayload {
     max_date: Option<i64>,
 }
 
+/// Payload of `getChatPhotos`: the page size, the cursor, and the `all` flag.
+///
+/// Separate from [HistoryPayload] so that `getHistory`, which does not offer `--all`, keeps its
+/// exact wire contract.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct ChatPhotosPayload {
+    #[serde(flatten)]
+    peer: PeerTarget,
+    /// Return every chat photo in one unbounded walk. Wins over [Self::limit] and [Self::offset_id].
+    all: Option<bool>,
+    limit: Option<usize>,
+    /// Paging cursor: return photos older than this message id. grammers' `SearchIter::offset_id`.
+    offset_id: Option<i32>,
+}
+
+/// What a chat-photos request asks for: the whole list in one walk, or one page.
+enum ChatPhotosPlan {
+    /// `all: true` — walk the iterator to exhaustion, with no limit and no cursor.
+    All,
+    /// One page: the clamped limit, resumed after the cursor when the payload carries one.
+    Page {
+        limit: usize,
+        offset_id: Option<i32>,
+    },
+}
+
+/// Resolves a chat-photos payload into the plan the handler follows.
+///
+/// `all` wins over both `limit` and the cursor, for the same reason as [`dialogs_plan`]: it is the
+/// explicit request for the whole list, so a limit or cursor sent with it is a caller error that
+/// `all` overrides rather than honours.
+fn chat_photos_plan(data: &ChatPhotosPayload) -> ChatPhotosPlan {
+    if data.all.unwrap_or(false) {
+        ChatPhotosPlan::All
+    } else {
+        ChatPhotosPlan::Page {
+            limit: data.limit.unwrap_or(50).clamp(1, 100),
+            offset_id: data.offset_id,
+        }
+    }
+}
+
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct SearchMessagesPayload {
@@ -400,24 +443,30 @@ fn get_history_total(native: &NativeClient, payload: &str) -> Result<String, Str
     json_string(MessageCountDto { total })
 }
 
-/// Lists the messages in a peer that carry a chat photo.
+/// Lists the messages in a peer that carry a chat photo, or all of them when the payload sets `all`.
 ///
 /// grammers 0.8.1 exposes no media filter on `MessageIter` (the history iterator); only a search
 /// carries one, so this is a search restricted to the chat-photo filter rather than a filtered
 /// history.
+///
+/// Paging cost is the dialogs' one: grammers' `SearchIter` keeps its cursor in `pub(crate)` request
+/// fields with no public setter, so a page beyond the first re-walks the iterator from the top and
+/// a page-by-page walk is O(n²). `all: true` is one unbounded walk (O(n)), which is how the CLI's
+/// `--all` should be served.
 fn get_chat_photos(native: &NativeClient, payload: &str) -> Result<String, String> {
-    let data: HistoryPayload = parse_payload(payload)?;
+    let data: ChatPhotosPayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
-    let limit = data.limit.unwrap_or(50).clamp(1, 100);
-    let offset_id = data.offset_id;
+    let plan = chat_photos_plan(&data);
     let messages = native.runtime.block_on(async {
         let mut iterator = native
             .client
             .search_messages(peer)
-            .filter(tl::enums::MessagesFilter::InputMessagesFilterChatPhotos)
-            .limit(limit);
-        if let Some(offset_id) = offset_id {
-            iterator = iterator.offset_id(offset_id);
+            .filter(tl::enums::MessagesFilter::InputMessagesFilterChatPhotos);
+        if let ChatPhotosPlan::Page { limit, offset_id } = &plan {
+            iterator = iterator.limit(*limit);
+            if let Some(offset_id) = offset_id {
+                iterator = iterator.offset_id(*offset_id);
+            }
         }
         let mut result = Vec::new();
         while let Some(message) = iterator.next().await.map_err(invocation_error)? {
@@ -746,6 +795,46 @@ mod tests {
         assert_eq!(data.limit, None);
         assert_eq!(data.offset_id, None);
         assert_eq!(data.max_date, None);
+    }
+
+    #[test]
+    fn the_chat_photos_all_flag_decodes_from_the_payload() {
+        // Absent and explicit false both mean "one page", which is the old behaviour.
+        let data: ChatPhotosPayload =
+            parse_payload(r#"{"peerHandle":7,"limit":25}"#).expect("a chat-photos payload");
+        assert_eq!(data.all, None);
+        let data: ChatPhotosPayload =
+            parse_payload(r#"{"all":false}"#).expect("a chat-photos payload");
+        assert_eq!(data.all, Some(false));
+        let data: ChatPhotosPayload =
+            parse_payload(r#"{"all":true}"#).expect("a chat-photos payload");
+        assert_eq!(data.all, Some(true));
+    }
+
+    #[test]
+    fn chat_photos_all_wins_over_the_cursor_and_the_limit() {
+        // `all` with a cursor still walks everything: the cursor is ignored, not honoured.
+        let data: ChatPhotosPayload =
+            parse_payload(r#"{"all":true,"limit":25,"offsetId":31}"#).expect("a chat-photos payload");
+        assert!(matches!(chat_photos_plan(&data), ChatPhotosPlan::All));
+
+        // `all` with a limit and no cursor still walks everything.
+        let data: ChatPhotosPayload =
+            parse_payload(r#"{"all":true,"limit":25}"#).expect("a chat-photos payload");
+        assert!(matches!(chat_photos_plan(&data), ChatPhotosPlan::All));
+    }
+
+    #[test]
+    fn a_chat_photos_page_request_keeps_the_old_behaviour() {
+        let data: ChatPhotosPayload =
+            parse_payload(r#"{"peerHandle":7,"limit":25}"#).expect("a chat-photos payload");
+        match chat_photos_plan(&data) {
+            ChatPhotosPlan::Page { limit, offset_id } => {
+                assert_eq!(limit, 25);
+                assert_eq!(offset_id, None);
+            }
+            ChatPhotosPlan::All => panic!("a page request must not walk everything"),
+        }
     }
 
     #[test]

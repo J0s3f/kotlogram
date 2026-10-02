@@ -11,6 +11,9 @@ import kotlinx.serialization.Serializable
  * the dialog they name, and must all be present to have any effect. A partial cursor is ignored
  * and the listing starts from the top, because the native side would otherwise re-serve the first
  * page. [offsetDate] is epoch milliseconds, matching how the rest of the payloads spell dates.
+ *
+ * [all] returns the whole list in one unbounded walk. It wins over [limit] and the cursor: a limit
+ * or cursor sent with it is a caller error that `all` overrides rather than honours.
  */
 @Serializable
 internal data class LimitPayload(
@@ -18,6 +21,7 @@ internal data class LimitPayload(
     val offsetPeer: Long? = null,
     val offsetId: Int? = null,
     val offsetDate: Long? = null,
+    val all: Boolean = false,
 )
 
 /** Result of `getDialogsTotal`. */

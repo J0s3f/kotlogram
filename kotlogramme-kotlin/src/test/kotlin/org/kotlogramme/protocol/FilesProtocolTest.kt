@@ -7,6 +7,7 @@ import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
  * Wire-contract tests for the file-transfer models and payloads.
@@ -215,6 +216,24 @@ class FilesProtocolTest {
             """{"peerHandle":12,"limit":10,"offset":100}""",
         )
         assertEquals(100, payload.offset)
+    }
+
+    @Test
+    fun `the profile-photos payload carries the all flag`() {
+        // Without `all` the payload is exactly what it always was.
+        assertEquals(
+            """{"peerHandle":12,"limit":10}""",
+            requests.encodeToString(ProfilePhotosPayload(PeerTarget(peerHandle = 12L), limit = 10)),
+        )
+        // `all` travels as the wire's `all` and wins over the limit and cursor.
+        assertEquals(
+            """{"peerHandle":12,"limit":10,"all":true}""",
+            requests.encodeToString(ProfilePhotosPayload(PeerTarget(peerHandle = 12L), limit = 10, all = true)),
+        )
+        val payload = requests.decodeFromString<ProfilePhotosPayload>(
+            """{"peerHandle":12,"limit":10,"all":true}""",
+        )
+        assertTrue(payload.all)
     }
 
     /** Decodes a native document and asserts that re-encoding it reproduces the same document. */

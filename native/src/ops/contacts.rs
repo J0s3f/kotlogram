@@ -71,6 +71,36 @@ struct GetBlockedPayload {
     #[serde(default)]
     offset: i32,
     limit: Option<i32>,
+    /// Return every blocked peer by walking the layer's pages in one call. Wins over `offset` and
+    /// `limit`.
+    #[serde(default)]
+    all: bool,
+}
+
+/// What a get-blocked request asks for: every blocked peer, or one page.
+enum BlockedPlan {
+    /// `all: true` — walk the layer's pages from the top until one comes back short.
+    All,
+    /// One page: the given offset and the clamped limit.
+    Page { offset: i32, limit: i32 },
+}
+
+/// Resolves a get-blocked payload into the plan the handler follows.
+///
+/// `all` wins over both `offset` and `limit`: it is the explicit request for the whole list, so an
+/// offset or limit sent with it is a caller error that `all` overrides rather than honours.
+fn blocked_plan(data: &GetBlockedPayload) -> BlockedPlan {
+    if data.all {
+        BlockedPlan::All
+    } else {
+        BlockedPlan::Page {
+            offset: data.offset,
+            limit: data
+                .limit
+                .unwrap_or(MAX_CONTACTS_LIMIT)
+                .clamp(1, MAX_CONTACTS_LIMIT),
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -264,17 +294,33 @@ fn unblock(native: &NativeClient, payload: &str) -> Result<String, String> {
 }
 
 /// Lists the account's blocked peers, which is the layer's `contacts.getBlocked`.
+///
+/// Cost note: unlike the iterator-based listings, this pages through the layer's raw
+/// `contacts.GetBlocked` request, which takes an explicit `offset` — so a page is O(1) and paging
+/// deep is cheap (no re-walk). `all: true` walks those pages in one call — O(n) pages of
+/// [`MAX_CONTACTS_LIMIT`] — which is how the CLI's `--all` is served.
 fn get_blocked(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: GetBlockedPayload = parse_payload(payload)?;
-    let limit = data
-        .limit
-        .unwrap_or(MAX_CONTACTS_LIMIT)
-        .clamp(1, MAX_CONTACTS_LIMIT);
+    match blocked_plan(&data) {
+        BlockedPlan::All => get_all_blocked(native, data.my_stories_from),
+        BlockedPlan::Page { offset, limit } => {
+            get_blocked_page(native, data.my_stories_from, offset, limit)
+        }
+    }
+}
+
+/// Fetches one page of blocked peers and projects it.
+fn get_blocked_page(
+    native: &NativeClient,
+    my_stories_from: bool,
+    offset: i32,
+    limit: i32,
+) -> Result<String, String> {
     let result = native
         .runtime
         .block_on(native.client.invoke(&tl::functions::contacts::GetBlocked {
-            my_stories_from: data.my_stories_from,
-            offset: data.offset,
+            my_stories_from,
+            offset,
             limit,
         }))
         .map_err(invocation_error)?;
@@ -287,6 +333,55 @@ fn get_blocked(native: &NativeClient, payload: &str) -> Result<String, String> {
             (Some(slice.count), slice.blocked, slice.chats, slice.users)
         }
     };
+    project_blocked(native, blocked, chats, users, count)
+}
+
+/// Walks every page of blocked peers in one call and projects the whole list.
+///
+/// The layer caps `contacts.getBlocked` at [`MAX_CONTACTS_LIMIT`] per request, so the whole list
+/// is fetched a page at a time, advancing the offset by the number of peers each page returned,
+/// until a page comes back short. Each page is O(1) (the request takes an explicit offset), so the
+/// walk is O(n) overall.
+fn get_all_blocked(native: &NativeClient, my_stories_from: bool) -> Result<String, String> {
+    let mut blocked = Vec::new();
+    let mut chats = Vec::new();
+    let mut users = Vec::new();
+    let mut offset = 0;
+    loop {
+        let result = native
+            .runtime
+            .block_on(native.client.invoke(&tl::functions::contacts::GetBlocked {
+                my_stories_from,
+                offset,
+                limit: MAX_CONTACTS_LIMIT,
+            }))
+            .map_err(invocation_error)?;
+        let (page_blocked, page_chats, page_users) = match result {
+            tl::enums::contacts::Blocked::Blocked(page) => (page.blocked, page.chats, page.users),
+            tl::enums::contacts::Blocked::Slice(page) => (page.blocked, page.chats, page.users),
+        };
+        let page_len = page_blocked.len();
+        blocked.extend(page_blocked);
+        chats.extend(page_chats);
+        users.extend(page_users);
+        // A short page (or the full-list answer) means the walk is done.
+        if page_len < MAX_CONTACTS_LIMIT as usize {
+            break;
+        }
+        offset += page_len as i32;
+    }
+    // The whole list was walked, so there is no separate total to report.
+    project_blocked(native, blocked, chats, users, None)
+}
+
+/// Projects the blocked peers the layer returned.
+fn project_blocked(
+    native: &NativeClient,
+    blocked: Vec<tl::enums::PeerBlocked>,
+    chats: Vec<tl::enums::Chat>,
+    users: Vec<tl::enums::User>,
+    count: Option<i32>,
+) -> Result<String, String> {
     let mut rows = Vec::with_capacity(blocked.len());
     for entry in &blocked {
         let tl::enums::PeerBlocked::Blocked(entry) = entry;
@@ -409,10 +504,48 @@ mod tests {
         assert!(!data.my_stories_from);
         assert_eq!(data.offset, 0);
         assert_eq!(data.limit, None);
+        assert!(!data.all);
 
         let data: GetBlockedPayload = decode(r#"{"offset": 100, "limit": 25}"#);
         assert_eq!(data.offset, 100);
         assert_eq!(data.limit, Some(25));
+        assert!(!data.all);
+
+        let data: GetBlockedPayload = decode(r#"{"all": true}"#);
+        assert!(data.all);
+    }
+
+    #[test]
+    fn blocked_all_wins_over_the_offset_and_the_limit() {
+        // `all` with an offset still walks everything from the top: the offset is ignored.
+        let data: GetBlockedPayload = decode(r#"{"all": true, "offset": 100, "limit": 25}"#);
+        assert!(matches!(blocked_plan(&data), BlockedPlan::All));
+
+        // `all` with a limit and no offset still walks everything.
+        let data: GetBlockedPayload = decode(r#"{"all": true, "limit": 25}"#);
+        assert!(matches!(blocked_plan(&data), BlockedPlan::All));
+    }
+
+    #[test]
+    fn a_get_blocked_page_request_keeps_the_old_behaviour() {
+        let data: GetBlockedPayload = decode(r#"{"offset": 100, "limit": 25}"#);
+        match blocked_plan(&data) {
+            BlockedPlan::Page { offset, limit } => {
+                assert_eq!(offset, 100);
+                assert_eq!(limit, 25);
+            }
+            BlockedPlan::All => panic!("a page request must not walk everything"),
+        }
+
+        // The default page is the first one at the layer's cap.
+        let data: GetBlockedPayload = decode("{}");
+        match blocked_plan(&data) {
+            BlockedPlan::Page { offset, limit } => {
+                assert_eq!(offset, 0);
+                assert_eq!(limit, MAX_CONTACTS_LIMIT);
+            }
+            BlockedPlan::All => panic!("a page request must not walk everything"),
+        }
     }
 
     #[test]

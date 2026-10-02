@@ -109,10 +109,39 @@ struct UploadStreamFinishPayload {
 struct ProfilePhotosPayload {
     #[serde(flatten)]
     peer: PeerTarget,
+    /// Return every photo in one unbounded walk. Wins over [Self::limit] and [Self::offset].
+    all: Option<bool>,
     limit: Option<usize>,
     /// Paging cursor: the index of the first photo to return. An index, not an id, so the CLI can
     /// page without any new field on the photo projection. Absent means the first page.
     offset: Option<i32>,
+}
+
+/// What a profile-photos request asks for: the whole list in one walk, or one page.
+enum ProfilePhotosPlan {
+    /// `all: true` — walk the iterator to exhaustion, with no limit and no cursor.
+    All,
+    /// One page: the clamped limit, resumed after the cursor when the payload carries one.
+    Page {
+        limit: usize,
+        offset: i32,
+    },
+}
+
+/// Resolves a profile-photos payload into the plan the handler follows.
+///
+/// `all` wins over both `limit` and the cursor, for the same reason as [`dialogs_plan`]: it is the
+/// explicit request for the whole list, so a limit or cursor sent with it is a caller error that
+/// `all` overrides rather than honours.
+fn profile_photos_plan(data: &ProfilePhotosPayload) -> ProfilePhotosPlan {
+    if data.all.unwrap_or(false) {
+        ProfilePhotosPlan::All
+    } else {
+        ProfilePhotosPlan::Page {
+            limit: data.limit.unwrap_or(50).clamp(1, 100),
+            offset: data.offset.unwrap_or(0).max(0),
+        }
+    }
 }
 
 #[cfg_attr(not(test), allow(dead_code))]
@@ -317,29 +346,43 @@ fn finish_upload(native: &NativeClient, uploaded: Uploaded, size: i64) -> Result
     json_string(uploaded_dto(&uploaded, size, Some(handle))?)
 }
 
+/// Lists a page of a peer's profile photos, or all of them when the payload sets `all`.
+///
+/// Paging cost is the dialogs' one: grammers' `ProfilePhotoIter` keeps its cursor in `pub(crate)`
+/// request fields with no public setter, so a page beyond the first re-walks the iterator from the
+/// top and a page-by-page walk is O(n²). `all: true` is one unbounded walk (O(n)), which is how the
+/// CLI's `--all` should be served.
 fn iter_profile_photos(native: &NativeClient, payload: &str) -> Result<String, String> {
     let data: ProfilePhotosPayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
-    let limit = data.limit.unwrap_or(50).clamp(1, 100);
-    let offset = data.offset.unwrap_or(0).max(0);
+    let plan = profile_photos_plan(&data);
     let photos = native.runtime.block_on(async {
         let mut iterator = native.client.iter_profile_photos(peer);
-        // The cursor is an index: grammers' `ProfilePhotoIter` advances its own request offset as
-        // it yields and exposes no setter, so the index is applied by consuming that many photos
-        // first. The iterator pages sequentially, so the photos after the skip are exactly the
-        // page the cursor names.
-        for _ in 0..offset {
-            if iterator.next().await.map_err(invocation_error)?.is_none() {
-                break;
+        if let ProfilePhotosPlan::Page { limit, offset } = &plan {
+            // The cursor is an index: grammers' `ProfilePhotoIter` advances its own request offset
+            // as it yields and exposes no setter, so the index is applied by consuming that many
+            // photos first. The iterator pages sequentially, so the photos after the skip are
+            // exactly the page the cursor names.
+            for _ in 0..*offset {
+                if iterator.next().await.map_err(invocation_error)?.is_none() {
+                    break;
+                }
             }
+            // The iterator has no limit of its own, so it is stopped once enough photos are
+            // collected.
+            let mut photos = Vec::new();
+            while photos.len() < *limit {
+                match iterator.next().await.map_err(invocation_error)? {
+                    Some(photo) => photos.push(profile_photo_dto(&photo)),
+                    None => break,
+                }
+            }
+            return Ok::<_, String>(photos);
         }
-        // The iterator has no limit of its own, so it is stopped once enough photos are collected.
+        // `all`: one unbounded walk, no limit and no cursor.
         let mut photos = Vec::new();
-        while photos.len() < limit {
-            match iterator.next().await.map_err(invocation_error)? {
-                Some(photo) => photos.push(profile_photo_dto(&photo)),
-                None => break,
-            }
+        while let Some(photo) = iterator.next().await.map_err(invocation_error)? {
+            photos.push(profile_photo_dto(&photo));
         }
         Ok::<_, String>(photos)
     })?;
@@ -492,5 +535,45 @@ mod tests {
             parse_payload(r#"{"username":"someone","offset":100}"#).expect("a profile-photos payload");
         assert_eq!(data.offset, Some(100));
         assert_eq!(data.limit, None);
+    }
+
+    #[test]
+    fn the_profile_photos_all_flag_decodes_from_the_payload() {
+        // Absent and explicit false both mean "one page", which is the old behaviour.
+        let data: ProfilePhotosPayload =
+            parse_payload(r#"{"peerHandle":7,"limit":50}"#).expect("a profile-photos payload");
+        assert_eq!(data.all, None);
+        let data: ProfilePhotosPayload =
+            parse_payload(r#"{"all":false}"#).expect("a profile-photos payload");
+        assert_eq!(data.all, Some(false));
+        let data: ProfilePhotosPayload =
+            parse_payload(r#"{"all":true}"#).expect("a profile-photos payload");
+        assert_eq!(data.all, Some(true));
+    }
+
+    #[test]
+    fn profile_photos_all_wins_over_the_cursor_and_the_limit() {
+        // `all` with a cursor still walks everything: the cursor is ignored, not honoured.
+        let data: ProfilePhotosPayload =
+            parse_payload(r#"{"all":true,"limit":50,"offset":100}"#).expect("a profile-photos payload");
+        assert!(matches!(profile_photos_plan(&data), ProfilePhotosPlan::All));
+
+        // `all` with a limit and no cursor still walks everything.
+        let data: ProfilePhotosPayload =
+            parse_payload(r#"{"all":true,"limit":50}"#).expect("a profile-photos payload");
+        assert!(matches!(profile_photos_plan(&data), ProfilePhotosPlan::All));
+    }
+
+    #[test]
+    fn a_profile_photos_page_request_keeps_the_old_behaviour() {
+        let data: ProfilePhotosPayload =
+            parse_payload(r#"{"peerHandle":7,"limit":50}"#).expect("a profile-photos payload");
+        match profile_photos_plan(&data) {
+            ProfilePhotosPlan::Page { limit, offset } => {
+                assert_eq!(limit, 50);
+                assert_eq!(offset, 0);
+            }
+            ProfilePhotosPlan::All => panic!("a page request must not walk everything"),
+        }
     }
 }

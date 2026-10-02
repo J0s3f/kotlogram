@@ -3,6 +3,7 @@ package org.kotlogramme.bridge
 import org.kotlogramme.Operation
 import org.kotlogramme.Transport
 import org.kotlogramme.protocol.AlbumItemPayload
+import org.kotlogramme.protocol.ChatPhotosPayload
 import org.kotlogramme.protocol.DeleteResult
 import org.kotlogramme.protocol.EditMediaSpec
 import org.kotlogramme.protocol.EditMessagePayload
@@ -161,16 +162,17 @@ internal interface MessagesBridge {
         transport.request<PeerTarget, MessageCount>("getHistoryTotal", PeerTarget(peer.nativeHandle)).total
 
     /**
-     * Lists the peer's messages that carry a chat photo.
+     * Lists the peer's messages that carry a chat photo, or all of them when [all] is set.
      *
      * grammers 0.8.1 exposes no media filter on the history iterator, so this is a search with the
-     * chat-photo filter; [offsetId] continues from the oldest message of the previous page.
+     * chat-photo filter; [offsetId] continues from the oldest message of the previous page. [all]
+     * wins over [limit] and [offsetId].
      */
     @Operation("getChatPhotos")
-    fun getChatPhotos(peer: Peer, limit: Int = 50, offsetId: Int? = null): List<Message> =
+    fun getChatPhotos(peer: Peer, limit: Int = 50, offsetId: Int? = null, all: Boolean = false): List<Message> =
         transport.request(
             "getChatPhotos",
-            HistoryPayload(PeerTarget(peer.nativeHandle), limit, offsetId),
+            ChatPhotosPayload(PeerTarget(peer.nativeHandle), limit, offsetId, all),
         )
 
     /** Resolves the message [messageId] replies to, or null when it replies to nothing. */
