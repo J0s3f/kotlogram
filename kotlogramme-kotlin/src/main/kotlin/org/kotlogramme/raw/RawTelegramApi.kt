@@ -64,7 +64,7 @@ object RawTelegramApi {
         val resource = requireNotNull(RawTelegramApi::class.java.getResourceAsStream("/raw/telegram-layer-229.json")) {
             "Bundled Layer-229 raw schema manifest is missing"
         }
-        resource.bufferedReader().use { json.decodeFromString(it.readText()) }
+        resource.bufferedReader(Charsets.UTF_8).use { json.decodeFromString(it.readText()) }
     }
 
     private val json = Json { ignoreUnknownKeys = true }
