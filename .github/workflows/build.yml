@@ -476,9 +476,19 @@ jobs:
           url="https://jitpack.io/com/github/J0s3f/kotlogram/$tag/kotlogram-$tag.pom"
 
           echo "requesting $url (this triggers the build)"
-          curl -s -o /dev/null -w 'first request: HTTP %{http_code}\n' --location "$url" || true
+          # The first request both triggers the build and reports whether JitPack is already serving
+          # the version: a re-run, or a build that finished since, answers 200 straight away. Acting
+          # on that answer means the step never sleeps to be told something it was just told, and
+          # never spends a second request on a version it already has.
+          code="$(curl -s -o /dev/null -w '%{http_code}' --location "$url" || true)"
+          echo "first request: HTTP $code"
+          if [ "$code" = "200" ]; then
+            echo "JitPack is serving $tag"
+            echo "serving=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
 
-          # Poll at 3-minute intervals (up to ~15 min) to avoid rate limiting
+          # Otherwise poll at 3-minute intervals (up to ~15 min) to avoid rate limiting.
           for attempt in $(seq 1 6); do
             sleep 180
             code="$(curl -s -o /dev/null -w '%{http_code}' --location "$url" || true)"
