@@ -8,6 +8,20 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## 0.9.9 - 2026-10-02
+
+### Fixed
+
+- **Emoji and other supplementary characters now survive the JNI boundary in both directions.**
+  `GetStringUTFChars` hands strings over as Modified UTF-8 (CESU-8), where an astral-plane character
+  is a surrogate pair spelled as two three-byte sequences that are invalid standard UTF-8. The
+  conversion read those bytes through `JavaStr`'s `CStr` deref with a plain lossy decode, turning one
+  emoji into six replacement characters; a live send through the CLI stored the replacements in
+  Telegram and read them back mangled. Strings are now decoded with jni's own CESU-8 conversion,
+  extracted into [decode_java_string] so three tests pin it: BMP text passes through unchanged, an
+  astral character reassembles from its surrogate pair, and the `C0 80` spelling of the null
+  character survives.
+
 ## 0.9.8 - 2026-10-02
 
 ### Added
