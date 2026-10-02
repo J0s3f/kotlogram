@@ -8,6 +8,15 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## 0.9.10 - 2026-10-02
+
+### Fixed
+
+- **The bundled raw-schema manifest is read as UTF-8 explicitly.** `RawTelegramApi` loaded
+  `/raw/telegram-layer-229.json` through the JVM's default charset. That default is UTF-8 on JDK 18+,
+  so nothing changes on a supported runtime, but the read no longer depends on `-Dfile.encoding`,
+  which is the one switch that could have silently changed how the manifest was decoded.
+
 ## 0.9.9 - 2026-10-02
 
 ### Fixed
