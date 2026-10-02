@@ -11,7 +11,7 @@ A Kotlin/JVM facade for the Telegram API, built on grammers and designed around 
 Released to [JitPack](https://jitpack.io/#J0s3f/kotlogram) as `com.github.J0s3f:kotlogram`, and to Maven
 Central as `io.github.j0s3f:kotlogramme` - see [Install](#install) for why JitPack is the one to prefer.
 Covered across every domain the plan scoped: 116 native operations, each reachable from Kotlin through a
-310-test Rust suite and a 311-test JVM suite.
+331-test Rust suite and a 318-test JVM suite.
 
 - persistent SQLite sessions through grammers
 - bot and user authentication (2FA included), `signOut`, the full account identity and its data
@@ -70,6 +70,14 @@ Kotlogram.getDefaultClient(
     client.messagesSendMessage(peer, "Hello from Kotlin")
 }
 ```
+
+## Requirements
+
+- **JDK 17 or newer** (the facade targets the JDK 17 toolchain).
+- **A supported platform**: Windows, Linux or macOS on x86_64 or aarch64. The matching native library
+  ships inside the published jar, so no separate native setup is required.
+- **Telegram API credentials**: an `api_id` and `api_hash` from <https://my.telegram.org>, plus an
+  account or a bot token to sign in with.
 
 ## Install
 
