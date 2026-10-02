@@ -167,14 +167,21 @@ gpg --verify kotlogramme-<version>.jar.asc kotlogramme-<version>.jar
 
 ## Releasing
 
-Ensure `main` is green, choose a new semantic version, and create an annotated tag:
+Ensure `main` is green, choose a new semantic version, point the documentation at it, and create an
+annotated tag:
 
 ```bash
 git checkout main
 git pull --ff-only
+scripts/version.sh set 0.10.0        # README and the JitPack fallback
+git commit -am "docs: prepare 0.10.0"
 git tag -a v0.10.0 -m "Release 0.10.0"
-git push origin v0.10.0
+git push origin main v0.10.0
 ```
+
+`scripts/version.sh check <version>` is the same rewrite as a test: the `package` job runs it on the
+tag, so a README that still names an older release fails the release instead of shipping. That guard
+exists because the README had drifted four releases behind, still advertising 0.9.5 at 0.9.11.
 
 The tag runs, in order:
 
