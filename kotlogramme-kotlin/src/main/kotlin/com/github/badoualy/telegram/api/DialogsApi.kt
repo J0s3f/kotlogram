@@ -2,19 +2,38 @@ package com.github.badoualy.telegram.api
 
 /** Listing dialogs, their metadata and totals, and clearing their unread state. */
 interface DialogsApi : BridgeApi {
-    fun messagesGetDialogs(limit: Int = 50): List<Dialog> =
-        bridge.getDialogs(limit).map { it.toCompatibility() }
+    /**
+     * Lists a page of the dialogs, newest first.
+     *
+     * [offsetPeer], [offsetId] and [offsetDate] are the paging cursor: they resume the listing
+     * after the dialog they name (the peer, the id of its last message, and that message's date in
+     * epoch milliseconds), and must all be present to have any effect. Absent, the listing starts
+     * from the top.
+     */
+    fun messagesGetDialogs(
+        limit: Int = 50,
+        offsetPeer: Long? = null,
+        offsetId: Int? = null,
+        offsetDate: Long? = null,
+    ): List<Dialog> =
+        bridge.getDialogs(limit, offsetPeer, offsetId, offsetDate).map { it.toCompatibility() }
 
     /**
      * The same dialogs as [messagesGetDialogs], each carrying the metadata that listing projection
      * leaves out — the read markers, the unread reaction count, the notification settings and, for
-     * a folder row, the folder's own counters.
+     * a folder row, the folder's own counters. The paging cursor is the same as [messagesGetDialogs]
+     * takes.
      *
      * The metadata lands on the `Dialog` model rather than a second type, so a caller keeps using
      * the same shape; the fields [messagesGetDialogs] cannot fill stay at their defaults here.
      */
-    fun messagesGetDialogsMeta(limit: Int = 50): List<Dialog> =
-        bridge.getDialogsMeta(limit).map { it.toCompatibility() }
+    fun messagesGetDialogsMeta(
+        limit: Int = 50,
+        offsetPeer: Long? = null,
+        offsetId: Int? = null,
+        offsetDate: Long? = null,
+    ): List<Dialog> =
+        bridge.getDialogsMeta(limit, offsetPeer, offsetId, offsetDate).map { it.toCompatibility() }
 
     /** The number of dialogs in the account, without fetching them. */
     fun messagesGetDialogsTotal(): Long = bridge.getDialogsTotal()

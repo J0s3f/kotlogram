@@ -115,12 +115,18 @@ internal interface FilesBridge {
             UploadProgressPayload(uploadId),
         )
 
-    /** Lists up to [limit] profile photos of a peer, most recent first. */
+    /**
+     * Lists up to [limit] profile photos of a peer, most recent first.
+     *
+     * [offset] is the paging cursor: the index of the first photo to return, absent is the first
+     * page.
+     */
     @Operation("iterProfilePhotos")
-    fun iterProfilePhotos(peer: Peer, limit: Int): List<ProfilePhoto> = transport.request(
-        "iterProfilePhotos",
-        ProfilePhotosPayload(PeerTarget(peer.nativeHandle), limit),
-    )
+    fun iterProfilePhotos(peer: Peer, limit: Int, offset: Int? = null): List<ProfilePhoto> =
+        transport.request(
+            "iterProfilePhotos",
+            ProfilePhotosPayload(PeerTarget(peer.nativeHandle), limit, offset),
+        )
 }
 
 /** The [FilesBridge] [org.kotlogramme.TelegramClient] delegates to. */

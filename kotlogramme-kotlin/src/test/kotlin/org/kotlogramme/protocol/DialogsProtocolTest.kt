@@ -108,6 +108,24 @@ class DialogsProtocolTest {
         assertEquals("""{"limit":25}""", requests.encodeToString(LimitPayload(25)))
     }
 
+    @Test
+    fun `the dialog cursor payload carries the three cursor values together`() {
+        // Without a cursor the payload is exactly what it always was.
+        assertEquals("""{"limit":25}""", requests.encodeToString(LimitPayload(25)))
+        // The cursor travels as the three values the native side applies as one.
+        assertEquals(
+            """{"limit":25,"offsetPeer":-1000007,"offsetId":31,"offsetDate":1700000000000}""",
+            requests.encodeToString(LimitPayload(25, -100_000_7, 31, 1_700_000_000_000)),
+        )
+        // The cursor decodes back from the wire.
+        val payload = requests.decodeFromString<LimitPayload>(
+            """{"limit":25,"offsetPeer":-1000007,"offsetId":31,"offsetDate":1700000000000}""",
+        )
+        assertEquals(-100_000_7, payload.offsetPeer)
+        assertEquals(31, payload.offsetId)
+        assertEquals(1_700_000_000_000, payload.offsetDate)
+    }
+
     /** Decodes a native document and asserts that re-encoding it reproduces the same document. */
     private inline fun <reified T> roundTrips(document: String): T {
         val decoded = json.decodeFromString<T>(document)

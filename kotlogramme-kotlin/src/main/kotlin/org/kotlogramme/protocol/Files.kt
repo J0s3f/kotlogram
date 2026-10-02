@@ -106,14 +106,21 @@ internal data class UploadStreamChunkPayload(
 @Serializable
 internal data class UploadStreamFinishPayload(val uploadId: Long)
 
-/** Payload of `iterProfilePhotos`. */
+/**
+ * Payload of `iterProfilePhotos`.
+ *
+ * [offset] is the paging cursor: the index of the first photo to return. An index, not an id, so
+ * a caller can page without any new field on the photo projection. Absent is the first page.
+ */
 @Serializable
 internal data class ProfilePhotosPayload(
     val peerHandle: Long? = null,
     val username: String? = null,
     val limit: Int = 50,
+    val offset: Int? = null,
 ) {
-    constructor(peer: PeerTarget, limit: Int) : this(peer.peerHandle, peer.username, limit)
+    constructor(peer: PeerTarget, limit: Int, offset: Int? = null) :
+        this(peer.peerHandle, peer.username, limit, offset)
 }
 
 /** Result of `downloadMedia`: where the file landed and how many bytes it holds. */

@@ -4,7 +4,12 @@ import kotlinx.serialization.Serializable
 
 /** Payloads and results of the chat membership and moderation operations. */
 
-/** Payload of `getParticipants`. */
+/**
+ * Payload of `getParticipants`.
+ *
+ * [offset] is the paging cursor: the index of the first member to return. An index, not an id, so
+ * a caller can page without any new field on the participant projection. Absent is the first page.
+ */
 @Serializable
 internal data class ParticipantPayload(
     val peerHandle: Long? = null,
@@ -14,13 +19,15 @@ internal data class ParticipantPayload(
     val filter: String? = null,
     /** The query the `search`, `banned`, `kicked` and `contacts` filters take. */
     val query: String? = null,
+    val offset: Int? = null,
 ) {
     constructor(
         peer: PeerTarget,
         limit: Int = 100,
         filter: String? = null,
         query: String? = null,
-    ) : this(peer.peerHandle, peer.username, limit, filter, query)
+        offset: Int? = null,
+    ) : this(peer.peerHandle, peer.username, limit, filter, query, offset)
 }
 
 /** Result of `getParticipants`: the listing plus the chat's total member count. */

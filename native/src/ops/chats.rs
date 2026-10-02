@@ -38,6 +38,9 @@ struct ParticipantPayload {
     filter: Option<String>,
     /// The query the `search`, `banned`, `kicked`, `contacts` and `mentions` filters take.
     query: Option<String>,
+    /// Paging cursor: the index of the first member to return. An index, not an id, so the CLI
+    /// can page without any new field on the participant projection. Absent means the first page.
+    offset: Option<i32>,
 }
 
 #[derive(Deserialize)]
@@ -135,12 +138,22 @@ fn get_participants(native: &NativeClient, payload: &str) -> Result<String, Stri
     let data: ParticipantPayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
     let limit = data.limit.unwrap_or(100).clamp(1, MAX_PARTICIPANT_LIMIT);
+    let offset = data.offset.unwrap_or(0).max(0);
     let (participants, total) = native.runtime.block_on(async {
         let mut iterator = native.client.iter_participants(peer);
         if let Some(filter) = data.filter.as_deref() {
             iterator = iterator.filter(participant_filter(filter, data.query.as_deref())?);
         }
         let total = iterator.total().await.map_err(invocation_error)?;
+        // The cursor is an index: grammers' `ParticipantIter` advances its own request offset as
+        // it yields and exposes no setter, so the index is applied by consuming that many members
+        // first. The iterator pages sequentially, so the members after the skip are exactly the
+        // page the cursor names.
+        for _ in 0..offset {
+            if iterator.next().await.map_err(invocation_error)?.is_none() {
+                break;
+            }
+        }
         let mut result = Vec::new();
         while result.len() < limit {
             let Some(participant) = iterator.next().await.map_err(invocation_error)? else {
@@ -830,6 +843,21 @@ mod tests {
             participants_result(Vec::new(), 4_825),
             json!({ "participants": [], "total": 4_825 })
         );
+    }
+
+    #[test]
+    fn a_participant_payload_reads_the_index_cursor() {
+        // Absent means the first page.
+        let data: ParticipantPayload =
+            parse_payload(r#"{"peerHandle":7,"limit":100}"#).expect("a participant payload");
+        assert_eq!(data.offset, None);
+        assert_eq!(data.limit, Some(100));
+
+        // The cursor is an index into the membership, not an id.
+        let data: ParticipantPayload =
+            parse_payload(r#"{"peerHandle":7,"offset":200}"#).expect("a participant payload");
+        assert_eq!(data.offset, Some(200));
+        assert_eq!(data.limit, None);
     }
 
     #[test]

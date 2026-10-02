@@ -14,16 +14,39 @@ import org.kotlogramme.protocol.PeerTarget
 internal interface DialogsBridge {
     val transport: Transport
 
+    /**
+     * Lists a page of the dialogs, newest first.
+     *
+     * [offsetPeer], [offsetId] and [offsetDate] are the paging cursor: they resume the listing
+     * after the dialog they name (the peer, the id of its last message, and that message's date in
+     * epoch milliseconds), and must all be present to have any effect. Absent, the listing starts
+     * from the top.
+     */
     @Operation("getDialogs")
-    fun getDialogs(limit: Int = 50): List<Dialog> = transport.request("getDialogs", LimitPayload(limit))
+    fun getDialogs(
+        limit: Int = 50,
+        offsetPeer: Long? = null,
+        offsetId: Int? = null,
+        offsetDate: Long? = null,
+    ): List<Dialog> = transport.request(
+        "getDialogs",
+        LimitPayload(limit, offsetPeer, offsetId, offsetDate),
+    )
 
     /**
      * Lists the same dialogs as [getDialogs], each carrying the metadata that projection leaves
-     * out under `Dialog.meta`.
+     * out under `Dialog.meta`. The paging cursor is the same as [getDialogs] takes.
      */
     @Operation("getDialogsMeta")
-    fun getDialogsMeta(limit: Int = 50): List<Dialog> =
-        transport.request("getDialogsMeta", LimitPayload(limit))
+    fun getDialogsMeta(
+        limit: Int = 50,
+        offsetPeer: Long? = null,
+        offsetId: Int? = null,
+        offsetDate: Long? = null,
+    ): List<Dialog> = transport.request(
+        "getDialogsMeta",
+        LimitPayload(limit, offsetPeer, offsetId, offsetDate),
+    )
 
     /** Counts the dialogs the account has, without fetching them; grammers' `DialogIter::total`. */
     @Operation("getDialogsTotal")

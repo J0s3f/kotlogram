@@ -79,6 +79,24 @@ class ChatsProtocolTest {
     }
 
     @Test
+    fun `the participant payload carries the index cursor`() {
+        // Without a cursor the payload leaves it out, exactly as before.
+        assertEquals(
+            """{"peerHandle":7,"limit":50}""",
+            plain.encodeToString(ParticipantPayload(PeerTarget(7), 50)),
+        )
+        // The cursor is an index into the membership.
+        assertEquals(
+            """{"peerHandle":7,"limit":50,"offset":200}""",
+            plain.encodeToString(ParticipantPayload(PeerTarget(7), 50, offset = 200)),
+        )
+        val payload = plain.decodeFromString<ParticipantPayload>(
+            """{"peerHandle":7,"limit":50,"offset":200}""",
+        )
+        assertEquals(200, payload.offset)
+    }
+
+    @Test
     fun `new admin rights default to false and decode from the wire`() {
         val blank = json.decodeFromString<ChatPermissions>("{}")
         assertTrue(

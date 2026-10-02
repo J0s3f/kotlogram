@@ -11,13 +11,6 @@ pub(crate) struct PeerTarget {
     pub(crate) username: Option<String>,
 }
 
-/// Result-limit selector used by the paged listings.
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct LimitPayload {
-    pub(crate) limit: Option<usize>,
-}
-
 /// The file a send attaches: a local path to upload now, or the handle of an upload that has
 /// already run.
 ///

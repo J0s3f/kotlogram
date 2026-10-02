@@ -199,6 +199,24 @@ class FilesProtocolTest {
         )
     }
 
+    @Test
+    fun `the profile-photos payload carries the index cursor`() {
+        // Without a cursor the payload leaves it out, exactly as before.
+        assertEquals(
+            """{"peerHandle":12,"limit":10}""",
+            requests.encodeToString(ProfilePhotosPayload(PeerTarget(peerHandle = 12L), limit = 10)),
+        )
+        // The cursor is an index into the photo history.
+        assertEquals(
+            """{"peerHandle":12,"limit":10,"offset":100}""",
+            requests.encodeToString(ProfilePhotosPayload(PeerTarget(peerHandle = 12L), limit = 10, offset = 100)),
+        )
+        val payload = requests.decodeFromString<ProfilePhotosPayload>(
+            """{"peerHandle":12,"limit":10,"offset":100}""",
+        )
+        assertEquals(100, payload.offset)
+    }
+
     /** Decodes a native document and asserts that re-encoding it reproduces the same document. */
     private inline fun <reified T> roundTrips(document: String): T {
         val decoded = json.decodeFromString<T>(document)

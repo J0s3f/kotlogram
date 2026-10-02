@@ -27,7 +27,8 @@ internal interface ChatsBridge {
      * Lists a chat's participants together with the chat's total member count.
      *
      * [filter] is one of the names the native side knows (`recent`, `admins`, `bots`, `banned`,
-     * `contacts`, `search`, `kicked`, `mentions`); the query-taking filters read [query].
+     * `contacts`, `search`, `kicked`, `mentions`); the query-taking filters read [query]. [offset]
+     * is the paging cursor: the index of the first member to return, absent is the first page.
      */
     @Operation("getParticipants")
     fun getParticipants(
@@ -35,9 +36,10 @@ internal interface ChatsBridge {
         limit: Int = 100,
         filter: String? = null,
         query: String? = null,
+        offset: Int? = null,
     ): ParticipantsResult = transport.request(
         "getParticipants",
-        ParticipantPayload(PeerTarget(peer.nativeHandle), limit, filter, query),
+        ParticipantPayload(PeerTarget(peer.nativeHandle), limit, filter, query, offset),
     )
 
     @Operation("kickParticipant")

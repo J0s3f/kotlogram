@@ -8,23 +8,31 @@ interface ChatsApi : BridgeApi {
         bridge.leaveChat(peer.native)
     }
 
-    fun channelsGetParticipants(peer: TelegramPeer, limit: Int = 100): List<Participant> =
-        bridge.getParticipants(peer.native, limit).toCompatibility().participants
+    /**
+     * Lists a page of a chat's participants.
+     *
+     * [offset] is the paging cursor: the index of the first member to return, absent is the first
+     * page.
+     */
+    fun channelsGetParticipants(peer: TelegramPeer, limit: Int = 100, offset: Int? = null): List<Participant> =
+        bridge.getParticipants(peer.native, limit, offset = offset).toCompatibility().participants
 
     /**
      * Lists a filtered page of a chat's participants together with the chat's total member count.
      *
      * The filter is one of grammers' `ChannelParticipantsFilter` shapes; [query] is read by the
      * `Search`, `Banned`, `Kicked` and `Contacts` filters. grammers only applies a filter to a
-     * channel or megagroup, so a small group always reports its whole membership.
+     * channel or megagroup, so a small group always reports its whole membership. [offset] is the
+     * paging cursor: the index of the first member to return, absent is the first page.
      */
     fun channelsGetParticipantPage(
         peer: TelegramPeer,
         filter: ParticipantFilter = ParticipantFilter.Recent,
         query: String? = null,
         limit: Int = 100,
+        offset: Int? = null,
     ): ParticipantPage =
-        bridge.getParticipants(peer.native, limit, filter.wire, query).toCompatibility()
+        bridge.getParticipants(peer.native, limit, filter.wire, query, offset).toCompatibility()
 
     fun channelsKickParticipant(peer: TelegramPeer, user: TelegramPeer) {
         bridge.kickParticipant(peer.native, user.native)

@@ -110,6 +110,9 @@ struct ProfilePhotosPayload {
     #[serde(flatten)]
     peer: PeerTarget,
     limit: Option<usize>,
+    /// Paging cursor: the index of the first photo to return. An index, not an id, so the CLI can
+    /// page without any new field on the photo projection. Absent means the first page.
+    offset: Option<i32>,
 }
 
 #[cfg_attr(not(test), allow(dead_code))]
@@ -318,9 +321,19 @@ fn iter_profile_photos(native: &NativeClient, payload: &str) -> Result<String, S
     let data: ProfilePhotosPayload = parse_payload(payload)?;
     let peer = native.runtime.block_on(resolve_peer(native, &data.peer))?;
     let limit = data.limit.unwrap_or(50).clamp(1, 100);
+    let offset = data.offset.unwrap_or(0).max(0);
     let photos = native.runtime.block_on(async {
-        // The iterator has no limit of its own, so it is stopped once enough photos are collected.
         let mut iterator = native.client.iter_profile_photos(peer);
+        // The cursor is an index: grammers' `ProfilePhotoIter` advances its own request offset as
+        // it yields and exposes no setter, so the index is applied by consuming that many photos
+        // first. The iterator pages sequentially, so the photos after the skip are exactly the
+        // page the cursor names.
+        for _ in 0..offset {
+            if iterator.next().await.map_err(invocation_error)?.is_none() {
+                break;
+            }
+        }
+        // The iterator has no limit of its own, so it is stopped once enough photos are collected.
         let mut photos = Vec::new();
         while photos.len() < limit {
             match iterator.next().await.map_err(invocation_error)? {
@@ -464,5 +477,20 @@ mod tests {
         let finish: UploadStreamFinishPayload =
             parse_payload(r#"{"uploadId":12}"#).expect("a finish payload");
         assert_eq!(finish.upload_id, 12);
+    }
+
+    #[test]
+    fn the_profile_photos_payload_reads_the_index_cursor() {
+        // Absent means the first page.
+        let data: ProfilePhotosPayload =
+            parse_payload(r#"{"peerHandle":7,"limit":50}"#).expect("a profile-photos payload");
+        assert_eq!(data.offset, None);
+        assert_eq!(data.limit, Some(50));
+
+        // The cursor is an index into the photo history, not an id.
+        let data: ProfilePhotosPayload =
+            parse_payload(r#"{"username":"someone","offset":100}"#).expect("a profile-photos payload");
+        assert_eq!(data.offset, Some(100));
+        assert_eq!(data.limit, None);
     }
 }
