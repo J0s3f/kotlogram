@@ -32,8 +32,13 @@ family_pattern="$(printf '%s' "${family}" | sed -E 's/\./\\./g')\.[0-9]+"
 
 case "${mode}" in
   set)
+    # Rewrite a file only when it actually names a different version, so a no-op `set` does not touch
+    # the working tree (rewriting an already-correct file churns its line endings).
     for file in "${files[@]}"; do
-      sed -i -E "s/${family_pattern}/${version}/g" "${file}"
+      differing="$(grep -oE "${family_pattern}" "${file}" | grep -vx "${version}" | head -n1 || true)"
+      if [ -n "${differing}" ]; then
+        sed -i -E "s/${family_pattern}/${version}/g" "${file}"
+      fi
     done
     echo "docs now advertise ${version}"
     ;;
