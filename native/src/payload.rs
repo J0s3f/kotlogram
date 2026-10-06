@@ -493,6 +493,64 @@ mod tests {
     }
 
     #[test]
+    fn html_dates_keep_their_formats_utf16_offsets_and_rendering() {
+        let html = concat!(
+            "😀 <time datetime=\"2026-09-27T12:13:14+02:00\" data-format=\"wDt\">time</time>",
+            " <time datetime=\"2026-09-27T10:13:14Z\" data-format=\"r\">later</time>",
+        );
+        let (text, entities) = resolve_format(html, Some("html"), None).expect("html dates");
+        assert_eq!(text, "😀 time later");
+        assert_eq!(
+            entities,
+            vec![
+                tl::types::MessageEntityFormattedDate {
+                    offset: 3,
+                    length: 4,
+                    date: 1790503994,
+                    relative: false,
+                    short_time: true,
+                    long_time: false,
+                    short_date: false,
+                    long_date: true,
+                    day_of_week: true,
+                }
+                .into(),
+                tl::types::MessageEntityFormattedDate {
+                    offset: 8,
+                    length: 5,
+                    date: 1790503994,
+                    relative: true,
+                    short_time: false,
+                    long_time: false,
+                    short_date: false,
+                    long_date: false,
+                    day_of_week: false,
+                }
+                .into(),
+            ]
+        );
+        // Message and reply-quote HTML rendering uses this same upstream renderer.
+        let rendered = grammers_client::parsers::generate_html_message(&text, &entities);
+        assert_eq!(
+            rendered,
+            html.replace("2026-09-27T12:13:14+02:00", "2026-09-27T10:13:14Z")
+        );
+    }
+
+    #[test]
+    fn an_invalid_html_date_keeps_its_text_without_an_entity() {
+        assert_eq!(
+            resolve_format(
+                "A <time datetime=\"invalid\" data-format=\"r\">time</time>",
+                Some("html"),
+                None,
+            )
+            .expect("html with an invalid date"),
+            ("A time".to_owned(), Vec::new())
+        );
+    }
+
+    #[test]
     fn a_file_source_is_exactly_one_of_a_path_or_a_handle() {
         use super::{file_source, FileSource};
 

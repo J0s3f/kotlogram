@@ -8,6 +8,15 @@ libraries, signs the artifact, creates a GitHub Release and publishes it to JitP
 Maven Central on a best-effort basis - Central enforces monthly publishing limits, so JitPack is the
 recommended channel and Central is the fallback. See [`docs/publishing.md`](docs/publishing.md).
 
+## Unreleased
+
+### Changed
+
+- Update grammers to revision `e7730ae3e00a5427b9d90f06ee6d2e985b63f8c1`. HTML parse mode
+  now accepts `<time datetime="..." data-format="...">` for Telegram formatted dates, and
+  received messages and reply quotes preserve those dates in `htmlText`. Telegram TL layer 229
+  and the bundled raw schema are unchanged.
+
 ## 0.9.11 - 2026-10-02
 
 ### Added
