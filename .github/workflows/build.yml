@@ -65,7 +65,7 @@ jobs:
             exit 0
           fi
           # Extract workflow file name (e.g. build.yml) expected by the runs API
-          workflow="${WORKFLOW_REF\%\%@*}"; workflow="${workflow##*/}"
+          workflow="${WORKFLOW_REF%%@*}"; workflow="${workflow##*/}"
           echo "workflow id    : $workflow"
           previous="$(gh api \
             "repos/${GITHUB_REPOSITORY}/actions/workflows/${workflow}/runs?status=success&per_page=1" \
