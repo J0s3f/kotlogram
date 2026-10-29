@@ -376,6 +376,9 @@ pub(crate) fn message_entity_dto(entity: &tl::enums::MessageEntity) -> MessageEn
         Entity::DiffDelete(entity) => {
             MessageEntityDto::plain("diffDelete", entity.offset, entity.length)
         }
+        Entity::TonAddress(entity) => {
+            MessageEntityDto::plain("tonAddress", entity.offset, entity.length)
+        }
     }
 }
 

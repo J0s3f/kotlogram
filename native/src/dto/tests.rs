@@ -806,6 +806,7 @@ fn quote_reply(
         quote_text: quote_text.map(ToOwned::to_owned),
         quote_entities,
         quote_offset: None,
+        quote_rich: None,
         todo_item_id: None,
         poll_option: None,
     })

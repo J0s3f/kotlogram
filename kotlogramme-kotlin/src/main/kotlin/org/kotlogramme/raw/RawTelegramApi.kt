@@ -13,7 +13,7 @@ import org.kotlogramme.TelegramClient
  */
 object RawTelegramApi {
     const val FORMAT: String = "kotlogram-raw-schema/v1"
-    const val LAYER: Int = 229
+    const val LAYER: Int = 232
 
     fun schema(): RawSchema = schema
 
@@ -61,8 +61,8 @@ object RawTelegramApi {
     ): RawValue = decodeResponse(methodName, invoke(client, RawRequest(encodeRequest(methodName, fields), dataCenterId)))
 
     private val schema: RawSchema by lazy {
-        val resource = requireNotNull(RawTelegramApi::class.java.getResourceAsStream("/raw/telegram-layer-229.json")) {
-            "Bundled Layer-229 raw schema manifest is missing"
+        val resource = requireNotNull(RawTelegramApi::class.java.getResourceAsStream("/raw/telegram-layer-232.json")) {
+            "Bundled Layer-232 raw schema manifest is missing"
         }
         resource.bufferedReader(Charsets.UTF_8).use { json.decodeFromString(it.readText()) }
     }

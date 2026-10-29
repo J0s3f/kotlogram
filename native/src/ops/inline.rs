@@ -560,6 +560,7 @@ fn input_reply_to(reply_to_msg_id: i32) -> tl::enums::InputReplyTo {
         quote_text: None,
         quote_entities: None,
         quote_offset: None,
+        quote_rich: None,
         monoforum_peer_id: None,
         todo_item_id: None,
         poll_option: None,

@@ -169,12 +169,12 @@ jobs:
           cargo_root="${CARGO_HOME:-$HOME/.cargo}"
           schema="$(find "$cargo_root/git/checkouts" "$cargo_root/registry/src" -path '*/grammers-tl-types*/tl/api.tl' -print -quit 2>/dev/null || true)"
           test -n "$schema"
-          python3 tools/generate_raw_schema.py --schema "$schema" --output generated/raw-schema/telegram-layer-229.json
-          cmp generated/raw-schema/telegram-layer-229.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-229.json
+          python3 tools/generate_raw_schema.py --schema "$schema" --output generated/raw-schema/telegram-layer-232.json
+          cmp generated/raw-schema/telegram-layer-232.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-232.json
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: raw-schema
-          path: generated/raw-schema/telegram-layer-229.json
+          path: generated/raw-schema/telegram-layer-232.json
 
   native:
     name: native-${{ matrix.platform }}
@@ -254,7 +254,7 @@ jobs:
           name: raw-schema
           path: generated/raw-schema
       - name: Verify bundled raw schema source
-        run: cmp generated/raw-schema/telegram-layer-229.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-229.json
+        run: cmp generated/raw-schema/telegram-layer-232.json kotlogramme-kotlin/src/main/resources/raw/telegram-layer-232.json
       - name: Check the docs name this release
         if: startsWith(github.ref, 'refs/tags/v')
         run: bash scripts/version.sh check "${GITHUB_REF_NAME#v}"
