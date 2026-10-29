@@ -33,21 +33,28 @@ val cargoTargets = listOf(
     "x86_64-linux-android" to "x86_64",
 )
 if (ndkHome != null) {
-    val clangBin = "$ndkHome/toolchains/llvm/prebuilt/windows-x86_64/bin"
+    val hostTag = when {
+        System.getProperty("os.name").startsWith("Windows", ignoreCase = true) -> "windows-x86_64"
+        System.getProperty("os.name").startsWith("Mac", ignoreCase = true) -> "darwin-x86_64"
+        else -> "linux-x86_64"
+    }
+    val clangBin = "$ndkHome/toolchains/llvm/prebuilt/$hostTag/bin"
     cargoTargets.forEach { (target, abi) ->
         val taskName = "buildNative" + abi.replace("-", "").replace("_", "").replaceFirstChar { it.uppercase() }
         tasks.register<Exec>(taskName) {
             workingDir = file("../native")
             environment("ANDROID_NDK_HOME", ndkHome)
+            val isWindows = System.getProperty("os.name").startsWith("Windows", ignoreCase = true)
+            val exe = if (isWindows) ".cmd" else ""
             val linker = when (target) {
-                "aarch64-linux-android" -> "aarch64-linux-android21-clang.cmd"
-                "armv7-linux-androideabi" -> "armv7a-linux-androideabi21-clang.cmd"
-                "i686-linux-android" -> "i686-linux-android21-clang.cmd"
-                "x86_64-linux-android" -> "x86_64-linux-android21-clang.cmd"
+                "aarch64-linux-android" -> "aarch64-linux-android21-clang$exe"
+                "armv7-linux-androideabi" -> "armv7a-linux-androideabi21-clang$exe"
+                "i686-linux-android" -> "i686-linux-android21-clang$exe"
+                "x86_64-linux-android" -> "x86_64-linux-android21-clang$exe"
                 else -> error("unknown target")
             }
             environment("CC", "$clangBin/$linker")
-            environment("AR", "$clangBin/llvm-ar.exe")
+            environment("AR", "$clangBin/llvm-ar" + if (isWindows) ".exe" else "")
             environment("CARGO_TARGET_${target.replace("-", "_").uppercase()}_LINKER", "$clangBin/$linker")
             commandLine("cargo", "build", "--target", target)
             doLast {
