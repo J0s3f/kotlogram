@@ -34,7 +34,7 @@ install:
     WAIT_INTERVAL_SECONDS=15
 
     # Fallback release for branch builds (e.g., main-SNAPSHOT) where no tag release exists
-    JITPACK_FALLBACK="0.9.14"
+    JITPACK_FALLBACK="0.9.15"
 
     requested="${VERSION#v}"
     source_version="${requested}"

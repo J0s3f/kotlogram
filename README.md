@@ -82,7 +82,7 @@ Kotlogram.getDefaultClient(
 ## Install
 
 The JAR bundles all six native libraries and loads the one matching the host at startup, so no separate
-native setup is required. The current release is **0.9.14**.
+native setup is required. The current release is **0.9.15**.
 
 ### JitPack (recommended)
 
@@ -107,7 +107,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.J0s3f:kotlogram:0.9.14")
+    implementation("com.github.J0s3f:kotlogram:0.9.15")
 }
 ```
 
@@ -117,7 +117,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.J0s3f:kotlogram:0.9.14'
+    implementation 'com.github.J0s3f:kotlogram:0.9.15'
 }
 ```
 
@@ -132,7 +132,7 @@ dependencies {
 <dependency>
     <groupId>com.github.J0s3f</groupId>
     <artifactId>kotlogram</artifactId>
-    <version>0.9.14</version>
+    <version>0.9.15</version>
 </dependency>
 ```
 
@@ -148,14 +148,14 @@ systemProp.org.gradle.internal.http.socketTimeout=180000
 ### Verifying the artifact
 
 The release jar is signed by this project's CI, and the detached signature is published beside it on the
-[v0.9.14 release](https://github.com/J0s3f/kotlogram/releases/tag/v0.9.14):
+[v0.9.15 release](https://github.com/J0s3f/kotlogram/releases/tag/v0.9.15):
 
 ```bash
-curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.14/kotlogramme-0.9.14.jar
-curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.14/kotlogramme-0.9.14.jar.asc
-curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.14/kotlogramme-0.9.14.jar.asc.pub
-gpg --import kotlogramme-0.9.14.jar.asc.pub
-gpg --verify kotlogramme-0.9.14.jar.asc kotlogramme-0.9.14.jar
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.15/kotlogramme-0.9.15.jar
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.15/kotlogramme-0.9.15.jar.asc
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.15/kotlogramme-0.9.15.jar.asc.pub
+gpg --import kotlogramme-0.9.15.jar.asc.pub
+gpg --verify kotlogramme-0.9.15.jar.asc kotlogramme-0.9.15.jar
 ```
 
 The signature is made by the key:
@@ -183,13 +183,13 @@ missing from it even though it is released, in which case JitPack is the one to 
 
 ```kotlin
 dependencies {
-    implementation("io.github.j0s3f:kotlogramme:0.9.14")
+    implementation("io.github.j0s3f:kotlogramme:0.9.15")
 }
 ```
 
 ```groovy
 dependencies {
-    implementation 'io.github.j0s3f:kotlogramme:0.9.14'
+    implementation 'io.github.j0s3f:kotlogramme:0.9.15'
 }
 ```
 
@@ -197,7 +197,7 @@ dependencies {
 <dependency>
     <groupId>io.github.j0s3f</groupId>
     <artifactId>kotlogramme</artifactId>
-    <version>0.9.14</version>
+    <version>0.9.15</version>
 </dependency>
 ```
 
@@ -216,7 +216,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.J0s3f.kotlogram:kotlogram-android:v0.9.14")
+    implementation("com.github.J0s3f.kotlogram:kotlogram-android:v0.9.15")
 }
 ```
 
@@ -240,17 +240,6 @@ Thread {
 ```
 
 Add `android.permission.INTERNET` to the application manifest. `minSdk` is 24.
-
-If you are pinning `v0.9.14` specifically: that release's AAR POM names the classes artifact
-incorrectly, so add the classes jar explicitly and exclude the stale transitive entry. Later
-releases fix the POM, after which the single AAR dependency above is enough:
-
-```kotlin
-implementation("com.github.J0s3f.kotlogram:kotlogram-android:v0.9.14") {
-    exclude(group = "com.github.J0s3f.kotlogram", module = "kotlogram")
-}
-implementation("com.github.J0s3f.kotlogram:kotlogramme:v0.9.14")
-```
 
 ### Sample project
 
