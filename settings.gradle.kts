@@ -17,3 +17,4 @@ dependencyResolutionManagement {
 rootProject.name = "kotlogramme"
 include(":kotlogramme-kotlin")
 include(":kotlogramme-android")
+include(":kotlogramme-android-test")
