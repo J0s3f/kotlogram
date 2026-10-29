@@ -260,8 +260,6 @@ jobs:
           gradle-version: '9.8.0'
       - name: Build Android AAR
         env:
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-          ANDROID_NDK_HOME: ${{ env.ANDROID_NDK_HOME }}
           KOTLOGRAMME_INCLUDE_ANDROID: "1"
         run: gradle --no-daemon :kotlogramme-android:assembleRelease
       - uses: actions/upload-artifact@v7.0.1
