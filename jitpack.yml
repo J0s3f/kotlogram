@@ -34,7 +34,7 @@ install:
     WAIT_INTERVAL_SECONDS=15
 
     # Fallback release for branch builds (e.g., main-SNAPSHOT) where no tag release exists
-    JITPACK_FALLBACK="0.9.13"
+    JITPACK_FALLBACK="0.9.14"
 
     requested="${VERSION#v}"
     source_version="${requested}"
@@ -77,3 +77,34 @@ install:
     test -n "${dir}"
     echo "installed into ${dir}:"
     ls -l "${dir}"
+
+    # The Android artifact is an AAR carrying the native libraries for the four
+    # Android ABIs. Its POM depends on the desktop jar for the Kotlin/JVM classes.
+    aar_asset="${base}/kotlogramme-${source_version}.aar"
+    echo "Fetching the CI-built AAR from ${aar_asset}"
+    curl -fsSL --output /tmp/kotlogramme.aar "${aar_asset}"
+    unzip -l /tmp/kotlogramme.aar | grep -q 'jni/arm64-v8a/libkotlogramme.so'
+    unzip -l /tmp/kotlogramme.aar | grep -q 'jni/x86_64/libkotlogramme.so'
+
+    cat > /tmp/kotlogramme-android.pom <<POM
+    <project xmlns="http://maven.apache.org/POM/4.0.0">
+      <modelVersion>4.0.0</modelVersion>
+      <groupId>${GROUP}</groupId>
+      <artifactId>${ARTIFACT}-android</artifactId>
+      <version>${requested}</version>
+      <packaging>aar</packaging>
+      <dependencies>
+        <dependency>
+          <groupId>${GROUP}</groupId>
+          <artifactId>${ARTIFACT}</artifactId>
+          <version>${requested}</version>
+        </dependency>
+      </dependencies>
+    </project>
+    POM
+
+    mvn --batch-mode install:install-file \
+      -Dfile=/tmp/kotlogramme.aar \
+      -DpomFile=/tmp/kotlogramme-android.pom \
+      -Dpackaging=aar
+    echo "installed Android AAR ${GROUP}:${ARTIFACT}-android:${requested}"

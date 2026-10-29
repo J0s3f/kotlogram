@@ -10,6 +10,15 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
 
 ## Unreleased
 
+### Added
+
+- **Android support.** A new `kotlogramme-android` module produces an AAR with the Rust bridge
+  cross-compiled for `arm64-v8a`, `armeabi-v7a`, `x86` and `x86_64`. The native libraries are
+  built with the `release-shipped` profile (LTO and `codegen-units = 1`) and published beside the
+  desktop jar on the GitHub Release and through JitPack as `com.github.J0s3f:kotlogram-android`.
+  `NativeLibraryLoader` already falls back to `System.loadLibrary`, which is how the AAR's
+  libraries are loaded on Android. The desktop artifact is unchanged.
+
 ### Changed
 
 - Update grammers to revision `1e31e73cd9797790905bbea82cd75adcbe6f1242`. HTML parse mode

@@ -56,10 +56,10 @@ if (ndkHome != null) {
             environment("CC", "$clangBin/$linker")
             environment("AR", "$clangBin/llvm-ar" + if (isWindows) ".exe" else "")
             environment("CARGO_TARGET_${target.replace("-", "_").uppercase()}_LINKER", "$clangBin/$linker")
-            commandLine("cargo", "build", "--target", target)
+            commandLine("cargo", "build", "--profile", "release-shipped", "--target", target)
             doLast {
                 copy {
-                    from("../native/target/$target/debug/libkotlogramme.so")
+                    from("../native/target/$target/release-shipped/libkotlogramme.so")
                     into("src/main/jniLibs/$abi")
                 }
             }
