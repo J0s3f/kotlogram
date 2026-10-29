@@ -16,7 +16,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "kotlogramme"
 include(":kotlogramme-kotlin")
-if (System.getenv("ANDROID_HOME") != null || System.getenv("ANDROID_SDK_ROOT") != null) {
+if (System.getenv("KOTLOGRAMME_INCLUDE_ANDROID") == "1") {
     include(":kotlogramme-android")
     include(":kotlogramme-android-test")
 }
