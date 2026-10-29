@@ -10,3 +10,5 @@ native/target/
 local.properties
 .kotlin/
 .secret/
+
+kotlogramme-android/src/main/jniLibs/**/*.so
