@@ -586,11 +586,17 @@ jobs:
         run: |
           version="${{ steps.release.outputs.version }}"
           tag="v$version"
-          base="https://jitpack.io/com/github/J0s3f/kotlogram/$tag"
-          curl -fsSL --output /tmp/jitpack.jar "$base/kotlogram-$tag.jar"
+          # JitPack serves the native-bearing jar as the `kotlogramme` module; the
+          # repository-named `kotlogram` wrapper only declares it as a dependency.
+          base="https://jitpack.io/com/github/J0s3f/kotlogram/kotlogramme/$tag"
+          curl -fsSL --output /tmp/jitpack.jar "$base/kotlogramme-$tag.jar"
           echo "served jar size: $(stat -c%s /tmp/jitpack.jar) bytes"
           count="$(unzip -l /tmp/jitpack.jar | grep -cE '^.*native/.*kotlogramme\.(dll|so|dylib)$' || true)"
           echo "bundled native libraries found: $count"
           test "$count" -ge 6
+          aar_base="https://jitpack.io/com/github/J0s3f/kotlogram/kotlogram-android/$tag"
+          curl -fsSL --output /tmp/jitpack.aar "$aar_base/kotlogram-android-$tag.aar"
+          unzip -l /tmp/jitpack.aar | grep -q 'jni/arm64-v8a/libkotlogramme.so'
+          echo "served Android AAR contains arm64-v8a: ok"
           gh release view "$tag" --repo "${{ github.repository }}" --json assets \
             --jq '.assets[].name' | grep -q '^kotlogramme-.*\.jar\.asc$'
