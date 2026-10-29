@@ -19,6 +19,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":kotlogramme-android"))
-    implementation(project(":kotlogramme-kotlin"))
+    // Resolve the Android artifact from JitPack, exactly as a consumer would.
+    // The AAR carries the four native libraries; the jar carries the Kotlin/JVM classes.
+    implementation("com.github.J0s3f.kotlogram:kotlogram-android:v0.9.14") {
+        exclude(group = "com.github.J0s3f.kotlogram", module = "kotlogram")
+    }
+    implementation("com.github.J0s3f.kotlogram:kotlogramme:v0.9.14")
 }

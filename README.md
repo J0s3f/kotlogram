@@ -204,6 +204,54 @@ dependencies {
 Requires JDK 17 or newer. See [the publishing guide](docs/publishing.md) for the release process and
 [`CHANGELOG.md`](CHANGELOG.md) for what each release contains.
 
+### Android
+
+The Android artifact is an AAR carrying the same Kotlin facade and the Rust bridge
+cross-compiled for `arm64-v8a`, `armeabi-v7a`, `x86` and `x86_64`. It is published to
+JitPack beside the desktop jar:
+
+```kotlin
+repositories {
+    maven("https://jitpack.io")
+}
+
+dependencies {
+    implementation("com.github.J0s3f.kotlogram:kotlogram-android:v0.9.14")
+}
+```
+
+The native libraries are loaded with `System.loadLibrary("kotlogramme")`; no extraction or
+manual `jniLibs` setup is needed. Use app-private storage for the session file and keep
+network calls off the main thread:
+
+```kotlin
+val session = File(context.filesDir, "telegram.session")
+Thread {
+    Kotlogram.getDefaultClient(
+        TelegramApp(apiId, apiHash),
+        FileTelegramApiStorage(session.toPath()),
+    ).use { client ->
+        if (!client.isAuthorized()) {
+            client.authImportBotAuthorization(botToken)
+        }
+        client.messagesSendMessage(peer, "Hello from Android")
+    }
+}.start()
+```
+
+Add `android.permission.INTERNET` to the application manifest. `minSdk` is 24.
+
+If you are pinning `v0.9.14` specifically: that release's AAR POM names the classes artifact
+incorrectly, so add the classes jar explicitly and exclude the stale transitive entry. Later
+releases fix the POM, after which the single AAR dependency above is enough:
+
+```kotlin
+implementation("com.github.J0s3f.kotlogram:kotlogram-android:v0.9.14") {
+    exclude(group = "com.github.J0s3f.kotlogram", module = "kotlogram")
+}
+implementation("com.github.J0s3f.kotlogram:kotlogramme:v0.9.14")
+```
+
 ### Sample project
 
 [`kotlogramme-cli`](https://github.com/J0s3f/kotlogramme-cli) is a command-line client built on this

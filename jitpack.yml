@@ -94,10 +94,11 @@ install:
       <version>${requested}</version>
       <packaging>aar</packaging>
       <dependencies>
+        <!-- The Kotlin/JVM classes live in the Gradle-published kotlogramme artifact. -->
         <dependency>
-          <groupId>${GROUP}</groupId>
-          <artifactId>${ARTIFACT}</artifactId>
-          <version>${requested}</version>
+          <groupId>com.github.J0s3f.kotlogram</groupId>
+          <artifactId>kotlogramme</artifactId>
+          <version>v${requested}</version>
         </dependency>
       </dependencies>
     </project>
