@@ -13,10 +13,10 @@ crate-type = ["cdylib"]
 # grammers is developed on its codeberg repository and releases are rare, so the bridge
 # tracks the repository rather than a crates.io version. The three crates below are the same
 # workspace, which keeps their versions unified. The rev pin includes HTML date formatting
-# and TL layer 232; bump it deliberately after reviewing upstream changes.
-grammers-client = { git = "https://codeberg.org/Lonami/grammers.git", rev = "1e31e73cd9797790905bbea82cd75adcbe6f1242", features = ["html", "markdown"] }
-grammers-mtsender = { git = "https://codeberg.org/Lonami/grammers.git", rev = "1e31e73cd9797790905bbea82cd75adcbe6f1242" }
-grammers-session = { git = "https://codeberg.org/Lonami/grammers.git", rev = "1e31e73cd9797790905bbea82cd75adcbe6f1242" }
+# and TL layer 233 (grammers 0.12.0); bump it deliberately after reviewing upstream changes.
+grammers-client = { git = "https://codeberg.org/Lonami/grammers.git", rev = "e61cf8585e1e9969ab81eda9fb4725a1500e2d86", features = ["html", "markdown"] }
+grammers-mtsender = { git = "https://codeberg.org/Lonami/grammers.git", rev = "e61cf8585e1e9969ab81eda9fb4725a1500e2d86" }
+grammers-session = { git = "https://codeberg.org/Lonami/grammers.git", rev = "e61cf8585e1e9969ab81eda9fb4725a1500e2d86" }
 # grammers' search date bounds take a `jiff::Timestamp`, so the bridge carries jiff to build one.
 jiff = "0.2.38"
 mime_guess = "2"

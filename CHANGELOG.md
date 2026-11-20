@@ -10,6 +10,17 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
 
 ## Unreleased
 
+## 0.9.16 - 2026-11-21
+
+### Changed
+
+- Update grammers to 0.12.0 (revision `e61cf8585e1e9969ab81eda9fb4725a1500e2d86`). Telegram TL layer is
+  now 233; the bundled raw schema was regenerated as `telegram-layer-233.json`. The layer adds bot
+  widgets (`inputMediaWidget`, `messageMediaWidget`, `messages.getBotWidgetQueryAnswer` and friends),
+  a forum sidebar flag on users and channels (`channels.toggleForum` takes a new `sidebar`
+  argument), `updateEditForumTopic` and audio-file transcription. These are reachable through the
+  raw API; no typed facade was added for them. Dependencies were refreshed with `cargo update`.
+
 ## 0.9.15 - 2026-10-29
 
 ### Added

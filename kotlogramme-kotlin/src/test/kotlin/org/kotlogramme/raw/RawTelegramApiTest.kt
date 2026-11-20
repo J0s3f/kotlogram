@@ -102,4 +102,58 @@ class RawTelegramApiTest {
             RawTelegramApi.decodeResponse("help.getNearestDc", response),
         )
     }
+
+    @Test
+    fun `layer 233 from grammers 0_12_0 adds bot widgets, forum sidebar and audio transcription`() {
+        assertEquals(233, RawTelegramApi.LAYER)
+        assertEquals(233, Kotlogram.API_LAYER)
+
+        // New requests and the changed channels.toggleForum signature.
+        listOf(
+            "messages.getBotWidgetQueryAnswer",
+            "messages.setBotWidgetQueryAnswer",
+            "messages.editMessageWidgetData",
+            "messages.editInlineBotMessageWidgetData",
+            "messages.editWidgetData",
+            "messages.getWidgetPublicData",
+            "messages.transcribeAudioFile",
+            "messages.getTranscriptionLangs",
+        ).forEach { assertNotNull(RawTelegramApi.method(it), "missing Layer-233 method $it") }
+        assertTrue("sidebar:Bool" in assertNotNull(RawTelegramApi.method("channels.toggleForum")).parameters)
+
+        // New constructors: widget media/updates, the forum sidebar flag and the user wallet.
+        listOf(
+            "inputMediaWidget",
+            "inputMediaWidgetId",
+            "messageMediaWidget",
+            "updateEditForumTopic",
+            "updateBotWidgetQuery",
+            "updateMessageWidgetData",
+            "updateTranscribedAudioFile",
+            "inputBotInlineMessageWidget",
+            "botInlineMessageWidget",
+            "widgetQueryTypeData",
+            "userWallet",
+            "messages.botWidgetQueryAnswer",
+            "messages.widgetPublicData",
+        ).forEach { assertNotNull(RawTelegramApi.constructor(it), "missing Layer-233 constructor $it") }
+        assertTrue("forum_sidebar:flags2.22?true" in assertNotNull(RawTelegramApi.constructor("user")).parameters)
+        assertTrue("forum_sidebar:flags2.23?true" in assertNotNull(RawTelegramApi.constructor("channel")).parameters)
+
+        // A request with only optional parameters encodes its flags word as zero...
+        val request = TlReader(RawTelegramApi.encodeRequest("messages.getTranscriptionLangs", emptyMap()))
+        request.constructor(assertNotNull(RawTelegramApi.method("messages.getTranscriptionLangs")).constructorId)
+        assertEquals(0, request.int())
+        request.requireFullyRead()
+
+        // ...and a new Layer-233 response type decodes through the dynamic codec.
+        val body = TlWriter()
+            .constructor(assertNotNull(RawTelegramApi.constructor("messages.widgetPublicDataNotModified")).constructorId)
+            .int(60)
+            .toByteArray()
+        assertEquals(
+            RawValue.Object("messages.widgetPublicDataNotModified", mapOf("period" to RawValue.IntValue(60))),
+            RawTelegramApi.decodeResponse("messages.getWidgetPublicData", body),
+        )
+    }
 }

@@ -288,6 +288,20 @@
       "result": "InputMedia"
     },
     {
+      "constructorId": 1157021774,
+      "declaration": "inputMediaWidget#44f6c04e flags:# allow_queries:flags.0?true shared_widget:flags.1?true width:int height:int html:string public_data:flags.2?string chat_data:flags.3?string = InputMedia;",
+      "name": "inputMediaWidget",
+      "parameters": "flags:# allow_queries:flags.0?true shared_widget:flags.1?true width:int height:int html:string public_data:flags.2?string chat_data:flags.3?string",
+      "result": "InputMedia"
+    },
+    {
+      "constructorId": 2089114805,
+      "declaration": "inputMediaWidgetId#7c855cb5 flags:# widget_id:long chat_data:flags.0?string = InputMedia;",
+      "name": "inputMediaWidgetId",
+      "parameters": "flags:# widget_id:long chat_data:flags.0?string",
+      "result": "InputMedia"
+    },
+    {
       "constructorId": 480546647,
       "declaration": "inputChatPhotoEmpty#1ca48f57 = InputChatPhoto;",
       "name": "inputChatPhotoEmpty",
@@ -506,9 +520,9 @@
     },
     {
       "constructorId": -1313289085,
-      "declaration": "user#b1b8cc83 flags:# self:flags.10?true contact:flags.11?true mutual_contact:flags.12?true deleted:flags.13?true bot:flags.14?true bot_chat_history:flags.15?true bot_nochats:flags.16?true verified:flags.17?true restricted:flags.18?true min:flags.20?true bot_inline_geo:flags.21?true support:flags.23?true scam:flags.24?true apply_min_photo:flags.25?true fake:flags.26?true bot_attach_menu:flags.27?true premium:flags.28?true attach_menu_enabled:flags.29?true flags2:# bot_can_edit:flags2.1?true close_friend:flags2.2?true stories_hidden:flags2.3?true stories_unavailable:flags2.4?true contact_require_premium:flags2.10?true bot_business:flags2.11?true bot_has_main_app:flags2.13?true bot_forum_view:flags2.16?true bot_forum_can_manage_topics:flags2.17?true bot_can_manage_bots:flags2.18?true bot_guestchat:flags2.19?true bot_guard:flags2.20?true id:long access_hash:flags.0?long first_name:flags.1?string last_name:flags.2?string username:flags.3?string phone:flags.4?string photo:flags.5?UserProfilePhoto status:flags.6?UserStatus bot_info_version:flags.14?int restriction_reason:flags.18?Vector<RestrictionReason> bot_inline_placeholder:flags.19?string lang_code:flags.22?string emoji_status:flags.30?EmojiStatus usernames:flags2.0?Vector<Username> stories_max_id:flags2.5?RecentStory color:flags2.8?PeerColor profile_color:flags2.9?PeerColor bot_active_users:flags2.12?int bot_verification_icon:flags2.14?long send_paid_messages_stars:flags2.15?long linked_community_id:flags2.21?long = User;",
+      "declaration": "user#b1b8cc83 flags:# self:flags.10?true contact:flags.11?true mutual_contact:flags.12?true deleted:flags.13?true bot:flags.14?true bot_chat_history:flags.15?true bot_nochats:flags.16?true verified:flags.17?true restricted:flags.18?true min:flags.20?true bot_inline_geo:flags.21?true support:flags.23?true scam:flags.24?true apply_min_photo:flags.25?true fake:flags.26?true bot_attach_menu:flags.27?true premium:flags.28?true attach_menu_enabled:flags.29?true flags2:# bot_can_edit:flags2.1?true close_friend:flags2.2?true stories_hidden:flags2.3?true stories_unavailable:flags2.4?true contact_require_premium:flags2.10?true bot_business:flags2.11?true bot_has_main_app:flags2.13?true bot_forum_view:flags2.16?true bot_forum_can_manage_topics:flags2.17?true bot_can_manage_bots:flags2.18?true bot_guestchat:flags2.19?true bot_guard:flags2.20?true bot_forum_sidebar:flags2.22?true id:long access_hash:flags.0?long first_name:flags.1?string last_name:flags.2?string username:flags.3?string phone:flags.4?string photo:flags.5?UserProfilePhoto status:flags.6?UserStatus bot_info_version:flags.14?int restriction_reason:flags.18?Vector<RestrictionReason> bot_inline_placeholder:flags.19?string lang_code:flags.22?string emoji_status:flags.30?EmojiStatus usernames:flags2.0?Vector<Username> stories_max_id:flags2.5?RecentStory color:flags2.8?PeerColor profile_color:flags2.9?PeerColor bot_active_users:flags2.12?int bot_verification_icon:flags2.14?long send_paid_messages_stars:flags2.15?long linked_community_id:flags2.21?long = User;",
       "name": "user",
-      "parameters": "flags:# self:flags.10?true contact:flags.11?true mutual_contact:flags.12?true deleted:flags.13?true bot:flags.14?true bot_chat_history:flags.15?true bot_nochats:flags.16?true verified:flags.17?true restricted:flags.18?true min:flags.20?true bot_inline_geo:flags.21?true support:flags.23?true scam:flags.24?true apply_min_photo:flags.25?true fake:flags.26?true bot_attach_menu:flags.27?true premium:flags.28?true attach_menu_enabled:flags.29?true flags2:# bot_can_edit:flags2.1?true close_friend:flags2.2?true stories_hidden:flags2.3?true stories_unavailable:flags2.4?true contact_require_premium:flags2.10?true bot_business:flags2.11?true bot_has_main_app:flags2.13?true bot_forum_view:flags2.16?true bot_forum_can_manage_topics:flags2.17?true bot_can_manage_bots:flags2.18?true bot_guestchat:flags2.19?true bot_guard:flags2.20?true id:long access_hash:flags.0?long first_name:flags.1?string last_name:flags.2?string username:flags.3?string phone:flags.4?string photo:flags.5?UserProfilePhoto status:flags.6?UserStatus bot_info_version:flags.14?int restriction_reason:flags.18?Vector<RestrictionReason> bot_inline_placeholder:flags.19?string lang_code:flags.22?string emoji_status:flags.30?EmojiStatus usernames:flags2.0?Vector<Username> stories_max_id:flags2.5?RecentStory color:flags2.8?PeerColor profile_color:flags2.9?PeerColor bot_active_users:flags2.12?int bot_verification_icon:flags2.14?long send_paid_messages_stars:flags2.15?long linked_community_id:flags2.21?long",
+      "parameters": "flags:# self:flags.10?true contact:flags.11?true mutual_contact:flags.12?true deleted:flags.13?true bot:flags.14?true bot_chat_history:flags.15?true bot_nochats:flags.16?true verified:flags.17?true restricted:flags.18?true min:flags.20?true bot_inline_geo:flags.21?true support:flags.23?true scam:flags.24?true apply_min_photo:flags.25?true fake:flags.26?true bot_attach_menu:flags.27?true premium:flags.28?true attach_menu_enabled:flags.29?true flags2:# bot_can_edit:flags2.1?true close_friend:flags2.2?true stories_hidden:flags2.3?true stories_unavailable:flags2.4?true contact_require_premium:flags2.10?true bot_business:flags2.11?true bot_has_main_app:flags2.13?true bot_forum_view:flags2.16?true bot_forum_can_manage_topics:flags2.17?true bot_can_manage_bots:flags2.18?true bot_guestchat:flags2.19?true bot_guard:flags2.20?true bot_forum_sidebar:flags2.22?true id:long access_hash:flags.0?long first_name:flags.1?string last_name:flags.2?string username:flags.3?string phone:flags.4?string photo:flags.5?UserProfilePhoto status:flags.6?UserStatus bot_info_version:flags.14?int restriction_reason:flags.18?Vector<RestrictionReason> bot_inline_placeholder:flags.19?string lang_code:flags.22?string emoji_status:flags.30?EmojiStatus usernames:flags2.0?Vector<Username> stories_max_id:flags2.5?RecentStory color:flags2.8?PeerColor profile_color:flags2.9?PeerColor bot_active_users:flags2.12?int bot_verification_icon:flags2.14?long send_paid_messages_stars:flags2.15?long linked_community_id:flags2.21?long",
       "result": "User"
     },
     {
@@ -590,9 +604,9 @@
     },
     {
       "constructorId": 2060538432,
-      "declaration": "channel#7ad15240 flags:# creator:flags.0?true left:flags.2?true broadcast:flags.5?true verified:flags.7?true megagroup:flags.8?true restricted:flags.9?true signatures:flags.11?true min:flags.12?true scam:flags.19?true has_link:flags.20?true has_geo:flags.21?true slowmode_enabled:flags.22?true call_active:flags.23?true call_not_empty:flags.24?true fake:flags.25?true gigagroup:flags.26?true noforwards:flags.27?true join_to_send:flags.28?true join_request:flags.29?true forum:flags.30?true flags2:# stories_hidden:flags2.1?true stories_hidden_min:flags2.2?true stories_unavailable:flags2.3?true signature_profiles:flags2.12?true autotranslation:flags2.15?true broadcast_messages_allowed:flags2.16?true monoforum:flags2.17?true forum_tabs:flags2.19?true in_news:flags2.21?true id:long access_hash:flags.13?long title:string username:flags.6?string photo:ChatPhoto date:int restriction_reason:flags.9?Vector<RestrictionReason> admin_rights:flags.14?ChatAdminRights banned_rights:flags.15?ChatBannedRights default_banned_rights:flags.18?ChatBannedRights participants_count:flags.17?int usernames:flags2.0?Vector<Username> stories_max_id:flags2.4?RecentStory color:flags2.7?PeerColor profile_color:flags2.8?PeerColor emoji_status:flags2.9?EmojiStatus level:flags2.10?int subscription_until_date:flags2.11?int bot_verification_icon:flags2.13?long send_paid_messages_stars:flags2.14?long linked_monoforum_id:flags2.18?long linked_community_id:flags2.20?long pinned_msg_id:flags2.22?int = Chat;",
+      "declaration": "channel#7ad15240 flags:# creator:flags.0?true left:flags.2?true broadcast:flags.5?true verified:flags.7?true megagroup:flags.8?true restricted:flags.9?true signatures:flags.11?true min:flags.12?true scam:flags.19?true has_link:flags.20?true has_geo:flags.21?true slowmode_enabled:flags.22?true call_active:flags.23?true call_not_empty:flags.24?true fake:flags.25?true gigagroup:flags.26?true noforwards:flags.27?true join_to_send:flags.28?true join_request:flags.29?true forum:flags.30?true flags2:# stories_hidden:flags2.1?true stories_hidden_min:flags2.2?true stories_unavailable:flags2.3?true signature_profiles:flags2.12?true autotranslation:flags2.15?true broadcast_messages_allowed:flags2.16?true monoforum:flags2.17?true forum_tabs:flags2.19?true in_news:flags2.21?true forum_sidebar:flags2.23?true id:long access_hash:flags.13?long title:string username:flags.6?string photo:ChatPhoto date:int restriction_reason:flags.9?Vector<RestrictionReason> admin_rights:flags.14?ChatAdminRights banned_rights:flags.15?ChatBannedRights default_banned_rights:flags.18?ChatBannedRights participants_count:flags.17?int usernames:flags2.0?Vector<Username> stories_max_id:flags2.4?RecentStory color:flags2.7?PeerColor profile_color:flags2.8?PeerColor emoji_status:flags2.9?EmojiStatus level:flags2.10?int subscription_until_date:flags2.11?int bot_verification_icon:flags2.13?long send_paid_messages_stars:flags2.14?long linked_monoforum_id:flags2.18?long linked_community_id:flags2.20?long pinned_msg_id:flags2.22?int = Chat;",
       "name": "channel",
-      "parameters": "flags:# creator:flags.0?true left:flags.2?true broadcast:flags.5?true verified:flags.7?true megagroup:flags.8?true restricted:flags.9?true signatures:flags.11?true min:flags.12?true scam:flags.19?true has_link:flags.20?true has_geo:flags.21?true slowmode_enabled:flags.22?true call_active:flags.23?true call_not_empty:flags.24?true fake:flags.25?true gigagroup:flags.26?true noforwards:flags.27?true join_to_send:flags.28?true join_request:flags.29?true forum:flags.30?true flags2:# stories_hidden:flags2.1?true stories_hidden_min:flags2.2?true stories_unavailable:flags2.3?true signature_profiles:flags2.12?true autotranslation:flags2.15?true broadcast_messages_allowed:flags2.16?true monoforum:flags2.17?true forum_tabs:flags2.19?true in_news:flags2.21?true id:long access_hash:flags.13?long title:string username:flags.6?string photo:ChatPhoto date:int restriction_reason:flags.9?Vector<RestrictionReason> admin_rights:flags.14?ChatAdminRights banned_rights:flags.15?ChatBannedRights default_banned_rights:flags.18?ChatBannedRights participants_count:flags.17?int usernames:flags2.0?Vector<Username> stories_max_id:flags2.4?RecentStory color:flags2.7?PeerColor profile_color:flags2.8?PeerColor emoji_status:flags2.9?EmojiStatus level:flags2.10?int subscription_until_date:flags2.11?int bot_verification_icon:flags2.13?long send_paid_messages_stars:flags2.14?long linked_monoforum_id:flags2.18?long linked_community_id:flags2.20?long pinned_msg_id:flags2.22?int",
+      "parameters": "flags:# creator:flags.0?true left:flags.2?true broadcast:flags.5?true verified:flags.7?true megagroup:flags.8?true restricted:flags.9?true signatures:flags.11?true min:flags.12?true scam:flags.19?true has_link:flags.20?true has_geo:flags.21?true slowmode_enabled:flags.22?true call_active:flags.23?true call_not_empty:flags.24?true fake:flags.25?true gigagroup:flags.26?true noforwards:flags.27?true join_to_send:flags.28?true join_request:flags.29?true forum:flags.30?true flags2:# stories_hidden:flags2.1?true stories_hidden_min:flags2.2?true stories_unavailable:flags2.3?true signature_profiles:flags2.12?true autotranslation:flags2.15?true broadcast_messages_allowed:flags2.16?true monoforum:flags2.17?true forum_tabs:flags2.19?true in_news:flags2.21?true forum_sidebar:flags2.23?true id:long access_hash:flags.13?long title:string username:flags.6?string photo:ChatPhoto date:int restriction_reason:flags.9?Vector<RestrictionReason> admin_rights:flags.14?ChatAdminRights banned_rights:flags.15?ChatBannedRights default_banned_rights:flags.18?ChatBannedRights participants_count:flags.17?int usernames:flags2.0?Vector<Username> stories_max_id:flags2.4?RecentStory color:flags2.7?PeerColor profile_color:flags2.8?PeerColor emoji_status:flags2.9?EmojiStatus level:flags2.10?int subscription_until_date:flags2.11?int bot_verification_icon:flags2.13?long send_paid_messages_stars:flags2.14?long linked_monoforum_id:flags2.18?long linked_community_id:flags2.20?long pinned_msg_id:flags2.22?int",
       "result": "Chat"
     },
     {
@@ -838,6 +852,13 @@
       "declaration": "messageMediaVideoStream#ca5cab89 flags:# rtmp_stream:flags.0?true call:InputGroupCall = MessageMedia;",
       "name": "messageMediaVideoStream",
       "parameters": "flags:# rtmp_stream:flags.0?true call:InputGroupCall",
+      "result": "MessageMedia"
+    },
+    {
+      "constructorId": 574157332,
+      "declaration": "messageMediaWidget#2238f214 flags:# is_copy:flags.0?true can_query:flags.1?true background_query:flags.2?true width:int height:int payload:bytes public_data:flags.3?string public_data_hash:flags.3?long chat_data:flags.4?string widget_id:flags.5?long = MessageMedia;",
+      "name": "messageMediaWidget",
+      "parameters": "flags:# is_copy:flags.0?true can_query:flags.1?true background_query:flags.2?true width:int height:int payload:bytes public_data:flags.3?string public_data_hash:flags.3?long chat_data:flags.4?string widget_id:flags.5?long",
       "result": "MessageMedia"
     },
     {
@@ -3081,6 +3102,48 @@
       "result": "Update"
     },
     {
+      "constructorId": 593913436,
+      "declaration": "updateEditForumTopic#2366665c flags:# peer:Peer topic_id:int title:flags.0?string icon_emoji_id:flags.1?long closed:flags.2?Bool hidden:flags.3?Bool = Update;",
+      "name": "updateEditForumTopic",
+      "parameters": "flags:# peer:Peer topic_id:int title:flags.0?string icon_emoji_id:flags.1?long closed:flags.2?Bool hidden:flags.3?Bool",
+      "result": "Update"
+    },
+    {
+      "constructorId": -1284243864,
+      "declaration": "updateBotWidgetQuery#b373fe68 flags:# query_id:long query_type:WidgetQueryType user_id:long peer:Peer msg_id:int chat_instance:long chat_type:string data:bytes widget_id:flags.0?long wallet_card:flags.1?wallet.Card = Update;",
+      "name": "updateBotWidgetQuery",
+      "parameters": "flags:# query_id:long query_type:WidgetQueryType user_id:long peer:Peer msg_id:int chat_instance:long chat_type:string data:bytes widget_id:flags.0?long wallet_card:flags.1?wallet.Card",
+      "result": "Update"
+    },
+    {
+      "constructorId": -1510965752,
+      "declaration": "updateInlineBotWidgetQuery#a5f07e08 flags:# query_id:long query_type:WidgetQueryType user_id:long inline_message_id:InputBotInlineMessageID chat_instance:long chat_type:string data:bytes widget_id:flags.0?long wallet_card:flags.1?wallet.Card = Update;",
+      "name": "updateInlineBotWidgetQuery",
+      "parameters": "flags:# query_id:long query_type:WidgetQueryType user_id:long inline_message_id:InputBotInlineMessageID chat_instance:long chat_type:string data:bytes widget_id:flags.0?long wallet_card:flags.1?wallet.Card",
+      "result": "Update"
+    },
+    {
+      "constructorId": -91635977,
+      "declaration": "updateBotWidgetCopyQuery#fa89bef7 flags:# query_id:long query_type:WidgetQueryType user_id:long data:bytes widget_id:long wallet_card:flags.1?wallet.Card = Update;",
+      "name": "updateBotWidgetCopyQuery",
+      "parameters": "flags:# query_id:long query_type:WidgetQueryType user_id:long data:bytes widget_id:long wallet_card:flags.1?wallet.Card",
+      "result": "Update"
+    },
+    {
+      "constructorId": -1146062627,
+      "declaration": "updateMessageWidgetData#bbb078dd flags:# peer:Peer msg_id:int public_data:flags.0?string public_data_hash:flags.0?long chat_data:flags.1?string pts:int pts_count:int = Update;",
+      "name": "updateMessageWidgetData",
+      "parameters": "flags:# peer:Peer msg_id:int public_data:flags.0?string public_data_hash:flags.0?long chat_data:flags.1?string pts:int pts_count:int",
+      "result": "Update"
+    },
+    {
+      "constructorId": 1934372475,
+      "declaration": "updateTranscribedAudioFile#734c2e7b flags:# pending:flags.0?true transcription_id:long text:string = Update;",
+      "name": "updateTranscribedAudioFile",
+      "parameters": "flags:# pending:flags.0?true transcription_id:long text:string",
+      "result": "Update"
+    },
+    {
       "constructorId": -1519637954,
       "declaration": "updates.state#a56c2a3e pts:int qts:int date:int seq:int unread_count:int = updates.State;",
       "name": "updates.state",
@@ -4810,6 +4873,20 @@
       "result": "InputBotInlineMessage"
     },
     {
+      "constructorId": -174611472,
+      "declaration": "inputBotInlineMessageWidget#f597a3f0 flags:# allow_queries:flags.0?true shared_widget:flags.1?true invert_media:flags.6?true width:int height:int html:string public_data:flags.2?string chat_data:flags.3?string reply_markup:flags.4?ReplyMarkup message:string entities:flags.5?Vector<MessageEntity> = InputBotInlineMessage;",
+      "name": "inputBotInlineMessageWidget",
+      "parameters": "flags:# allow_queries:flags.0?true shared_widget:flags.1?true invert_media:flags.6?true width:int height:int html:string public_data:flags.2?string chat_data:flags.3?string reply_markup:flags.4?ReplyMarkup message:string entities:flags.5?Vector<MessageEntity>",
+      "result": "InputBotInlineMessage"
+    },
+    {
+      "constructorId": -24413909,
+      "declaration": "inputBotInlineMessageWidgetId#fe8b792b flags:# invert_media:flags.3?true widget_id:long chat_data:flags.0?string reply_markup:flags.1?ReplyMarkup message:string entities:flags.2?Vector<MessageEntity> = InputBotInlineMessage;",
+      "name": "inputBotInlineMessageWidgetId",
+      "parameters": "flags:# invert_media:flags.3?true widget_id:long chat_data:flags.0?string reply_markup:flags.1?ReplyMarkup message:string entities:flags.2?Vector<MessageEntity>",
+      "result": "InputBotInlineMessage"
+    },
+    {
       "constructorId": -2000710887,
       "declaration": "inputBotInlineResult#88bf9319 flags:# id:string type:string title:flags.1?string description:flags.2?string url:flags.3?string thumb:flags.4?InputWebDocument content:flags.5?InputWebDocument send_message:InputBotInlineMessage = InputBotInlineResult;",
       "name": "inputBotInlineResult",
@@ -4891,6 +4968,13 @@
       "declaration": "botInlineMessageRichMessage#a617e7b flags:# reply_markup:flags.2?ReplyMarkup rich_message:RichMessage = BotInlineMessage;",
       "name": "botInlineMessageRichMessage",
       "parameters": "flags:# reply_markup:flags.2?ReplyMarkup rich_message:RichMessage",
+      "result": "BotInlineMessage"
+    },
+    {
+      "constructorId": -1163823052,
+      "declaration": "botInlineMessageWidget#baa17834 flags:# invert_media:flags.5?true width:int height:int payload:bytes public_data:flags.0?string public_data_hash:flags.0?long chat_data:flags.1?string reply_markup:flags.2?ReplyMarkup widget_id:flags.3?long message:string entities:flags.4?Vector<MessageEntity> = BotInlineMessage;",
+      "name": "botInlineMessageWidget",
+      "parameters": "flags:# invert_media:flags.5?true width:int height:int payload:bytes public_data:flags.0?string public_data_hash:flags.0?long chat_data:flags.1?string reply_markup:flags.2?ReplyMarkup widget_id:flags.3?long message:string entities:flags.4?Vector<MessageEntity>",
       "result": "BotInlineMessage"
     },
     {
@@ -12039,6 +12123,55 @@
       "name": "payments.starGiftDepositPayload",
       "parameters": "nft_address:string payload:bytes amount:long",
       "result": "payments.StarGiftDepositPayload"
+    },
+    {
+      "constructorId": 1162684215,
+      "declaration": "userWallet#454d2737 flags:# address:string balance:long public_key:flags.0?bytes state_init:flags.0?bytes = UserWallet;",
+      "name": "userWallet",
+      "parameters": "flags:# address:string balance:long public_key:flags.0?bytes state_init:flags.0?bytes",
+      "result": "UserWallet"
+    },
+    {
+      "constructorId": 383307531,
+      "declaration": "widgetQueryTypeData#16d8cf0b flags:# with_wallet:flags.0?true = WidgetQueryType;",
+      "name": "widgetQueryTypeData",
+      "parameters": "flags:# with_wallet:flags.0?true",
+      "result": "WidgetQueryType"
+    },
+    {
+      "constructorId": 421545948,
+      "declaration": "widgetQueryTypeSignData#192047dc wallet:UserWallet sign_data:DataJSON = WidgetQueryType;",
+      "name": "widgetQueryTypeSignData",
+      "parameters": "wallet:UserWallet sign_data:DataJSON",
+      "result": "WidgetQueryType"
+    },
+    {
+      "constructorId": -12897356,
+      "declaration": "widgetQueryTypeSentTransaction#ff3b33b4 wallet:UserWallet msg_hash:string = WidgetQueryType;",
+      "name": "widgetQueryTypeSentTransaction",
+      "parameters": "wallet:UserWallet msg_hash:string",
+      "result": "WidgetQueryType"
+    },
+    {
+      "constructorId": -1783156701,
+      "declaration": "messages.botWidgetQueryAnswer#95b73023 flags:# result:flags.0?string = messages.BotWidgetQueryAnswer;",
+      "name": "messages.botWidgetQueryAnswer",
+      "parameters": "flags:# result:flags.0?string",
+      "result": "messages.BotWidgetQueryAnswer"
+    },
+    {
+      "constructorId": -1189515689,
+      "declaration": "messages.widgetPublicDataNotModified#b9196e57 period:int = messages.WidgetPublicData;",
+      "name": "messages.widgetPublicDataNotModified",
+      "parameters": "period:int",
+      "result": "messages.WidgetPublicData"
+    },
+    {
+      "constructorId": 71908351,
+      "declaration": "messages.widgetPublicData#4493bff hash:long data:string period:int = messages.WidgetPublicData;",
+      "name": "messages.widgetPublicData",
+      "parameters": "hash:long data:string period:int",
+      "result": "messages.WidgetPublicData"
     }
   ],
   "format": "kotlogram-raw-schema/v1",
@@ -15313,6 +15446,62 @@
       "result": "ShareThemeBackdrops"
     },
     {
+      "constructorId": 1549075833,
+      "declaration": "messages.getBotWidgetQueryAnswer#5c550579 peer:InputPeer msg_id:int query_type:WidgetQueryType data:bytes = messages.BotWidgetQueryAnswer;",
+      "name": "messages.getBotWidgetQueryAnswer",
+      "parameters": "peer:InputPeer msg_id:int query_type:WidgetQueryType data:bytes",
+      "result": "messages.BotWidgetQueryAnswer"
+    },
+    {
+      "constructorId": -120722326,
+      "declaration": "messages.setBotWidgetQueryAnswer#f8cdec6a flags:# query_id:long result:flags.0?string = Bool;",
+      "name": "messages.setBotWidgetQueryAnswer",
+      "parameters": "flags:# query_id:long result:flags.0?string",
+      "result": "Bool"
+    },
+    {
+      "constructorId": -165364706,
+      "declaration": "messages.editMessageWidgetData#f624bc1e flags:# peer:InputPeer id:int public_data:flags.0?string chat_data:flags.1?string = Updates;",
+      "name": "messages.editMessageWidgetData",
+      "parameters": "flags:# peer:InputPeer id:int public_data:flags.0?string chat_data:flags.1?string",
+      "result": "Updates"
+    },
+    {
+      "constructorId": 1670827563,
+      "declaration": "messages.editInlineBotMessageWidgetData#6396ce2b flags:# id:InputBotInlineMessageID public_data:flags.0?string chat_data:flags.1?string = Bool;",
+      "name": "messages.editInlineBotMessageWidgetData",
+      "parameters": "flags:# id:InputBotInlineMessageID public_data:flags.0?string chat_data:flags.1?string",
+      "result": "Bool"
+    },
+    {
+      "constructorId": -356301888,
+      "declaration": "messages.editWidgetData#eac343c0 flags:# widget_id:long public_data:string cache_time:flags.0?int = Bool;",
+      "name": "messages.editWidgetData",
+      "parameters": "flags:# widget_id:long public_data:string cache_time:flags.0?int",
+      "result": "Bool"
+    },
+    {
+      "constructorId": 1875194241,
+      "declaration": "messages.getWidgetPublicData#6fc53181 peer:InputPeer msg_id:int hash:long = messages.WidgetPublicData;",
+      "name": "messages.getWidgetPublicData",
+      "parameters": "peer:InputPeer msg_id:int hash:long",
+      "result": "messages.WidgetPublicData"
+    },
+    {
+      "constructorId": 120401655,
+      "declaration": "messages.transcribeAudioFile#72d2ef7 file:InputFile = messages.TranscribedAudio;",
+      "name": "messages.transcribeAudioFile",
+      "parameters": "file:InputFile",
+      "result": "messages.TranscribedAudio"
+    },
+    {
+      "constructorId": -1167271510,
+      "declaration": "messages.getTranscriptionLangs#ba6cd9aa flags:# peer:flags.0?InputPeer = Vector<string>;",
+      "name": "messages.getTranscriptionLangs",
+      "parameters": "flags:# peer:flags.0?InputPeer",
+      "result": "Vector<string>"
+    },
+    {
       "constructorId": -304838614,
       "declaration": "updates.getState#edd4882a = updates.State;",
       "name": "updates.getState",
@@ -15887,10 +16076,10 @@
       "result": "Bool"
     },
     {
-      "constructorId": 1073174324,
-      "declaration": "channels.toggleForum#3ff75734 channel:InputChannel enabled:Bool tabs:Bool = Updates;",
+      "constructorId": -1567282348,
+      "declaration": "channels.toggleForum#a2952b54 channel:InputChannel enabled:Bool tabs:Bool sidebar:Bool = Updates;",
       "name": "channels.toggleForum",
-      "parameters": "channel:InputChannel enabled:Bool tabs:Bool",
+      "parameters": "channel:InputChannel enabled:Bool tabs:Bool sidebar:Bool",
       "result": "Updates"
     },
     {
@@ -18057,6 +18246,6 @@
       "result": "wallet.Card"
     }
   ],
-  "layer": 232,
-  "schemaSha256": "1a4d6691018348d8735ccadc25c16ba9fb5ac7eae4bb5d4d422d0909edee2332"
+  "layer": 233,
+  "schemaSha256": "fc8052578d11dbfff9364313a2b39f352904b47699dd41d96cb93054806742d5"
 }
