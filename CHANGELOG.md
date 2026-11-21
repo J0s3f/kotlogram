@@ -10,6 +10,15 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
 
 ## Unreleased
 
+### Added
+
+- **Layer 233 facade** (design in `docs/layer-233-facade.md`): `channelsToggleForum` with the new
+  `sidebar` argument; `messagesTranscribeAudioFile` and `messagesGetTranscriptionLangs`; widgets
+  (`messagesSendWidget`, `messagesGetWidgetPublicData`, the three `...EditWidgetData` calls and the
+  bot widget query answer calls, plus `InlineWidgetResult` for inline answers); and four newly typed
+  updates on `TypedUpdate` (`forumTopicEdit`, `widgetQuery`, `widgetData`, `transcription`). Ten new
+  native operations. Wallet-carrying widget query types stay behind `invokeRaw`.
+
 ## 0.9.16 - 2026-11-21
 
 ### Changed

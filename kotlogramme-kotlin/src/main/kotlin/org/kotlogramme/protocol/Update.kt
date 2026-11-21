@@ -32,6 +32,14 @@ data class Update(
     val inlineQuery: InlineQueryUpdate? = null,
     val inlineSend: InlineSendUpdate? = null,
     val guestChatQuery: GuestChatQueryUpdate? = null,
+    /** Set for `forumTopicEdited`. */
+    val forumTopicEdit: ForumTopicEditUpdate? = null,
+    /** Set for `botWidgetQuery` and `inlineBotWidgetQuery`. */
+    val widgetQuery: WidgetQueryUpdate? = null,
+    /** Set for `messageWidgetData`. */
+    val widgetData: WidgetDataUpdate? = null,
+    /** Set for `audioTranscribed`. */
+    val transcription: TranscriptionUpdate? = null,
     /** The update as Telegram sent it, for the variants that carry no typed payload. */
     val rawUpdate: RawUpdate? = null,
 )

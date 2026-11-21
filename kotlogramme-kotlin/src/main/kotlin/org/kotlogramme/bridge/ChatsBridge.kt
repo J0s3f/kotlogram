@@ -18,6 +18,7 @@ import org.kotlogramme.protocol.PeerTarget
 import org.kotlogramme.protocol.ResolvePeerPayload
 import org.kotlogramme.protocol.SetAdminRightsPayload
 import org.kotlogramme.protocol.SetBannedRightsPayload
+import org.kotlogramme.protocol.ToggleForumPayload
 
 /** Joining, leaving, inspecting and moderating the membership of a chat. */
 internal interface ChatsBridge {
@@ -143,6 +144,24 @@ internal interface ChatsBridge {
             "resolvePeer",
             ResolvePeerPayload(id, accessHash),
         ).peer
+
+    /**
+     * Turns the supergroup [channel] into a forum, or back.
+     *
+     * [tabs] shows the topics as tabs at the top of the chat and [sidebar] (layer 233) in a sidebar.
+     */
+    @Operation("toggleForum")
+    fun toggleForum(
+        channel: Peer,
+        enabled: Boolean,
+        tabs: Boolean = false,
+        sidebar: Boolean = false,
+    ) {
+        transport.request<ToggleForumPayload, OperationResult>(
+            "toggleForum",
+            ToggleForumPayload(PeerTarget(channel.nativeHandle), enabled, tabs, sidebar),
+        )
+    }
 }
 
 /** The [ChatsBridge] [org.kotlogramme.TelegramClient] delegates to. */

@@ -252,7 +252,8 @@ class UpdatesProtocolTest {
              "inlineSend": {
                 "sender": ${USER.trimIndent()}, "text": "where is", "resultId": "result-1",
                 "messageId": {"dcId": 2, "accessHash": 77, "id": 88}},
-             "guestChatQuery": null, "rawUpdate": ${RAW_UPDATE.trimIndent()}}
+             "guestChatQuery": null, "forumTopicEdit": null, "widgetQuery": null,
+             "widgetData": null, "transcription": null, "rawUpdate": ${RAW_UPDATE.trimIndent()}}
         """.trimIndent()
 
         val UPDATE_NEW_MESSAGE = """
@@ -260,7 +261,8 @@ class UpdatesProtocolTest {
              "state": {"date": 1700000000000, "seq": 1,
                        "messageBox": {"kind": "common", "pts": 7, "channelId": null}},
              "deletedMessageIds": null, "deletedChannelId": null, "callbackQuery": null,
-             "inlineQuery": null, "inlineSend": null, "guestChatQuery": null, "rawUpdate": null}
+             "inlineQuery": null, "inlineSend": null, "guestChatQuery": null, "forumTopicEdit": null, "widgetQuery": null,
+             "widgetData": null, "transcription": null, "rawUpdate": null}
         """.trimIndent()
 
         val UPDATE_DELETED_GROUP = """
@@ -268,7 +270,8 @@ class UpdatesProtocolTest {
              "state": {"date": 1700000000000, "seq": 2,
                        "messageBox": {"kind": "common", "pts": 8, "channelId": null}},
              "deletedMessageIds": [31, 32], "deletedChannelId": null, "callbackQuery": null,
-             "inlineQuery": null, "inlineSend": null, "guestChatQuery": null, "rawUpdate": null}
+             "inlineQuery": null, "inlineSend": null, "guestChatQuery": null, "forumTopicEdit": null, "widgetQuery": null,
+             "widgetData": null, "transcription": null, "rawUpdate": null}
         """.trimIndent()
 
         val UPDATE_DELETED_CHANNEL = """
@@ -276,13 +279,15 @@ class UpdatesProtocolTest {
              "state": {"date": 1700000000000, "seq": 3,
                        "messageBox": {"kind": "channel", "pts": 3, "channelId": -1000007}},
              "deletedMessageIds": [31], "deletedChannelId": -1000007, "callbackQuery": null,
-             "inlineQuery": null, "inlineSend": null, "guestChatQuery": null, "rawUpdate": null}
+             "inlineQuery": null, "inlineSend": null, "guestChatQuery": null, "forumTopicEdit": null, "widgetQuery": null,
+             "widgetData": null, "transcription": null, "rawUpdate": null}
         """.trimIndent()
 
         val UPDATE_UNKNOWN = """
             {"kind": "unknown", "message": null, "state": null, "deletedMessageIds": null,
              "deletedChannelId": null, "callbackQuery": null, "inlineQuery": null,
-             "inlineSend": null, "guestChatQuery": null, "rawUpdate": ${RAW_UPDATE.trimIndent()}}
+             "inlineSend": null, "guestChatQuery": null, "forumTopicEdit": null, "widgetQuery": null,
+             "widgetData": null, "transcription": null, "rawUpdate": ${RAW_UPDATE.trimIndent()}}
         """.trimIndent()
 
         val CALLBACK_QUERY_CHAT = """
@@ -324,8 +329,9 @@ class UpdatesProtocolTest {
         """.trimIndent()
 
         val UPDATE_FIELDS = listOf(
-            "callbackQuery", "deletedChannelId", "deletedMessageIds", "guestChatQuery",
-            "inlineQuery", "inlineSend", "kind", "message", "rawUpdate", "state",
+            "callbackQuery", "deletedChannelId", "deletedMessageIds", "forumTopicEdit", "guestChatQuery",
+            "inlineQuery", "inlineSend", "kind", "message", "rawUpdate", "state", "transcription",
+            "widgetData", "widgetQuery",
         )
     }
 }

@@ -1,6 +1,11 @@
 package com.github.badoualy.telegram.api
 
 import org.kotlogramme.TelegramException
+import org.kotlogramme.protocol.ForumTopicEditUpdate
+import org.kotlogramme.protocol.TranscriptionUpdate
+import org.kotlogramme.protocol.WidgetDataUpdate
+import org.kotlogramme.protocol.WidgetQueryUpdate
+import org.kotlogramme.protocol.WidgetSpec
 import org.kotlogramme.protocol.Authorization as BridgeAuthorization
 import org.kotlogramme.protocol.AuthorizationsResult as BridgeAuthorizationsResult
 import org.kotlogramme.protocol.Button as BridgeButton
@@ -896,6 +901,14 @@ data class TypedUpdate(
     val inlineSend: InlineSendUpdate? = null,
     val guestChatQuery: GuestChatQueryUpdate? = null,
     val rawUpdate: RawUpdate? = null,
+    /** Set for `forumTopicEdited` (layer 233). */
+    val forumTopicEdit: ForumTopicEditUpdate? = null,
+    /** Set for `botWidgetQuery` and `inlineBotWidgetQuery` (layer 233). */
+    val widgetQuery: WidgetQueryUpdate? = null,
+    /** Set for `messageWidgetData` (layer 233). */
+    val widgetData: WidgetDataUpdate? = null,
+    /** Set for `audioTranscribed` (layer 233). */
+    val transcription: TranscriptionUpdate? = null,
 )
 
 /** The state grammers attaches to every update. [date] is epoch milliseconds. */
@@ -1067,7 +1080,23 @@ data class InlineMediaResult(
     val caption: String? = null,
 ) : InlineAnswerResult
 
-/** One result an inline answer carries: an [InlineArticle] or an [InlineMediaResult]. */
+/**
+ * A widget result an inline answer carries (layer 233): a new [widget], or an existing one by its
+ * [widgetId], with [messageText] as the text its message posts.
+ */
+data class InlineWidgetResult(
+    val title: String,
+    val widget: WidgetSpec? = null,
+    val widgetId: Long? = null,
+    val messageText: String = "",
+    val id: String? = null,
+    val description: String? = null,
+    val url: String? = null,
+    val thumbUrl: String? = null,
+    val invertMedia: Boolean = false,
+) : InlineAnswerResult
+
+/** One result an inline answer carries: an [InlineArticle], an [InlineMediaResult] or an [InlineWidgetResult]. */
 sealed interface InlineAnswerResult
 
 /** The prompt that offers to switch an inline query to the bot's private chat. */
@@ -1105,6 +1134,7 @@ internal fun BridgeUpdate.toTypedCompatibility() = TypedUpdate(
     kind, message?.toCompatibility(), state?.toCompatibility(), deletedMessageIds, deletedChannelId,
     callbackQuery?.toCompatibility(), inlineQuery?.toCompatibility(), inlineSend?.toCompatibility(),
     guestChatQuery?.toCompatibility(), rawUpdate?.toCompatibility(),
+    forumTopicEdit, widgetQuery, widgetData, transcription,
 )
 
 internal fun BridgeUpdateState.toCompatibility() =

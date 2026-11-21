@@ -107,4 +107,19 @@ interface ChatsApi : BridgeApi {
      */
     fun channelsResolvePeer(id: Long, accessHash: Long? = null): TelegramPeer? =
         bridge.resolvePeer(id, accessHash)?.toCompatibility()
+
+    /**
+     * Turns the supergroup [channel] into a forum, or back.
+     *
+     * [tabs] shows the topics as tabs at the top of the chat and [sidebar] (layer 233) in a
+     * sidebar.
+     */
+    fun channelsToggleForum(
+        channel: TelegramPeer,
+        enabled: Boolean,
+        tabs: Boolean = false,
+        sidebar: Boolean = false,
+    ) {
+        bridge.toggleForum(channel.native, enabled, tabs, sidebar)
+    }
 }

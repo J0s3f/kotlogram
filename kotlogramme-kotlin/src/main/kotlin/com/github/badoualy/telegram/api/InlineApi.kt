@@ -149,6 +149,18 @@ internal fun InlineAnswerResult.asSpec(): InlineResultSpec = when (this) {
         url = url,
         thumbUrl = thumbUrl,
     )
+    is InlineWidgetResult -> InlineResultSpec(
+        kind = "widget",
+        id = id,
+        title = title,
+        description = description,
+        url = url,
+        thumbUrl = thumbUrl,
+        messageText = messageText,
+        invertMedia = invertMedia,
+        widget = widget,
+        widgetId = widgetId,
+    )
     is InlineMediaResult -> InlineResultSpec(
         kind = kind,
         id = id,

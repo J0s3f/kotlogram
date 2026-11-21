@@ -107,6 +107,7 @@ pub(crate) const OPERATIONS: &[&str] = &[
     "acceptInviteLink",
     "parseInviteLink",
     "resolvePeer",
+    "toggleForum",
 ];
 
 /// Routes [operation] to its handler, or returns `None` when the name is not this module's.
@@ -126,8 +127,51 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
         "acceptInviteLink" => accept_invite_link,
         "parseInviteLink" => parse_invite_link,
         "resolvePeer" => resolve_peer_by_id,
+        "toggleForum" => toggle_forum,
         _ => return None,
     })
+}
+
+/// Payload of `toggleForum`: the supergroup, whether it is a forum and how the forum is shown.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct ToggleForumPayload {
+    pub(crate) channel: PeerTarget,
+    pub(crate) enabled: bool,
+    /// Show the topics as tabs at the top of the chat.
+    #[serde(default)]
+    pub(crate) tabs: bool,
+    /// Show the topics in a sidebar (layer 233).
+    #[serde(default)]
+    pub(crate) sidebar: bool,
+}
+
+/// Builds the layer's `channels.toggleForum`, which grammers has no helper for. Layer 233 added the
+/// `sidebar` argument and changed the constructor id, so the pre-233 raw call no longer works.
+pub(crate) fn toggle_forum_request(
+    channel: tl::enums::InputChannel,
+    data: &ToggleForumPayload,
+) -> tl::functions::channels::ToggleForum {
+    tl::functions::channels::ToggleForum {
+        channel,
+        enabled: data.enabled,
+        tabs: data.tabs,
+        sidebar: data.sidebar,
+    }
+}
+
+/// Turns a supergroup into a forum, or back, choosing how its topics are shown.
+fn toggle_forum(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: ToggleForumPayload = parse_payload(payload)?;
+    let channel = native.runtime.block_on(resolve_peer(native, &data.channel))?;
+    if !matches!(channel.id.kind(), PeerKind::Channel) {
+        return Err("only a supergroup can be a forum".to_owned());
+    }
+    native
+        .runtime
+        .block_on(native.client.invoke(&toggle_forum_request(channel.into(), &data)))
+        .map_err(invocation_error)?;
+    json_string(json!({ "ok": true }))
 }
 
 /// Lists a chat's participants, optionally filtered, together with the chat's total member count.

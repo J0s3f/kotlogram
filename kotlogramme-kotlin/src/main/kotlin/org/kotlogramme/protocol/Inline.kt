@@ -140,6 +140,9 @@ data class InlineResultSpec(
     val contentUrl: String? = null,
     /** The caption a media kind's message carries. */
     val caption: String? = null,
+    // Widget fields (kind `widget`): a new widget, or an existing one by its id.
+    val widget: WidgetSpec? = null,
+    val widgetId: Long? = null,
 )
 
 /** Payload of `answerInlineQuery`. */

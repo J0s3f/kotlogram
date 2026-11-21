@@ -1,5 +1,6 @@
 package com.github.badoualy.telegram.api
 
+import org.kotlogramme.protocol.AudioTranscription
 import java.io.InputStream
 import java.nio.file.Path
 import java.util.Base64
@@ -131,4 +132,18 @@ interface FilesApi : BridgeApi {
         all: Boolean = false,
     ): List<ProfilePhoto> =
         bridge.iterProfilePhotos(peer.native, limit, offset, all).map { it.toCompatibility() }
+
+    /**
+     * Transcribes an uploaded audio file, addressed by the [UploadedFile.handle] its upload
+     * returned.
+     *
+     * A [AudioTranscription.pending] answer carries partial text; the final text arrives as an
+     * `audioTranscribed` update ([TypedUpdate.transcription]).
+     */
+    fun messagesTranscribeAudioFile(uploadHandle: Long): AudioTranscription =
+        bridge.transcribeAudioFile(uploadHandle)
+
+    /** Lists the language codes audio can be transcribed in, for [peer] or for the account. */
+    fun messagesGetTranscriptionLangs(peer: TelegramPeer? = null): List<String> =
+        bridge.getTranscriptionLangs(peer?.native)
 }

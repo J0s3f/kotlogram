@@ -21,7 +21,10 @@ pub(crate) mod raw;
 pub(crate) mod stickers;
 pub(crate) mod updates;
 pub(crate) mod users;
+pub(crate) mod widgets;
 
+#[cfg(test)]
+mod layer233_tests;
 #[cfg(test)]
 mod tests;
 
@@ -50,6 +53,7 @@ const ROUTES: &[fn(&str) -> Option<Handler>] = &[
     markup::route,
     raw::route,
     users::route,
+    widgets::route,
 ];
 
 #[cfg_attr(not(test), allow(dead_code))]
@@ -72,6 +76,7 @@ const INVENTORY: &[&[&str]] = &[
     markup::OPERATIONS,
     raw::OPERATIONS,
     users::OPERATIONS,
+    widgets::OPERATIONS,
 ];
 
 /// Runs one operation by name.

@@ -29,6 +29,7 @@ use serde_json::json;
 
 use super::markup::reply_markup_from_spec;
 use super::media::external_url_media;
+use super::widgets::{widget_inline_message, WidgetSpec};
 use super::Handler;
 use crate::client::{resolve_peer, NativeClient};
 use crate::dto::inline::{inline_query_results_dto, SentInlineResultDto};
@@ -126,6 +127,9 @@ pub(crate) struct InlineResultSpec {
     pub(crate) content_url: Option<String>,
     /// The caption a media kind's message carries.
     pub(crate) caption: Option<String>,
+    // Widget fields (layer 233): a new widget, or an existing one by its id.
+    pub(crate) widget: Option<WidgetSpec>,
+    pub(crate) widget_id: Option<i64>,
 }
 
 impl InlineResultSpec {
@@ -166,12 +170,12 @@ struct InlineSwitchWebviewSpec {
 /// projection cannot.
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
-struct InlineMessageIdPayload {
-    dc_id: i32,
-    access_hash: i64,
-    id: i64,
+pub(crate) struct InlineMessageIdPayload {
+    pub(crate) dc_id: i32,
+    pub(crate) access_hash: i64,
+    pub(crate) id: i64,
     /// Set only when the layer's 64-bit constructor is the one to rebuild.
-    owner_id: Option<i64>,
+    pub(crate) owner_id: Option<i64>,
 }
 
 #[derive(Deserialize)]
@@ -347,7 +351,7 @@ fn answer_inline_query(native: &NativeClient, payload: &str) -> Result<String, S
 }
 
 /// Builds one result of an inline answer, whichever kind it is.
-fn inline_result(spec: &InlineResultSpec) -> Result<tl::enums::InputBotInlineResult, String> {
+pub(crate) fn inline_result(spec: &InlineResultSpec) -> Result<tl::enums::InputBotInlineResult, String> {
     match spec.result_kind() {
         "article" => article_result(&InlineArticleSpec {
             id: spec.id.clone(),
@@ -359,8 +363,43 @@ fn inline_result(spec: &InlineResultSpec) -> Result<tl::enums::InputBotInlineRes
             link_preview: spec.link_preview,
             invert_media: spec.invert_media,
         }),
+        "widget" => widget_result(spec),
         kind => media_result(spec, kind),
     }
+}
+
+/// Builds a widget result: an `article`-typed result whose message is the layer's widget message,
+/// either a new widget (`widget`) or an existing one (`widgetId`), with `messageText` as its text.
+fn widget_result(spec: &InlineResultSpec) -> Result<tl::enums::InputBotInlineResult, String> {
+    let title = spec.title.clone().unwrap_or_default();
+    if title.is_empty() {
+        return Err("an inline result title must not be empty".to_owned());
+    }
+    let send_message = widget_inline_message(
+        spec.widget.as_ref(),
+        spec.widget_id,
+        spec.message_text.clone().unwrap_or_default(),
+        spec.invert_media,
+    )?;
+    Ok(tl::enums::InputBotInlineResult::Result(
+        tl::types::InputBotInlineResult {
+            id: spec.id.clone().unwrap_or_else(generate_result_id),
+            r#type: "article".to_owned(),
+            title: Some(title),
+            description: spec.description.clone(),
+            url: spec.url.clone(),
+            thumb: spec.thumb_url.as_ref().map(|url| {
+                tl::enums::InputWebDocument::Document(tl::types::InputWebDocument {
+                    url: url.clone(),
+                    size: 0,
+                    mime_type: "image/jpeg".to_owned(),
+                    attributes: Vec::new(),
+                })
+            }),
+            content: None,
+            send_message,
+        },
+    ))
 }
 
 /// Builds one article result the way grammers' `Article` does: an article kind, the metadata, an
@@ -533,7 +572,7 @@ fn send_request(
 ///
 /// The layer usually sends `UpdateMessageId` mapping the random id to the new message id, next to
 /// the `UpdateNewMessage` that carries the message; a short bundle is the message id alone.
-fn sent_message_id(updates: &tl::enums::Updates, random_id: i64) -> Option<i32> {
+pub(crate) fn sent_message_id(updates: &tl::enums::Updates, random_id: i64) -> Option<i32> {
     let matched = match updates {
         tl::enums::Updates::Updates(bundle) => Some(&bundle.updates),
         tl::enums::Updates::Combined(bundle) => Some(&bundle.updates),
@@ -552,7 +591,7 @@ fn sent_message_id(updates: &tl::enums::Updates, random_id: i64) -> Option<i32> 
 
 /// Builds the reply-to a scheduled or threaded inline send carries, matching the plain reply the
 /// send side builds.
-fn input_reply_to(reply_to_msg_id: i32) -> tl::enums::InputReplyTo {
+pub(crate) fn input_reply_to(reply_to_msg_id: i32) -> tl::enums::InputReplyTo {
     tl::types::InputReplyToMessage {
         reply_to_msg_id,
         top_msg_id: None,
@@ -569,7 +608,7 @@ fn input_reply_to(reply_to_msg_id: i32) -> tl::enums::InputReplyTo {
 }
 
 /// Converts the epoch milliseconds the bridge carries into the seconds the layer schedules with.
-fn schedule_seconds(millis: i64) -> Result<i32, String> {
+pub(crate) fn schedule_seconds(millis: i64) -> Result<i32, String> {
     let seconds = millis.div_euclid(1_000);
     i32::try_from(seconds).map_err(|_| format!("the schedule date is out of range: {millis}"))
 }
@@ -624,7 +663,7 @@ fn inline_edit_media(spec: &InlineEditMediaSpec) -> Result<tl::enums::InputMedia
 }
 
 /// Rebuilds the layer identifier, choosing the 64-bit constructor only when its owner is known.
-fn inline_message_id(id: &InlineMessageIdPayload) -> tl::enums::InputBotInlineMessageId {
+pub(crate) fn inline_message_id(id: &InlineMessageIdPayload) -> tl::enums::InputBotInlineMessageId {
     match id.owner_id {
         Some(owner_id) => {
             tl::enums::InputBotInlineMessageId::Id64(tl::types::InputBotInlineMessageId64 {
@@ -655,7 +694,7 @@ fn generate_result_id() -> String {
 }
 
 /// The next value of the shared timestamp-seeded counter.
-fn next_generated_id() -> i64 {
+pub(crate) fn next_generated_id() -> i64 {
     static NEXT: AtomicI64 = AtomicI64::new(0);
     let counter = NEXT.fetch_add(1, Ordering::SeqCst);
     let now = SystemTime::now()

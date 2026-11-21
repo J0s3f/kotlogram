@@ -2,15 +2,18 @@ package org.kotlogramme.bridge
 
 import org.kotlogramme.Operation
 import org.kotlogramme.Transport
+import org.kotlogramme.protocol.AudioTranscription
 import org.kotlogramme.protocol.DownloadMediaChunkPayload
 import org.kotlogramme.protocol.DownloadMediaPayload
 import org.kotlogramme.protocol.DownloadResult
+import org.kotlogramme.protocol.GetTranscriptionLangsPayload
 import org.kotlogramme.protocol.MediaChunk
 import org.kotlogramme.protocol.Peer
 import org.kotlogramme.protocol.PeerTarget
 import org.kotlogramme.protocol.OperationResult
 import org.kotlogramme.protocol.ProfilePhoto
 import org.kotlogramme.protocol.ProfilePhotosPayload
+import org.kotlogramme.protocol.TranscribeAudioFilePayload
 import org.kotlogramme.protocol.UploadBytesPayload
 import org.kotlogramme.protocol.UploadedFile
 import org.kotlogramme.protocol.UploadFilePayload
@@ -127,6 +130,23 @@ internal interface FilesBridge {
         transport.request(
             "iterProfilePhotos",
             ProfilePhotosPayload(PeerTarget(peer.nativeHandle), limit, offset, all),
+        )
+
+    /**
+     * Transcribes the audio file a previous upload made, addressed by its [uploadHandle].
+     *
+     * A pending answer carries partial text; the final text arrives as an `audioTranscribed` update.
+     */
+    @Operation("transcribeAudioFile")
+    fun transcribeAudioFile(uploadHandle: Long): AudioTranscription =
+        transport.request("transcribeAudioFile", TranscribeAudioFilePayload(uploadHandle))
+
+    /** Lists the language codes audio can be transcribed in, for [peer] or for the account. */
+    @Operation("getTranscriptionLangs")
+    fun getTranscriptionLangs(peer: Peer? = null): List<String> =
+        transport.request(
+            "getTranscriptionLangs",
+            GetTranscriptionLangsPayload(peer?.let { PeerTarget(it.nativeHandle) }),
         )
 }
 

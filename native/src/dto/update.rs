@@ -57,6 +57,12 @@ pub(crate) struct UpdateDto {
     pub(crate) inline_send: Option<InlineSendDto>,
     pub(crate) guest_chat_query: Option<GuestChatQueryDto>,
 
+    // Layer-233 updates grammers delivers raw, which the bridge types itself.
+    pub(crate) forum_topic_edit: Option<ForumTopicEditDto>,
+    pub(crate) widget_query: Option<WidgetQueryDto>,
+    pub(crate) widget_data: Option<WidgetDataDto>,
+    pub(crate) transcription: Option<TranscriptionUpdateDto>,
+
     /// The TL update itself, for the variants that carry no typed payload.
     pub(crate) raw_update: Option<RawUpdateDto>,
 }
@@ -75,6 +81,10 @@ impl UpdateDto {
             inline_query: None,
             inline_send: None,
             guest_chat_query: None,
+            forum_topic_edit: None,
+            widget_query: None,
+            widget_data: None,
+            transcription: None,
             raw_update: None,
         }
     }
@@ -220,9 +230,170 @@ pub(crate) fn update_dto(native: &NativeClient, update: &Update) -> Result<Updat
         // `#[non_exhaustive]`, so a variant grammers adds after this bridge was written lands
         // here too, reporting `unknown` and carrying the same bytes rather than turning into an
         // update with nothing in it.
-        _ => dto.raw_update = Some(raw_update_dto(update.raw())),
+        _ => match typed_layer233_update(update.raw()) {
+            Some(mut typed) => {
+                typed.state = dto.state.take();
+                dto = typed;
+            }
+            None => dto.raw_update = Some(raw_update_dto(update.raw())),
+        },
     }
     Ok(dto)
+}
+
+/// A forum topic edit (`updateEditForumTopic`): only the fields that changed are set.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct ForumTopicEditDto {
+    pub(crate) peer_id: i64,
+    /// `user`, `chat` or `channel`.
+    pub(crate) peer_kind: &'static str,
+    pub(crate) topic_id: i32,
+    pub(crate) title: Option<String>,
+    pub(crate) icon_emoji_id: Option<i64>,
+    pub(crate) closed: Option<bool>,
+    pub(crate) hidden: Option<bool>,
+}
+
+/// A widget query a bot receives, for a message (`updateBotWidgetQuery`) or an inline message
+/// (`updateInlineBotWidgetQuery`); exactly one of [Self::message_id] and [Self::inline_message_id]
+/// is set. [Self::query_type] is `data`, `signData` or `sentTransaction`; the wallet payload of the
+/// last two is not projected and stays in the raw update.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct WidgetQueryDto {
+    pub(crate) query_id: i64,
+    pub(crate) user_id: i64,
+    pub(crate) query_type: &'static str,
+    pub(crate) peer_id: Option<i64>,
+    pub(crate) peer_kind: Option<&'static str>,
+    pub(crate) message_id: Option<i32>,
+    pub(crate) inline_message_id: Option<InlineMessageIdDto>,
+    pub(crate) chat_instance: i64,
+    pub(crate) chat_type: String,
+    pub(crate) data_base64: String,
+    pub(crate) widget_id: Option<i64>,
+}
+
+/// New data on a widget message (`updateMessageWidgetData`).
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct WidgetDataDto {
+    pub(crate) peer_id: i64,
+    pub(crate) peer_kind: &'static str,
+    pub(crate) message_id: i32,
+    pub(crate) public_data: Option<String>,
+    pub(crate) public_data_hash: Option<i64>,
+    pub(crate) chat_data: Option<String>,
+}
+
+/// A finished or partial audio transcription (`updateTranscribedAudioFile`).
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct TranscriptionUpdateDto {
+    pub(crate) transcription_id: i64,
+    pub(crate) text: String,
+    pub(crate) pending: bool,
+}
+
+/// Types the layer-233 updates grammers 0.12.0 delivers as raw, or returns `None` for any other.
+///
+/// The result has no state (the caller attaches it) and keeps [`UpdateDto::raw_update`], so nothing
+/// the typed projection leaves out is lost.
+pub(crate) fn typed_layer233_update(update: &tl::enums::Update) -> Option<UpdateDto> {
+    let mut dto = match update {
+        tl::enums::Update::EditForumTopic(edit) => {
+            let (peer_id, peer_kind) = peer_parts(&edit.peer);
+            let mut dto = UpdateDto::empty("forumTopicEdited");
+            dto.forum_topic_edit = Some(ForumTopicEditDto {
+                peer_id,
+                peer_kind,
+                topic_id: edit.topic_id,
+                title: edit.title.clone(),
+                icon_emoji_id: edit.icon_emoji_id,
+                closed: edit.closed,
+                hidden: edit.hidden,
+            });
+            dto
+        }
+        tl::enums::Update::BotWidgetQuery(query) => {
+            let (peer_id, peer_kind) = peer_parts(&query.peer);
+            let mut dto = UpdateDto::empty("botWidgetQuery");
+            dto.widget_query = Some(WidgetQueryDto {
+                query_id: query.query_id,
+                user_id: query.user_id,
+                query_type: widget_query_type_name(&query.query_type),
+                peer_id: Some(peer_id),
+                peer_kind: Some(peer_kind),
+                message_id: Some(query.msg_id),
+                inline_message_id: None,
+                chat_instance: query.chat_instance,
+                chat_type: query.chat_type.clone(),
+                data_base64: base64(&query.data),
+                widget_id: query.widget_id,
+            });
+            dto
+        }
+        tl::enums::Update::InlineBotWidgetQuery(query) => {
+            let mut dto = UpdateDto::empty("inlineBotWidgetQuery");
+            dto.widget_query = Some(WidgetQueryDto {
+                query_id: query.query_id,
+                user_id: query.user_id,
+                query_type: widget_query_type_name(&query.query_type),
+                peer_id: None,
+                peer_kind: None,
+                message_id: None,
+                inline_message_id: Some(inline_message_id_dto(&query.inline_message_id)),
+                chat_instance: query.chat_instance,
+                chat_type: query.chat_type.clone(),
+                data_base64: base64(&query.data),
+                widget_id: query.widget_id,
+            });
+            dto
+        }
+        tl::enums::Update::MessageWidgetData(data) => {
+            let (peer_id, peer_kind) = peer_parts(&data.peer);
+            let mut dto = UpdateDto::empty("messageWidgetData");
+            dto.widget_data = Some(WidgetDataDto {
+                peer_id,
+                peer_kind,
+                message_id: data.msg_id,
+                public_data: data.public_data.clone(),
+                public_data_hash: data.public_data_hash,
+                chat_data: data.chat_data.clone(),
+            });
+            dto
+        }
+        tl::enums::Update::TranscribedAudioFile(transcription) => {
+            let mut dto = UpdateDto::empty("audioTranscribed");
+            dto.transcription = Some(TranscriptionUpdateDto {
+                transcription_id: transcription.transcription_id,
+                text: transcription.text.clone(),
+                pending: transcription.pending,
+            });
+            dto
+        }
+        _ => return None,
+    };
+    dto.raw_update = Some(raw_update_dto(update));
+    Some(dto)
+}
+
+/// The id and kind of a TL peer.
+fn peer_parts(peer: &tl::enums::Peer) -> (i64, &'static str) {
+    match peer {
+        tl::enums::Peer::User(user) => (user.user_id, "user"),
+        tl::enums::Peer::Chat(chat) => (chat.chat_id, "chat"),
+        tl::enums::Peer::Channel(channel) => (channel.channel_id, "channel"),
+    }
+}
+
+fn widget_query_type_name(query_type: &tl::enums::WidgetQueryType) -> &'static str {
+    match query_type {
+        tl::enums::WidgetQueryType::Data(_) => "data",
+        tl::enums::WidgetQueryType::SignData(_) => "signData",
+        tl::enums::WidgetQueryType::SentTransaction(_) => "sentTransaction",
+    }
 }
 
 /// The grammers `Update` variant in lowerCamelCase, or `unknown` for one this build cannot name.
@@ -496,6 +667,10 @@ mod tests {
                 }),
             }),
             guest_chat_query: None,
+            forum_topic_edit: None,
+            widget_query: None,
+            widget_data: None,
+            transcription: None,
             raw_update: Some(RawUpdateDto {
                 name: "updateUserTyping",
                 data: "SQkAGg==".to_owned(),
@@ -540,6 +715,7 @@ mod tests {
         "callbackQuery",
         "deletedChannelId",
         "deletedMessageIds",
+        "forumTopicEdit",
         "guestChatQuery",
         "inlineQuery",
         "inlineSend",
@@ -547,6 +723,9 @@ mod tests {
         "message",
         "rawUpdate",
         "state",
+        "transcription",
+        "widgetData",
+        "widgetQuery",
     ];
 
     #[test]
@@ -596,6 +775,10 @@ mod tests {
                     "messageId": {"dcId": 2, "accessHash": 77, "id": 88},
                 },
                 "guestChatQuery": null,
+                "forumTopicEdit": null,
+                "widgetQuery": null,
+                "widgetData": null,
+                "transcription": null,
                 "rawUpdate": {"name": "updateUserTyping", "data": "SQkAGg=="},
             }),
         );

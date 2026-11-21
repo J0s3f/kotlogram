@@ -15,6 +15,7 @@ import org.kotlogramme.bridge.RawBridge
 import org.kotlogramme.bridge.StickersBridge
 import org.kotlogramme.bridge.UpdatesBridge
 import org.kotlogramme.bridge.UsersBridge
+import org.kotlogramme.bridge.WidgetsBridge
 import kotlin.reflect.KClass
 
 /**
@@ -52,6 +53,7 @@ object OperationCatalog {
         StickersBridge::class,
         RawBridge::class,
         UsersBridge::class,
+        WidgetsBridge::class,
     )
 
     val names: Set<String> = BRIDGES

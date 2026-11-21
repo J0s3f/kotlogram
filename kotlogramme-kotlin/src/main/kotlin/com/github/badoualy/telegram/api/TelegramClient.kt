@@ -10,7 +10,8 @@ import org.kotlogramme.TelegramClient as GrammersClient
  * that delegate to the direct grammers bridge.
  */
 interface TelegramClient : AutoCloseable, BridgeApi, AuthApi, MessagesApi, ChatsApi, ContactsApi, DialogsApi,
-    UpdatesApi, MediaApi, FilesApi, InlineApi, ActionsApi, MarkupApi, AccountApi, StickersApi, FoldersApi, RawApi, UsersApi {
+    UpdatesApi, MediaApi, FilesApi, InlineApi, ActionsApi, MarkupApi, AccountApi, StickersApi, FoldersApi, RawApi, UsersApi,
+    WidgetsApi {
     fun isAuthorized(): Boolean = bridge.isAuthorized()
     fun isClosed(): Boolean
 

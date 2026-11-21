@@ -7,7 +7,8 @@ use std::sync::atomic::Ordering;
 use grammers_client::media::Media as ClientMedia;
 use grammers_client::media::Uploaded;
 use grammers_session::types::PeerRef;
-use serde::Deserialize;
+use grammers_client::tl;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use super::Handler;
@@ -157,6 +158,8 @@ pub(crate) const OPERATIONS: &[&str] = &[
     "uploadStreamChunk",
     "uploadStreamFinish",
     "iterProfilePhotos",
+    "transcribeAudioFile",
+    "getTranscriptionLangs",
 ];
 
 /// Routes [operation] to its handler, or returns `None` when the name is not this module's.
@@ -175,6 +178,8 @@ pub(crate) fn route(operation: &str) -> Option<Handler> {
         "uploadStreamChunk" => upload_stream_chunk,
         "uploadStreamFinish" => upload_stream_finish,
         "iterProfilePhotos" => iter_profile_photos,
+        "transcribeAudioFile" => transcribe_audio_file,
+        "getTranscriptionLangs" => get_transcription_langs,
         _ => return None,
     })
 }
@@ -223,6 +228,79 @@ fn download_media_chunk(native: &NativeClient, payload: &str) -> Result<String, 
             size: bytes.len() as i64,
         }),
     }
+}
+
+/// Payload of `transcribeAudioFile`: the handle of an upload a previous `upload*` operation made.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct TranscribeAudioFilePayload {
+    pub(crate) upload_handle: i64,
+}
+
+/// Payload of `getTranscriptionLangs`: the peer to ask for, or none for the account's languages.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct GetTranscriptionLangsPayload {
+    pub(crate) peer: Option<PeerTarget>,
+}
+
+/// The layer's `messages.TranscribedAudio`, which `transcribeAudioFile` answers with.
+///
+/// [Self::pending] means [Self::text] is partial; the final text arrives as an `audioTranscribed`
+/// update with the same id. The trial allowance is only present for accounts without Premium, and
+/// its date is epoch milliseconds like every other date on the wire.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct TranscriptionDto {
+    pub(crate) transcription_id: i64,
+    pub(crate) text: String,
+    pub(crate) pending: bool,
+    pub(crate) trial_remaining: Option<i32>,
+    pub(crate) trial_remaining_until_date: Option<i64>,
+}
+
+/// Projects a `messages.TranscribedAudio`.
+pub(crate) fn transcription_dto(audio: &tl::enums::messages::TranscribedAudio) -> TranscriptionDto {
+    let tl::enums::messages::TranscribedAudio::Audio(audio) = audio;
+    TranscriptionDto {
+        transcription_id: audio.transcription_id,
+        text: audio.text.clone(),
+        pending: audio.pending,
+        trial_remaining: audio.trial_remains_num,
+        trial_remaining_until_date: audio.trial_remains_until_date.map(|date| i64::from(date) * 1_000),
+    }
+}
+
+/// Transcribes an uploaded audio file, which is the layer's `messages.transcribeAudioFile`.
+fn transcribe_audio_file(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: TranscribeAudioFilePayload = parse_payload(payload)?;
+    let uploaded = native.uploads.get(data.upload_handle)?;
+    let audio = native
+        .runtime
+        .block_on(
+            native
+                .client
+                .invoke(&tl::functions::messages::TranscribeAudioFile { file: uploaded.raw }),
+        )
+        .map_err(invocation_error)?;
+    json_string(transcription_dto(&audio))
+}
+
+/// Lists the language codes audio can be transcribed in, for a peer or for the account.
+fn get_transcription_langs(native: &NativeClient, payload: &str) -> Result<String, String> {
+    let data: GetTranscriptionLangsPayload = parse_payload(payload)?;
+    let langs = native.runtime.block_on(async {
+        let peer = match &data.peer {
+            Some(target) => Some(resolve_peer(native, target).await?.into()),
+            None => None,
+        };
+        native
+            .client
+            .invoke(&tl::functions::messages::GetTranscriptionLangs { peer })
+            .await
+            .map_err(invocation_error)
+    })?;
+    json_string(langs)
 }
 
 /// Uploads a local file, counting it into a `uploadProgressBegin` slot when one is named.
