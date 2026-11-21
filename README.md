@@ -82,7 +82,7 @@ Kotlogram.getDefaultClient(
 ## Install
 
 The JAR bundles all six native libraries and loads the one matching the host at startup, so no separate
-native setup is required. The current release is **0.9.16**.
+native setup is required. The current release is **0.9.17**.
 
 ### JitPack (recommended)
 
@@ -107,7 +107,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.J0s3f:kotlogram:0.9.16")
+    implementation("com.github.J0s3f:kotlogram:0.9.17")
 }
 ```
 
@@ -117,7 +117,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.J0s3f:kotlogram:0.9.16'
+    implementation 'com.github.J0s3f:kotlogram:0.9.17'
 }
 ```
 
@@ -132,7 +132,7 @@ dependencies {
 <dependency>
     <groupId>com.github.J0s3f</groupId>
     <artifactId>kotlogram</artifactId>
-    <version>0.9.16</version>
+    <version>0.9.17</version>
 </dependency>
 ```
 
@@ -148,14 +148,14 @@ systemProp.org.gradle.internal.http.socketTimeout=180000
 ### Verifying the artifact
 
 The release jar is signed by this project's CI, and the detached signature is published beside it on the
-[v0.9.16 release](https://github.com/J0s3f/kotlogram/releases/tag/v0.9.16):
+[v0.9.17 release](https://github.com/J0s3f/kotlogram/releases/tag/v0.9.17):
 
 ```bash
-curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.16/kotlogramme-0.9.16.jar
-curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.16/kotlogramme-0.9.16.jar.asc
-curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.16/kotlogramme-0.9.16.jar.asc.pub
-gpg --import kotlogramme-0.9.16.jar.asc.pub
-gpg --verify kotlogramme-0.9.16.jar.asc kotlogramme-0.9.16.jar
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.17/kotlogramme-0.9.17.jar
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.17/kotlogramme-0.9.17.jar.asc
+curl -LO https://github.com/J0s3f/kotlogram/releases/download/v0.9.17/kotlogramme-0.9.17.jar.asc.pub
+gpg --import kotlogramme-0.9.17.jar.asc.pub
+gpg --verify kotlogramme-0.9.17.jar.asc kotlogramme-0.9.17.jar
 ```
 
 The signature is made by the key:
@@ -183,13 +183,13 @@ missing from it even though it is released, in which case JitPack is the one to 
 
 ```kotlin
 dependencies {
-    implementation("io.github.j0s3f:kotlogramme:0.9.16")
+    implementation("io.github.j0s3f:kotlogramme:0.9.17")
 }
 ```
 
 ```groovy
 dependencies {
-    implementation 'io.github.j0s3f:kotlogramme:0.9.16'
+    implementation 'io.github.j0s3f:kotlogramme:0.9.17'
 }
 ```
 
@@ -197,7 +197,7 @@ dependencies {
 <dependency>
     <groupId>io.github.j0s3f</groupId>
     <artifactId>kotlogramme</artifactId>
-    <version>0.9.16</version>
+    <version>0.9.17</version>
 </dependency>
 ```
 
@@ -216,7 +216,7 @@ repositories {
 }
 
 dependencies {
-    implementation("com.github.J0s3f.kotlogram:kotlogram-android:v0.9.16")
+    implementation("com.github.J0s3f.kotlogram:kotlogram-android:v0.9.17")
 }
 ```
 

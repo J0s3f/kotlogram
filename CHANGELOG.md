@@ -10,6 +10,8 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
 
 ## Unreleased
 
+## 0.9.17 - 2026-11-21
+
 ### Added
 
 - **Layer 233 facade** (design in `docs/layer-233-facade.md`): `channelsToggleForum` with the new
@@ -18,6 +20,12 @@ recommended channel and Central is the fallback. See [`docs/publishing.md`](docs
   bot widget query answer calls, plus `InlineWidgetResult` for inline answers); and four newly typed
   updates on `TypedUpdate` (`forumTopicEdit`, `widgetQuery`, `widgetData`, `transcription`). Ten new
   native operations. Wallet-carrying widget query types stay behind `invokeRaw`.
+
+### Security
+
+- CI now refuses a JDK older than the Java4Shell fix (CVE-2026-114938: 17.0.21.1, 21.0.13.1, 25.0.5.1,
+  27.0.1.1) and asks `setup-java` for the newest Temurin 17, because the runner served a cached,
+  affected 17.0.21 build. The library itself bundles no JDK and is unaffected.
 
 ## 0.9.16 - 2026-11-21
 
