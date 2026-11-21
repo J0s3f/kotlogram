@@ -103,6 +103,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          check-latest: true
       - name: Require a JDK with the Java4Shell fix
         shell: bash
         run: bash scripts/check-jdk.sh
@@ -258,6 +259,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          check-latest: true
       - name: Require a JDK with the Java4Shell fix
         shell: bash
         run: bash scripts/check-jdk.sh
@@ -296,6 +298,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          check-latest: true
       - name: Require a JDK with the Java4Shell fix
         shell: bash
         run: bash scripts/check-jdk.sh
@@ -341,6 +344,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          check-latest: true
       - name: Require a JDK with the Java4Shell fix
         shell: bash
         run: bash scripts/check-jdk.sh
